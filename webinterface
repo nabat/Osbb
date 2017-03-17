@@ -14,10 +14,28 @@ our(
   %lang,
   $html,
   $admin,
-  $db
+  $db,
+  %permissions,
+  %ADMIN_REPORT
 );
 
 my $Osbb = Osbb->new($db, $admin, \%conf);
+
+require Osbb::User_portal;
+#require Osbb::Quick_reports;
+
+if($permissions{3}) {
+  require Osbb::Reports;
+}
+
+if($permissions{4}) {
+  require Osbb::Configure;
+}
+
+#if(%ADMIN_REPORT) {
+#  require Dv::Periodic;
+#}
+
 
 #**********************************************************
 =head2 osbb_user($attr)
@@ -54,13 +72,4 @@ sub osbb_user {
 }
 
 
-#**********************************************************
-=head2 osbb_config($attr)
-
-=cut
-#**********************************************************
-sub osbb_config {
-
-
-
-}
+1

@@ -7,7 +7,7 @@
 
  cd abills/Abills/modules/
  
- git clone 
+ git clone git@github.com:nabat/Osbb.git
  
  cd abills/Abills/modules/Osbb/
  
