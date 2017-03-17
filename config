@@ -1,0 +1,13 @@
+#Iner_ID : Main or Sub or if -1 user menu func list
+our %FUNCTIONS_LIST = (
+  "01:-1:$lang{OSBB}:osbb_user:UID"                          => 15,
+  "01:0:$lang{OSBB}:osbb_config"                             => 5,
+);
+
+
+$USER_FUNCTION_LIST = (
+  "01:0:$lang{OSBB}:osbb_user:" => 0
+);
+
+
+1;
