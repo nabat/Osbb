@@ -20,6 +20,10 @@ our(
 );
 
 my $Osbb = Osbb->new($db, $admin, \%conf);
+our %space_type = (
+  0  => '',
+  1  => $lang{COMMERCIAL}
+);
 
 require Osbb::User_portal;
 #require Osbb::Quick_reports;
@@ -37,6 +41,7 @@ if($permissions{4}) {
 #}
 
 
+
 #**********************************************************
 =head2 osbb_user($attr)
 
@@ -45,31 +50,106 @@ if($permissions{4}) {
 sub osbb_user {
   my($attr) = @_;
 
-  if($FORM{add}) {
-
+  if ( $FORM{add} ){
+    $Osbb->user_add( { %FORM } );
+    if ( !$Osbb->{errno} ){
+      $html->message( 'info', $lang{BOXES}, "$lang{ADDED}" );
+    }
   }
-  elsif($FORM{change}) {
-
+  elsif ( $FORM{change} ){
+    $Osbb->user_change( \%FORM );
+    if ( !_error_show( $Osbb ) ){
+      $html->message( 'info', $lang{BOXES}, "$lang{CHANGED}" );
+    }
   }
-  elsif($FORM{chg}) {
-
+  elsif ( $FORM{del} && $FORM{COMMENTS} ){
+    $Osbb->user_del( "$FORM{del}" );
+    if ( !$Osbb->{errno} ){
+      $html->message( 'info', $lang{BOXES}, "$lang{DELETED}" );
+    }
   }
-  elsif($FORM{del}) {
 
+  _error_show($Osbb);
+
+  if ( $FORM{UID} ){
+    $Osbb->user_info({ UID =>  $FORM{UID} });
+
+    if ( !$Osbb->{errno} ){
+      $FORM{chg}=1;
+      $Osbb->{APARTMENT_AREA} = sprintf("%.2f", $Osbb->{LIVING_SPACE} + $Osbb->{UTILITY_ROOM});
+    }
   }
 
+  $Osbb->{SEL_TYPE} = $html->form_select(
+    'TYPE',
+    {
+      SELECTED => $Osbb->{TYPE},
+      SEL_HASH => \%space_type,
+      NO_ID    => 1,
+      ID       => 'type',
+    }
+  );
 
   $html->tpl_show(
     _include( 'osbb_user', 'Osbb' ),
     {
-      %$attr,
+      %$Osbb,
       ACTION     => ($FORM{chg}) ? 'change' : 'add',
-      LNG_ACTION => ($FORM{chg}) ? $lang{CHANGE} : $lang{ADD},
+      LNG_ACTION => ($FORM{chg}) ? $lang{CHANGE} : $lang{REGISTRATION},
     }
   );
 
   return 1;
 }
 
+#**********************************************************
+=head2 osbb_user_list($attr)
+
+=cut
+#**********************************************************
+sub osbb_users_list {
+
+  result_former({
+    INPUT_DATA      => $Osbb,
+    FUNCTION        => 'user_list',
+    BASE_FIELDS     => 0,
+    DEFAULT_FIELDS  => 'FIO,DEPOSIT,ADDRESS_FLAT',
+    FUNCTION_FIELDS => 'change,form_payments',
+    MULTISELECT     => ($permissions{0}{7}) ? 'IDS:uid:internet_users_list' : '',
+    EXT_TITLES      => {
+      living_space   => $lang{LIVING_SPACE},
+      utility_room   => $lang{UTILITY_ROOM},
+      apartment_area => $lang{APARTMENT_AREA},
+      commercial     => $lang{COMMERCIAL}
+    },
+    SELECT_VALUE    => {
+      commercial    => {
+        0 => '',
+        1 => $lang{COMMERCIAL}
+      }
+    },
+#    FILTER_COLS  => {
+#      ip_num   => 'int2ip',
+#    },
+    TABLE           => {
+      width      => '100%',
+      caption    => "%lang{OSBB} - $lang{USERS}",
+      qs         => $pages_qs,
+      ID         => 'OSBB_USERS_LIST',
+      #header     => $status_bar,
+      SELECT_ALL => ($permissions{0}{7}) ? "internet_users_list:IDS:$lang{SELECT_ALL}" : undef,
+      EXPORT     => 1,
+      MENU       => "$lang{ADD}:index=" . get_function_index('dv_wizard_user') . ':add' . ";$lang{SEARCH}:index=$index&search_form=1:search",
+    },
+    MAKE_ROWS    => 1,
+    SEARCH_FORMER=> 1,
+    MODULE       => 'Osbb',
+    TOTAL        => 1,
+    #SHOW_MORE_THEN=>1,
+    #OUTPUT2RETURN =>1
+  });
+
+  return 1;
+}
 
 1
