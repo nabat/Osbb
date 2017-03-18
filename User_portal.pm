@@ -26,7 +26,7 @@ my $Osbb = Osbb->new($db, $admin, \%conf);
 sub osbb_client_info {
 
   if ( $user->{UID} ){
-    $Osbb->user_info({ UID =>  $FORM{UID} });
+    $Osbb->user_info({ UID => $user->{UID}  });
 
     if ( !$Osbb->{errno} ){
       $FORM{chg}=1;

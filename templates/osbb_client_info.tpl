@@ -6,39 +6,22 @@
                 </button>
             </div>
         </div>
-        <div class='nav-tabs-custom box-body'>
+        <div class='box-body'>
 
-            <div class='form-group'>
-                <label class='control-label col-md-3' for='LIVING_SPACE'>_{LIVING_SPACE}_</label>
-                <div class='col-md-9'>
-                    <input id='LIVING_SPACE' name='LIVING_SPACE' value='%LIVING_SPACE%' placeholder='%LIVING_SPACE%'
-                           class='form-control' type='text' readonly>
-                </div>
-            </div>
-
-            <div class='form-group'>
-                <label class='control-label col-md-3' for='UTILITY_ROOM'>_{UTILITY_ROOM}_</label>
-                <div class='col-md-9'>
-                    <input id='UTILITY_ROOM' name='UTILITY_ROOM' value='%UTILITY_ROOM%' placeholder='%UTILITY_ROOM%'
-                           class='form-control' type='text' readonly>
-                </div>
-            </div>
-
-            <div class='form-group'>
-                <label class='control-label col-md-3' for='APARTMENT_AREA'>_{APARTMENT_AREA}_</label>
-                <div class='col-md-9'>
-                    <input id='APARTMENT_AREA' name='APARTMENT_AREA' value='%APARTMENT_AREA%' placeholder='%APARTMENT_AREA%'
-                           class='form-control' type='text' readonly>
-                </div>
-            </div>
-
-            <div class='form-group'>
-                <label class='control-label col-md-3' for='TYPE'>_{TYPE}_</label>
-                <div class='col-md-9'>
-                    <input id='TYPE' name='TYPE' value='%TYPE%' placeholder='%TYPE%'
-                           class='form-control' type='text' readonly>
-                </div>
-            </div>
+            <ul class='list-group list-group-unbordered'>
+                <li class='list-group-item'>
+                    <b>_{LIVING_SPACE}_</b> <a class='pull-right'>%LIVING_SPACE%</a>
+                </li>
+                <li class='list-group-item'>
+                    <b>_{UTILITY_ROOM}_</b> <a class='pull-right'>%UTILITY_ROOM%</a>
+                </li>
+                <li class='list-group-item'>
+                    <b>_{APARTMENT_AREA}_</b> <a class='pull-right'>%APARTMENT_AREA%</a>
+                </li>
+                <li class='list-group-item'>
+                    <b>_{TYPE}_</b> <a class='pull-right'>%TYPE%</a>
+                </li>
+            </ul>
 
             <div class='form-group'>
                 <label class='control-label col-md-3' for='RENT'>_{RENT}_</label>
