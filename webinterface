@@ -133,7 +133,7 @@ sub osbb_users_list {
 #    },
     TABLE           => {
       width      => '100%',
-      caption    => "%lang{OSBB} - $lang{USERS}",
+      caption    => "$lang{OSBB} - $lang{USERS}",
       qs         => $pages_qs,
       ID         => 'OSBB_USERS_LIST',
       #header     => $status_bar,
