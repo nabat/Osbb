@@ -18,6 +18,7 @@
   /usr/abills/libexec/config.pl
   
   @MODULES = (
-   ...
+
    Osbb
+
   );
