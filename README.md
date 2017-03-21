@@ -12,8 +12,11 @@
 
 <code>
   cd /usr/abills/abills/Abills/modules/
+  
   git clone git@github.com:nabat/Osbb.git
+  
   cd /usr/abills/Abills/modules/Osbb/
+  
   mysql -D abills < Osbb.sql
 </code>
  
@@ -23,6 +26,8 @@
   
 <code>
   @MODULES = (
+  
    'Osbb'
+   
   );
 </code>
