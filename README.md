@@ -1,30 +1,28 @@
-# Osbb managment system
+# Osbb management system
 
 Система управління ОСББ
 
 # Можливості
 
   - Інформація по жильцям
-  - Тарифыкація  прощі
-  - Диференційована тарифікація типів приміщення
+  - Тарифікація  площі
+  - Диференційована тарифікація по типам приміщення
 
 # Початок роботи:
 
- cd abills/Abills/modules/
+<code>
+  cd /usr/abills/abills/Abills/modules/
+  git clone git@github.com:nabat/Osbb.git
+  cd /usr/abills/Abills/modules/Osbb/
+  mysql -D abills < Osbb.sql
+</code>
  
- git clone git@github.com:nabat/Osbb.git
- 
- cd abills/Abills/modules/Osbb/
- 
- mysql -D abills < Osbb.sql
-
 # Підключення до системи
 
-  /usr/abills/libexec/config.pl
+  <b>/usr/abills/libexec/config.pl</b>
   
+<code>
   @MODULES = (
-
-   Osbb
-
+   'Osbb'
   );
-
+</code>
