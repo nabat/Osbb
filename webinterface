@@ -109,6 +109,13 @@ sub osbb_user {
 #**********************************************************
 sub osbb_users_list {
 
+  if ($FORM{search}){
+    $html->message('warn', $lang{ERROR}, $lang{NOT_IMPLEMENTED});
+  }
+  elsif ($FORM{import}){
+    return $html->redirect($SELF_URL . '?index=' . get_function_index('osbb_users_import'));
+  }
+  
   result_former({
     INPUT_DATA      => $Osbb,
     FUNCTION        => 'user_list',
@@ -139,7 +146,10 @@ sub osbb_users_list {
       #header     => $status_bar,
       SELECT_ALL => ($permissions{0}{7}) ? "internet_users_list:IDS:$lang{SELECT_ALL}" : undef,
       EXPORT     => 1,
-      MENU       => "$lang{ADD}:index=" . get_function_index('dv_wizard_user') . ':add' . ";$lang{SEARCH}:index=$index&search_form=1:search",
+      MENU       =>
+      "$lang{ADD}:index=" . get_function_index('dv_wizard_user') . ':add'
+        . ";$lang{SEARCH}:index=$index&search_form=1:search"
+        . ";$lang{IMPORT}:index=$index&import=1:import",
     },
     MAKE_ROWS    => 1,
     SEARCH_FORMER=> 1,
@@ -150,6 +160,43 @@ sub osbb_users_list {
   });
 
   return 1;
+}
+
+#**********************************************************
+=head2 osbb_users_import()
+
+=cut
+#**********************************************************
+sub osbb_users_import {
+  
+  if (!$FORM{UPLOAD}) {
+  
+    $html->message('info alert-sm', $lang{TIP}, $lang{FILL_DEFAULT_VALUES_AND_CHOOSE_FILE_FOR_IMPORT});
+  
+    # TODO: Show reg form
+    my $tpl = qq{<input type='file' name='UPLOAD'/>};
+    
+    print $html->form_main({
+      CONTENT => $tpl,
+      HIDDEN  => {
+        'index' => $index
+      },
+      METHOD  => 'post',
+      ENCTYPE => 'multipart/form_data',
+      SUBMIT  => {
+        preview => $lang{PREVIEW}
+      }
+    });
+    
+  }
+  elsif ($FORM{preview}){
+    _bp('', \%FORM);
+  }
+  elsif ($FORM{import}){
+    
+  }
+  
+    
 }
 
 1
