@@ -11,13 +11,13 @@
 # Початок роботи:
 
 <code>
-  cd /usr/abills/abills/Abills/modules/
+ cd /usr/abills/abills/Abills/modules/
   
-  git clone git@github.com:nabat/Osbb.git
+ git clone git@github.com:nabat/Osbb.git
   
-  cd /usr/abills/Abills/modules/Osbb/
+ cd /usr/abills/Abills/modules/Osbb/
   
-  mysql -D abills < Osbb.sql
+ mysql -D abills < Osbb.sql
 </code>
  
 # Підключення до системи
@@ -25,9 +25,9 @@
   <b>/usr/abills/libexec/config.pl</b>
   
 <code>
-  @MODULES = (
+ @MODULES = (
   
-   'Osbb'
+  'Osbb'
    
-  );
+ );
 </code>
