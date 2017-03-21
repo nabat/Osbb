@@ -3,7 +3,7 @@
 Система управління ОСББ
 
 
-Початок роботи:
+# Початок роботи:
 
  cd abills/Abills/modules/
  
@@ -13,3 +13,11 @@
  
  mysql -D abills < Osbb.sql
 
+# Підключення до системи
+
+  /usr/abills/libexec/config.pl
+  
+  @MODULES = (
+   ...
+   Osbb
+  );
