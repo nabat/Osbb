@@ -4,6 +4,7 @@ our %FUNCTIONS_LIST = (
   "02:0:$lang{OSBB}:osbb_user:UID"       => 20,
   "03:1:$lang{IMPORT}:osbb_users_import" => 11,
   "10:0:$lang{OSBB}:osbb_config"         => 5,
+  "11:10:$lang{SPACE_TYPES}:osbb_area_types"    => 5,
 );
 
 our %USER_FUNCTION_LIST = (

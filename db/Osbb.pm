@@ -199,5 +199,127 @@ sub user_list {
 }
 
 
+#**********************************************************
+=head2 area_type_add($attr)
+
+=cut
+#**********************************************************
+sub area_type_add {
+  my $self = shift;
+  my ($attr) = @_;
+
+  $self->query_add('osbb_area_types', $attr);
+  return [ ] if ($self->{errno});
+
+  $admin->system_action_add("AREA TYPES: $self->{INSERT_ID}", { TYPE => 1 });
+  return $self;
+}
+
+#**********************************************************
+=head2 area_type_info($attr)
+
+=cut
+#**********************************************************
+sub area_type_info {
+  my $self = shift;
+  my ($id) = @_;
+
+  $self->query2("SELECT * FROM osbb_area_types WHERE id= ? ;",
+    undef,
+    { INFO => 1,
+      Bind => [ $id ] }
+  );
+
+  return $self;
+}
+
+#**********************************************************
+=head2 area_type_del($id)
+
+=cut
+#**********************************************************
+sub area_type_del {
+  my $self = shift;
+  my ($id) = @_;
+
+  $self->query_del('osbb_area_types', { ID => $id });
+
+  return [ ] if ($self->{errno});
+
+  $admin->system_action_add("AREA TYPES: $id", { TYPE => 10 });
+
+  return $self;
+}
+
+#**********************************************************
+=head2 area_type_change($attr)
+
+=cut
+#**********************************************************
+sub area_type_change {
+  my $self = shift;
+  my ($attr) = @_;
+
+  $attr->{DISABLE}=(! defined($attr->{DISABLE})) ? 0 : 1;
+
+  $self->changes2(
+    {
+      CHANGE_PARAM => 'ID',
+      TABLE        => 'osbb_area_types',
+      DATA         => $attr
+    }
+  );
+
+  return $self;
+}
+
+#**********************************************************
+=head2 area_type_list($attr)
+
+=cut
+#**********************************************************
+sub area_type_list {
+  my $self   = shift;
+  my ($attr) = @_;
+
+  $SORT      = ($attr->{SORT})      ? $attr->{SORT}      : 1;
+  $DESC      = ($attr->{DESC})      ? $attr->{DESC}      : '';
+  $PG        = ($attr->{PG})        ? $attr->{PG}        : 0;
+  $PAGE_ROWS = ($attr->{PAGE_ROWS}) ? $attr->{PAGE_ROWS} : 25;
+
+  my $WHERE =  $self->search_former($attr, [
+      ['MARKING',     'STR', 'marking',    ],
+      ['VENDOR',      'STR', 'vendor',     ],
+    ],
+    { WHERE => 1,
+    }
+  );
+
+  $self->query2("SELECT
+     name,
+     living_space,
+     utility_room,
+     total_space,
+     id
+     FROM osbb_area_types
+     $WHERE
+     ORDER BY $SORT $DESC LIMIT $PG, $PAGE_ROWS;",
+    undef,
+    $attr
+  );
+
+  return [ ] if ($self->{errno});
+
+  my $list = $self->{list};
+
+  if ($self->{TOTAL} >= 0) {
+    $self->query2("SELECT COUNT(id) AS total FROM osbb_area_types $WHERE",
+      undef, { INFO => 1 });
+  }
+
+  return $list;
+}
+
+
 
 1;
