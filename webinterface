@@ -169,12 +169,13 @@ sub osbb_users_list {
 #**********************************************************
 sub osbb_users_import {
   
+  my $tpl = qq{<input type='file' name='UPLOAD'/>};
+  
   if (!$FORM{UPLOAD}) {
   
     $html->message('info alert-sm', $lang{TIP}, $lang{FILL_DEFAULT_VALUES_AND_CHOOSE_FILE_FOR_IMPORT});
   
     # TODO: Show reg form
-    my $tpl = qq{<input type='file' name='UPLOAD'/>};
     
     print $html->form_main({
       CONTENT => $tpl,
@@ -182,21 +183,75 @@ sub osbb_users_import {
         'index' => $index
       },
       METHOD  => 'post',
-      ENCTYPE => 'multipart/form_data',
+      ENCTYPE => 'multipart/form-data',
       SUBMIT  => {
         preview => $lang{PREVIEW}
       }
     });
     
   }
-  elsif ($FORM{preview}){
-    _bp('', \%FORM);
+  elsif ($FORM{preview}) {
+  
+    my $filename = $FORM{UPLOAD}->{filename};
+    my $content_type = $FORM{UPLOAD}->{'Content-Type'};
+    my $file_content = $FORM{UPLOAD}->{Contents};
+  
+    delete $FORM{UPLOAD};
+  
+    my $parsed = osbb_parse_import_file($filename, $content_type, \$file_content);
+  
+    my @imported_users = map {
+      # TODO: Add values from %FORM;
+      $_;
+      
+    } @$parsed;
+  
+    my $table = $html->table( {
+      width   => '100%',
+      caption => $lang{IMPORT},
+      border  => 1,
+      title   => [ '#', $lang{FIO},  ],
+      qs      => $pages_qs,
+      ID      => 'OSBB_IMPORT_PREVIEW_TABLE'
+    } );
+  
+    foreach my $imported_user ( @imported_users ) {
+      $table->addrow(
+        $imported_user->{UID},
+        $imported_user->{FIO},
+      );
+    }
+  
+    print $html->form_main({
+      HIDDEN  => {
+        'index' => $index
+      },
+      METHOD  => 'post',
+      ENCTYPE => 'multipart/form-data',
+      SUBMIT  => {
+        a_return  => $lang{BACK},
+        import  => $lang{IMPORT}
+      }
+    });
+    
   }
   elsif ($FORM{import}){
     
   }
   
-    
+}
+
+#**********************************************************
+=head2 osbb_parse_import_file($filename, $content_type, \$file_content)
+
+=cut
+#**********************************************************
+sub osbb_parse_import_file {
+  my ($filename, $content_type, $file_content_scalar_ref) = @_;
+  
+  my $file_content = $$file_content_scalar_ref;
+  
+  return [];
 }
 
 1
