@@ -3,6 +3,10 @@ our %FUNCTIONS_LIST = (
   "01:0:$lang{OSBB}:osbb_users_list:"    => 11,
   "02:0:$lang{OSBB}:osbb_user:UID"       => 20,
   "10:0:$lang{OSBB}:osbb_config"         => 5,
+  "11:10:$lang{SPACE_TYPES}:osbb_area_types"    => 5,
+  "12:10:Spending:null" => 5,
+  "13:12:Spending Types:osbb_spending_types" => 5,
+  "14:12:Add spending:osbb_spending" => 5,
 );
 
 our %USER_FUNCTION_LIST = (

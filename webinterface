@@ -126,7 +126,7 @@ sub osbb_users_list {
     EXT_TITLES      => {
       living_space   => $lang{LIVING_SPACE},
       utility_room   => $lang{UTILITY_ROOM},
-      apartment_area => $lang{APARTMENT_AREA},
+      apartment_area => $lang{TOTAL_SPACE},
       commercial     => $lang{COMMERCIAL}
     },
     SELECT_VALUE    => {
