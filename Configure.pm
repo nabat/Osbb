@@ -103,6 +103,25 @@ sub osbb_area_types{
   return 1;
 }
 
+#**********************************************************
+=head2 osbb_spending_typed() -
 
+  Arguments:
+    $attr -
+  Returns:
+
+  Examples:
+
+=cut
+#**********************************************************
+sub osbb_spending_types {
+  my ($attr) = @_;
+
+  if ( $FORM{add_form} ){
+    $html->tpl_show( _include( 'osbb_spending_types', 'Osbb' ), $Osbb );
+  }
+
+  return 1;
+}
 
 1;
