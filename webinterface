@@ -113,7 +113,7 @@ sub osbb_users_list {
     $html->message('warn', $lang{ERROR}, $lang{NOT_IMPLEMENTED});
   }
   elsif ($FORM{import}){
-    return $html->redirect($SELF_URL . '?index=' . get_function_index('osbb_users_import'));
+    return &_osbb_users_import;
   }
   
   result_former({
@@ -146,10 +146,10 @@ sub osbb_users_list {
       #header     => $status_bar,
       SELECT_ALL => ($permissions{0}{7}) ? "internet_users_list:IDS:$lang{SELECT_ALL}" : undef,
       EXPORT     => 1,
+      IMPORT     => "$SELF_URL?qindex=$index&import=1&header=2",
       MENU       =>
       "$lang{ADD}:index=" . get_function_index('dv_wizard_user') . ':add'
         . ";$lang{SEARCH}:index=$index&search_form=1:search"
-        . ";$lang{IMPORT}:index=$index&import=1:import",
     },
     MAKE_ROWS    => 1,
     SEARCH_FORMER=> 1,
@@ -163,40 +163,37 @@ sub osbb_users_list {
 }
 
 #**********************************************************
-=head2 osbb_users_import()
+=head2 _osbb_users_import()
 
 =cut
 #**********************************************************
-sub osbb_users_import {
+sub _osbb_users_import {
   
-  my $tpl = qq{<input type='file' name='UPLOAD'/>};
-  
-  if (!$FORM{UPLOAD}) {
-  
-    $html->message('info alert-sm', $lang{TIP}, $lang{FILL_DEFAULT_VALUES_AND_CHOOSE_FILE_FOR_IMPORT});
-  
-    # TODO: Show reg form
+  if (!$FORM{FILE}) {
     
-    print $html->form_main({
-      CONTENT => $tpl,
-      HIDDEN  => {
-        'index' => $index
-      },
-      METHOD  => 'post',
-      ENCTYPE => 'multipart/form-data',
-      SUBMIT  => {
-        preview => $lang{PREVIEW}
-      }
+    my $type_select = $html->form_select('FILE_FORMAT', {
+        SEL_ARRAY => [ 'CSV', 'JSON' ],
+        NO_ARRAY_ID => 1
     });
     
+    # TODO: Show reg form
+    $html->tpl_show(_include('osbb_import_file_form', 'Osbb'),
+      {
+        FILE_FORMAT_SELECT => $type_select
+      }
+    );
+    
+    return 1;
   }
   elsif ($FORM{preview}) {
   
-    my $filename = $FORM{UPLOAD}->{filename};
-    my $content_type = $FORM{UPLOAD}->{'Content-Type'};
-    my $file_content = $FORM{UPLOAD}->{Contents};
+    $html->message('info alert-sm', $lang{TIP}, $lang{FILL_DEFAULT_VALUES_THAT_WILL_REPLACE_EMPTY_FILE_FIELDS});
+    
+    my $filename = $FORM{FILE}->{filename};
+    my $content_type = $FORM{FILE}->{'Content-Type'};
+    my $file_content = $FORM{FILE}->{Contents};
   
-    delete $FORM{UPLOAD};
+    delete $FORM{FILE};
   
     my $parsed = osbb_parse_import_file($filename, $content_type, \$file_content);
   
