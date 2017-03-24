@@ -104,7 +104,7 @@ sub osbb_area_types{
 }
 
 #**********************************************************
-=head2 osbb_spending_typed() -
+=head2 osbb_spending_types() -
 
   Arguments:
     $attr -
