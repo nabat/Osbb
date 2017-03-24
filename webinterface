@@ -188,36 +188,27 @@ sub _osbb_users_import {
   
     $html->message('info alert-sm', $lang{TIP}, $lang{FILL_DEFAULT_VALUES_THAT_WILL_REPLACE_EMPTY_FILE_FIELDS});
     
-    my $filename = $FORM{FILE}->{filename};
-    my $content_type = $FORM{FILE}->{'Content-Type'};
-    my $file_content = $FORM{FILE}->{Contents};
+    my $parsed = osbb_parse_import_file($FORM{FILE_FORMAT}, $FORM{FILE});
   
-    delete $FORM{FILE};
-  
-    my $parsed = osbb_parse_import_file($filename, $content_type, \$file_content);
-  
-    my @imported_users = map {
-      # TODO: Add values from %FORM;
-      $_;
-      
-    } @$parsed;
   
     my $table = $html->table( {
       width   => '100%',
-      caption => $lang{IMPORT},
+      caption => "$lang{IMPORT} : $lang{PREVIE}",
       border  => 1,
       title   => [ '#', $lang{FIO},  ],
       qs      => $pages_qs,
       ID      => 'OSBB_IMPORT_PREVIEW_TABLE'
     } );
   
-    foreach my $imported_user ( @imported_users ) {
+    foreach my $imported_user ( @$parsed ) {
       $table->addrow(
-        $imported_user->{UID},
-        $imported_user->{FIO},
+        $imported_user->{UID} || '',
+        $imported_user->{FIO} || '',
       );
     }
   
+    print $table->show();
+    
     print $html->form_main({
       HIDDEN  => {
         'index' => $index
@@ -230,6 +221,7 @@ sub _osbb_users_import {
       }
     });
     
+    return 1;
   }
   elsif ($FORM{import}){
     
@@ -243,9 +235,49 @@ sub _osbb_users_import {
 =cut
 #**********************************************************
 sub osbb_parse_import_file {
-  my ($filename, $content_type, $file_content_scalar_ref) = @_;
+  my ($file_format, $upload_obj) = @_;
   
-  my $file_content = $$file_content_scalar_ref;
+  return 0 unless ($file_format && $upload_obj && ref $upload_obj eq 'HASH');
+  
+  if ($file_format eq 'CSV'){
+       
+    my $csv_load_error = load_pmodule( "Text::CSV", { RETURN => 1 } );
+    if ( $csv_load_error ){
+      print $csv_load_error;
+      return 0;
+    }
+  
+    my $Text_csv = Text::CSV->new({
+      sep_char           => ";", # Excel default_sep_char
+      decode_utf8        => 1,
+      auto_diag          => 1,
+      empty_is_undef     => 1,
+      allow_loose_quotes => 1,
+    }) or die "" . Text::CSV->error_diag();
+  
+
+    my $Contents = $upload_obj->{Contents};
+    open(my $fh,'<', \$Contents);
+    
+    my @rows = $Text_csv->getline_all( $fh );
+#    while ( my $row =  ) {
+##      $row->[2] =~ m/pattern/ or next; # 3rd field should match
+#      push @rows, $row;
+#    }
+    $Text_csv->eof or $Text_csv->error_diag();
+    
+    
+    _bp('', \@rows);
+  }
+  elsif ( $file_format eq 'JSON' ) {
+    my $json_load_error = load_pmodule( "JSON", { RETURN => 1 } );
+    if ( $json_load_error ){
+      print $json_load_error;
+      return 0;
+    }
+    my $json = JSON->new()->utf8(0);
+    
+  }
   
   return [];
 }
