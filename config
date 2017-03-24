@@ -13,4 +13,9 @@ our %USER_FUNCTION_LIST = (
   "01:0:$lang{RENT}:osbb_client_info:" => 0,
 );
 
+our %PERIODIC = (
+  monthly => [ 'osbb_monthly_fees' ],
+);
+
+
 1;

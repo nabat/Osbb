@@ -36,10 +36,9 @@ if($permissions{4}) {
   require Osbb::Configure;
 }
 
-#if(%ADMIN_REPORT) {
-#  require Dv::Periodic;
-#}
-
+if(%ADMIN_REPORT) {
+  require Osbb::Periodic;
+}
 
 
 #**********************************************************
