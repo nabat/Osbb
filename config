@@ -7,7 +7,6 @@ our %FUNCTIONS_LIST = (
   "11:10:$lang{SPACE_TYPES}:osbb_area_types"    => 5,
   "12:10:Spending:null" => 5,
   "13:12:Spending Types:osbb_spending_types" => 5,
-  "14:12:Add spending:osbb_spending" => 5,
 );
 
 our %USER_FUNCTION_LIST = (
