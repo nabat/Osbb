@@ -288,8 +288,10 @@ sub area_type_list {
   $PAGE_ROWS = ($attr->{PAGE_ROWS}) ? $attr->{PAGE_ROWS} : 25;
 
   my $WHERE =  $self->search_former($attr, [
-      ['MARKING',     'STR', 'marking',    ],
-      ['VENDOR',      'STR', 'vendor',     ],
+      ['LIVING_SPACE',   'INT', 'living_space',    ],
+      ['UTILITY_ROOM',   'INT', 'utility_room',    ],
+      ['TOTAL_SPACE',    'INT', 'total_space',     ],
+      ['DOMAIN_ID',      'INT', 'domain_id'        ]
     ],
     { WHERE => 1,
     }
@@ -300,6 +302,7 @@ sub area_type_list {
      living_space,
      utility_room,
      total_space,
+     $self->{SEARCH_FIELDS}
      id
      FROM osbb_area_types
      $WHERE

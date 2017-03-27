@@ -36,10 +36,9 @@ if($permissions{4}) {
   require Osbb::Configure;
 }
 
-#if(%ADMIN_REPORT) {
-#  require Dv::Periodic;
-#}
-
+if(%ADMIN_REPORT) {
+  require Osbb::Periodic;
+}
 
 
 #**********************************************************
@@ -113,7 +112,7 @@ sub osbb_users_list {
     $html->message('warn', $lang{ERROR}, $lang{NOT_IMPLEMENTED});
   }
   elsif ($FORM{import}){
-    return $html->redirect($SELF_URL . '?index=' . get_function_index('osbb_users_import'));
+    return &_osbb_users_import;
   }
   
   result_former({
@@ -146,10 +145,10 @@ sub osbb_users_list {
       #header     => $status_bar,
       SELECT_ALL => ($permissions{0}{7}) ? "internet_users_list:IDS:$lang{SELECT_ALL}" : undef,
       EXPORT     => 1,
+      IMPORT     => "$SELF_URL?qindex=$index&import=1&header=2",
       MENU       =>
       "$lang{ADD}:index=" . get_function_index('dv_wizard_user') . ':add'
         . ";$lang{SEARCH}:index=$index&search_form=1:search"
-        . ";$lang{IMPORT}:index=$index&import=1:import",
     },
     MAKE_ROWS    => 1,
     SEARCH_FORMER=> 1,
@@ -163,40 +162,124 @@ sub osbb_users_list {
 }
 
 #**********************************************************
-=head2 osbb_users_import()
+=head2 _osbb_users_import()
 
 =cut
 #**********************************************************
-sub osbb_users_import {
+sub _osbb_users_import {
   
-  if (!$FORM{UPLOAD}) {
-  
-    $html->message('info alert-sm', $lang{TIP}, $lang{FILL_DEFAULT_VALUES_AND_CHOOSE_FILE_FOR_IMPORT});
-  
+  if (!$FORM{FILE}) {
+    
+    my $type_select = $html->form_select('FILE_FORMAT', {
+        SEL_ARRAY => [ 'CSV', 'JSON' ],
+        NO_ARRAY_ID => 1
+    });
+    
     # TODO: Show reg form
-    my $tpl = qq{<input type='file' name='UPLOAD'/>};
+    $html->tpl_show(_include('osbb_import_file_form', 'Osbb'),
+      {
+        FILE_FORMAT_SELECT => $type_select
+      }
+    );
+    
+    return 1;
+  }
+  elsif ($FORM{preview}) {
+  
+    $html->message('info alert-sm', $lang{TIP}, $lang{FILL_DEFAULT_VALUES_THAT_WILL_REPLACE_EMPTY_FILE_FIELDS});
+    
+    my $parsed = osbb_parse_import_file($FORM{FILE_FORMAT}, $FORM{FILE});
+  
+  
+    my $table = $html->table( {
+      width   => '100%',
+      caption => "$lang{IMPORT} : $lang{PREVIE}",
+      border  => 1,
+      title   => [ '#', $lang{FIO},  ],
+      qs      => $pages_qs,
+      ID      => 'OSBB_IMPORT_PREVIEW_TABLE'
+    } );
+  
+    foreach my $imported_user ( @$parsed ) {
+      $table->addrow(
+        $imported_user->{UID} || '',
+        $imported_user->{FIO} || '',
+      );
+    }
+  
+    print $table->show();
     
     print $html->form_main({
-      CONTENT => $tpl,
       HIDDEN  => {
         'index' => $index
       },
       METHOD  => 'post',
-      ENCTYPE => 'multipart/form_data',
+      ENCTYPE => 'multipart/form-data',
       SUBMIT  => {
-        preview => $lang{PREVIEW}
+        a_return  => $lang{BACK},
+        import  => $lang{IMPORT}
       }
     });
     
-  }
-  elsif ($FORM{preview}){
-    _bp('', \%FORM);
+    return 1;
   }
   elsif ($FORM{import}){
     
   }
   
+}
+
+#**********************************************************
+=head2 osbb_parse_import_file($filename, $content_type, \$file_content)
+
+=cut
+#**********************************************************
+sub osbb_parse_import_file {
+  my ($file_format, $upload_obj) = @_;
+  
+  return 0 unless ($file_format && $upload_obj && ref $upload_obj eq 'HASH');
+  
+  if ($file_format eq 'CSV'){
+       
+    my $csv_load_error = load_pmodule( "Text::CSV", { RETURN => 1 } );
+    if ( $csv_load_error ){
+      print $csv_load_error;
+      return 0;
+    }
+  
+    my $Text_csv = Text::CSV->new({
+      sep_char           => ";", # Excel default_sep_char
+      decode_utf8        => 1,
+      auto_diag          => 1,
+      empty_is_undef     => 1,
+      allow_loose_quotes => 1,
+    }) or die "" . Text::CSV->error_diag();
+  
+
+    my $Contents = $upload_obj->{Contents};
+    open(my $fh,'<', \$Contents);
     
+    my @rows = $Text_csv->getline_all( $fh );
+#    while ( my $row =  ) {
+##      $row->[2] =~ m/pattern/ or next; # 3rd field should match
+#      push @rows, $row;
+#    }
+    $Text_csv->eof or $Text_csv->error_diag();
+    
+    
+    _bp('', \@rows);
+  }
+  elsif ( $file_format eq 'JSON' ) {
+    my $json_load_error = load_pmodule( "JSON", { RETURN => 1 } );
+    if ( $json_load_error ){
+      print $json_load_error;
+      return 0;
+    }
+    my $json = JSON->new()->utf8(0);
+    
+  }
+  
+  return [];
 }
 
 1

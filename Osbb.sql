@@ -13,6 +13,7 @@ CREATE TABLE `osbb_area_types` (
   `living_space` double(10,2) unsigned NOT NULL DEFAULT '0.00',
   `utility_room` double(10,2) unsigned NOT NULL DEFAULT '0.00',
   `total_space` double(10,2) unsigned NOT NULL DEFAULT '0.00',
+  `domain_id` smallint(3) unsigned NOT NULL DEFAULT '0',
   `comments` text,
   UNIQUE KEY (`name`)
 ) COMMENT='OSBB area types';
