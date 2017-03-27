@@ -117,9 +117,63 @@ sub osbb_area_types{
 sub osbb_spending_types {
   my ($attr) = @_;
 
+  $Osbb->{ACTION}     = 'add';
+  $Osbb->{LNG_ACTION} = $lang{ADD};
+
+   if ( $FORM{add} ){
+    $Osbb->spending_type_add( { %FORM } );
+    if ( !$Osbb->{errno} ){
+      $html->message( 'info', $lang{AREA_TYPES}, "$lang{ADDED}" );
+    }
+  }
+  elsif ( $FORM{change} ){
+    $Osbb->spending_type_change( \%FORM );
+    if ( !_error_show( $Osbb ) ){
+      $html->message( 'info', $lang{AREA_TYPES}, "$lang{CHANGED}" );
+    }
+  }
+  elsif ( $FORM{chg} ){
+    $Osbb->spending_type_info( "$FORM{chg}" );
+
+    if ( !$Osbb->{errno} ){
+      $Osbb->{ACTION} = 'change';
+      $Osbb->{LNG_ACTION} = "$lang{CHANGE}";
+      $FORM{add_form} = 1;
+      $html->message( 'info', $lang{AREA_TYPES}, "$lang{CHANGING}" );
+    }
+  }
+  elsif ( $FORM{del} && $FORM{COMMENTS} ){
+    $Osbb->area_type_del( "$FORM{del}" );
+    if ( !$Osbb->{errno} ){
+      $html->message( 'info', $lang{AREA_TYPES}, "$lang{DELETED}" );
+    }
+  }
+
   if ( $FORM{add_form} ){
     $html->tpl_show( _include( 'osbb_spending_types', 'Osbb' ), $Osbb );
   }
+
+  result_former({
+    INPUT_DATA      => $Osbb,
+    FUNCTION        => 'spending_type_list',
+    BASE_FIELDS     => 1,
+    FUNCTION_FIELDS => 'change,del',
+    SKIP_USER_TITLE => 1,
+    EXT_TITLES      => {
+      name         => $lang{NAME},
+    },
+    TABLE           => {
+      width   => '100%',
+      caption => "$lang{SPENDING} $lang{TYPE}",
+      qs      => $pages_qs,
+      ID      => 'SPENDING_TYPES',
+      EXPORT  => 1,
+      MENU    => "$lang{ADD}:index=$index&add_form=1&$pages_qs:add",
+    },
+    MAKE_ROWS       => 1,
+    SEARCH_FORMER   => 1,
+    TOTAL           => 1
+  });
 
   return 1;
 }
