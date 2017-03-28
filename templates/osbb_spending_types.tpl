@@ -20,6 +20,16 @@
             </div>
         </div>
 
+        <div class='nav-tabs-custom box-body'>
+            <div class='form-group'>
+                <label class='control-label col-md-3' for='NAME'>_{NAME}_</label>
+                <div class='col-md-9'>
+                    <input id='NAME' name='NAME' value='%NAME%' placeholder='%NAME%'
+                           class='form-control' type='text'>
+                </div>
+            </div>
+        </div>
+
         <div class='box-footer'>
             %BACK_BUTTON%
             <input type=submit name='%ACTION%' value='%LNG_ACTION%' class='btn btn-primary'/>
