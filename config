@@ -4,8 +4,8 @@ our %FUNCTIONS_LIST = (
   "02:0:$lang{OSBB}:osbb_user:UID"       => 20,
   "10:0:$lang{OSBB}:osbb_config"         => 5,
   "11:10:$lang{SPACE_TYPES}:osbb_area_types"    => 5,
-  "12:10:Spending:null" => 5,
-  "13:12:Spending Types:osbb_spending_types" => 5,
+  "12:10:$lang{SPENDING}:null" => 5,
+  "13:12:$lang{SPENDING} $lang{TYPES}:osbb_spending_types" => 5,
 );
 
 our %USER_FUNCTION_LIST = (
