@@ -21,10 +21,10 @@ our(
 );
 
 my $Osbb = Osbb->new($db, $admin, \%conf);
-our %space_type = (
-  0  => '',
-  1  => $lang{COMMERCIAL}
-);
+#our %space_type = (
+#  0  => '',
+#  1  => $lang{COMMERCIAL}
+#);
 
 require Osbb::User_portal;
 #require Osbb::Quick_reports;
@@ -84,9 +84,9 @@ sub osbb_user {
     'TYPE',
     {
       SELECTED => $Osbb->{TYPE},
-      SEL_HASH => \%space_type,
+      SEL_LIST => $Osbb->area_type_list({ COLS_NAME => 1, COLS_NAME => 1000 }),
       NO_ID    => 1,
-      ID       => 'type',
+      ID       => 'TYPE',
     }
   );
 

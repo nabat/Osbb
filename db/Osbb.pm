@@ -158,7 +158,10 @@ sub user_list {
   $PAGE_ROWS = ($attr->{PAGE_ROWS}) ? $attr->{PAGE_ROWS} : 25;
 
   my $WHERE =  $self->search_former($attr, [
-      ['UID',            'INT', 'osbb.uid',                           1 ],
+      ['TYPE',           'INT', 'osbb.type',             1],
+      ['LIVING_SPACE',   'INT', 'osbb.living_space',     1],
+      ['UTILITY_ROOM',   'INT', 'osbb.utility_room',     1],
+      ['UID',            'INT', 'osbb.uid',              1],
     ],
     { WHERE            => 1,
       USERS_FIELDS_PRE => 1,
