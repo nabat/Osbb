@@ -4,6 +4,9 @@
 
 =cut
 
+use warnings;
+use strict;
+
 our (
   $db,
   $admin,
