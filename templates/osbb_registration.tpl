@@ -1,4 +1,4 @@
-</div></div>
+
 <script type='text/javascript'>
     function selectLanguage() {
         var sLanguage = jQuery('#language').val() || '';
@@ -58,19 +58,18 @@
         <textarea cols=60 rows=7 class='form-control' readonly style='resize: none; overflow: auto;'> %_RULES_%</textarea>
       </div>
     </div>
-
-    <div class='form-group'>
-      <label class='control-elenement col-md-6 text-right' for='ACCEPT_RULES'>_{ACCEPT}_</label>
-      <div class='col-md-65'>
-        <input type='checkbox' name='ACCEPT_RULES' value='1'>
+      <div class='checkbox pull-right'>
+        <label>
+          <input type='checkbox' name='ACCEPT_RULES'>
+          <strong>_{ACCEPT}_</strong>
+        </label>
       </div>
-    </div>
 
 %CAPTCHA%
   </div>
 
 <div class='box-footer'>
-    <input type=submit name=reg value='_{REGISTRATION}_' class='btn btn-primary'>
+    <input type=submit name=reg value='_{REGISTRATION}_' class='btn btn-primary pull-right'>
 </div>
 
 

@@ -9,6 +9,7 @@ use strict;
 use warnings FATAL => 'all';
 
 use Osbb::db::Osbb;
+use Multidoms;
 
 our(
   %lang,
@@ -306,7 +307,6 @@ sub osbb_registration {
       $html->message('err', $lang{ERROR}, "$lang{ERR_ACCEPT_RULES} -");
     }
     else {
-      use Multidoms;
       my $Multidoms = Multidoms->new($db, $admin, \%conf);
       $Multidoms->multidoms_domain_add({ NAME => "$FORM{PHONE}" });
       if ($Multidoms->{errno}) {
@@ -318,7 +318,8 @@ sub osbb_registration {
           ID          => $FORM{PHONE},
           PASSWORD    => $password,
           NAME        => $FORM{FIO},
-          DOMAIN_ID   => $Multidoms->{ID},
+          A_LOGIN     => $FORM{PHONE},
+          DOMAIN_ID   => $Multidoms->{INSERT_ID},
         });
 
         if ($admin->{errno}) {
