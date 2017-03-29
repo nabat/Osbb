@@ -279,6 +279,25 @@ sub osbb_parse_import_file {
 }
 
 #**********************************************************
+=head2 osbb_payments() -
+
+  Arguments:
+    $attr -
+  Returns:
+
+  Examples:
+
+=cut
+#**********************************************************
+sub osbb_payments {
+  my ($attr) = @_;
+
+  $html->tpl_show( _include( 'osbb_payments', 'Osbb' ), $Osbb );
+
+  return 1;
+}
+
+#**********************************************************
 =head2 osbb_registration($attr)
 
 =cut
@@ -344,6 +363,5 @@ sub osbb_registration {
   return 0;
 }
 
-
-1
+1;
 
