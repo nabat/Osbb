@@ -156,11 +156,12 @@ sub osbb_spending_types {
   result_former({
     INPUT_DATA      => $Osbb,
     FUNCTION        => 'spending_type_list',
-    BASE_FIELDS     => 1,
+    BASE_FIELDS     => 2,
     FUNCTION_FIELDS => 'change,del',
     SKIP_USER_TITLE => 1,
     EXT_TITLES      => {
       name         => $lang{NAME},
+      comments     => $lang{COMMENTS},
     },
     TABLE           => {
       width   => '100%',
