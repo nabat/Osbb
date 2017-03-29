@@ -425,6 +425,7 @@ sub spending_type_list {
 
   $self->query2("SELECT
      name,
+     comments,
      id
      FROM osbb_spending_types
      $WHERE

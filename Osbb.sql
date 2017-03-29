@@ -21,5 +21,6 @@ CREATE TABLE `osbb_area_types` (
 CREATE TABLE `osbb_spending_types` (
   `id` int(2) unsigned NOT NULL auto_increment,
   `name` varchar(200) NOT NULL DEFAULT '',
+  `comments` text,
   PRIMARY KEY (`id`)
 ) COMMENT='OSBB spending types';

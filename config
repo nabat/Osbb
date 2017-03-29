@@ -2,6 +2,7 @@
 our %FUNCTIONS_LIST = (
   "01:0:$lang{OSBB}:osbb_users_list:"    => 11,
   "02:0:$lang{OSBB}:osbb_user:UID"       => 20,
+  "03:0:Osbb Payments:osbb_payments:" => 2,
   "10:0:$lang{OSBB}:osbb_config"         => 5,
   "11:10:$lang{SPACE_TYPES}:osbb_area_types"    => 5,
   "12:10:$lang{SPENDING}:null" => 5,

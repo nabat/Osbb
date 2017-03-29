@@ -20,7 +20,10 @@
             </div>
 
             <div class='form-group'>
-                
+                <label class='control-label col-md-3' for='NAME'>_{COMMENTS}_</label>
+                <div class='col-md-9'>
+                <textarea class='form-control' name='COMMENTS'>%COMMENTS%</textarea>
+                </div>
             </div>
         </div>
 
