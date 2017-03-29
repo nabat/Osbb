@@ -10,7 +10,6 @@ use warnings FATAL => 'all';
 
 use Osbb::db::Osbb;
 use Abills::Base qw/convert _bp/;
-use Multidoms;
 use JSON;
 
 our(
@@ -222,7 +221,6 @@ sub _osbb_users_import {
       {
         COLUMNS  => JSON::to_json(\%columns),
         TABLE_ID => $table->{ID} . '_',
-        HEADINGS => JSON::to_json([ map { $columns{$_} || '' } @$file_columns ])
       }
     );
     
@@ -303,6 +301,15 @@ sub osbb_registration {
       $html->message('err', $lang{ERROR}, "$lang{ERR_ACCEPT_RULES} -");
     }
     else {
+      
+      if (form_purchase_module({
+        HEADER          => $user->{UID} || $html->{show_header},
+        MODULE          => 'Multidoms',
+        REQUIRE_VERSION => 1.01
+      })) {
+        exit;
+      }
+  
       my $Multidoms = Multidoms->new($db, $admin, \%conf);
       $Multidoms->multidoms_domain_add({ NAME => "$FORM{PHONE}" });
       if ($Multidoms->{errno}) {
