@@ -19,7 +19,8 @@ our(
   $admin,
   $db,
   %permissions,
-  %ADMIN_REPORT
+  %ADMIN_REPORT,
+  %err_strs
 );
 
 my $Osbb = Osbb->new($db, $admin, \%conf);
