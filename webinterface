@@ -10,6 +10,7 @@ use warnings FATAL => 'all';
 
 use Osbb::db::Osbb;
 use Abills::Base qw/convert _bp/;
+use Multidoms;
 use JSON;
 
 our(
@@ -278,4 +279,63 @@ sub osbb_parse_import_file {
   return [ ];
 }
 
+#**********************************************************
+=head2 osbb_registration($attr)
+
+=cut
+#**********************************************************
+sub osbb_registration {
+  my ($attr) = @_;
+
+  if ($FORM{reg}) {
+    if ($attr->{CAPTCHA} && $attr->{CAPTCHA_OBJ}->check_code("$FORM{CCODE}", "$FORM{C}") != 1) {
+      $Osbb->{MESSAGE} = $html->message('err', $lang{ERROR}, "$lang{ERR_WRONG_CAPTCHA}", { ID => 991 });
+    }
+    elsif ($FORM{EMAIL} !~ /^(([^<>()[\]\\.,;:\s\@\"]+(\.[^<>()[\]\\.,;:\s\@\"]+)*)|(\".+\"))\@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/) {
+      $Osbb->{MESSAGE} = $html->message('err', $lang{ERROR}, "$lang{ERR_WRONG_EMAIL}");
+    }
+    elsif ($conf{REGISTRATION_CHECK_PHONE}
+      && (!$FORM{PHONE} || ($conf{PHONE_FORMAT} && $FORM{PHONE} !~ /$conf{PHONE_FORMAT}/ )) ) {
+      $Osbb->{MESSAGE} = $html->message('err', $lang{ERROR}, $lang{ERR_WRONG_PHONE}. (($conf{PHONE_FORMAT}) ? ' '.human_exp($conf{PHONE_FORMAT}) : q{}));
+    }
+    elsif (! $FORM{ACCEPT_RULES}) {
+      $html->message('err', $lang{ERROR}, "$lang{ERR_ACCEPT_RULES} -");
+    }
+    else {
+      my $Multidoms = Multidoms->new($db, $admin, \%conf);
+      $Multidoms->multidoms_domain_add({ NAME => "$FORM{PHONE}" });
+      if ($Multidoms->{errno}) {
+        $html->message('err', $lang{ERROR}, "$FORM{PHONE} already registred");
+      }
+      else {
+        my $password = mk_unique_value($conf{PASSWD_LENGTH} || 8);
+        $admin->add({ %FORM,
+          ID          => $FORM{PHONE},
+          PASSWORD    => $password,
+          NAME        => $FORM{FIO},
+          A_LOGIN     => $FORM{PHONE},
+          DOMAIN_ID   => $Multidoms->{INSERT_ID},
+        });
+
+        if ($admin->{errno}) {
+          $html->message('err', $lang{ERROR}, "[$admin->{errno}] $err_strs{$admin->{errno}}");
+          return 1;
+        }
+        else { 
+          my $message = $html->tpl_show(_include('osbb_reg_complete_mail', 'Osbb'), { %$Osbb, %FORM, PASSWORD => "$password" }, { OUTPUT2RETURN => 1 });
+          sendmail("$conf{ADMIN_MAIL}", "$FORM{EMAIL}", "$lang{REGISTRATION}", "$message", "$conf{MAIL_CHARSET}", '');
+          $html->message('info', "Реєстрація успішна.", "На пошту вам надіслано листа з інформацію про наступні дії.");
+          return 1;
+        }
+      }
+    }
+  }
+  
+  $html->tpl_show(_include('osbb_registration', 'Osbb'), { %$Osbb, %$attr, %FORM }, { ID => 'OSBB_REGISTRATION' });
+
+  return 0;
+}
+
+
 1
+
