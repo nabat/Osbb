@@ -10,6 +10,7 @@ use warnings FATAL => 'all';
 
 use Osbb::db::Osbb;
 use Abills::Base qw/convert _bp/;
+use JSON;
 
 our(
   %lang,
@@ -21,10 +22,10 @@ our(
 );
 
 my $Osbb = Osbb->new($db, $admin, \%conf);
-our %space_type = (
-  0  => '',
-  1  => $lang{COMMERCIAL}
-);
+#our %space_type = (
+#  0  => '',
+#  1  => $lang{COMMERCIAL}
+#);
 
 require Osbb::User_portal;
 #require Osbb::Quick_reports;
@@ -84,9 +85,9 @@ sub osbb_user {
     'TYPE',
     {
       SELECTED => $Osbb->{TYPE},
-      SEL_HASH => \%space_type,
+      SEL_LIST => $Osbb->area_type_list({ COLS_NAME => 1, COLS_NAME => 1000 }),
       NO_ID    => 1,
-      ID       => 'type',
+      ID       => 'TYPE',
     }
   );
 
@@ -169,12 +170,22 @@ sub osbb_users_list {
 #**********************************************************
 sub _osbb_users_import {
   
-  if (!$FORM{FILE}) {
+  my %columns = (
+    uid              => 'UID',
+    fio              => $lang{FIO},
+    phone            => $lang{PHONE},
+    address_district => $lang{DISTRICT},
+    address_street   => $lang{STREET},
+    address_build    => $lang{BUILD},
+    address_flat     => $lang{FLAT}
+  );
+  
+  if ( !$FORM{FILE} ) {
     
     my $type_select = $html->form_select('FILE_FORMAT', {
-        SEL_ARRAY => [ 'CSV', 'JSON' ],
+        SEL_ARRAY   => [ 'CSV', 'JSON' ],
         NO_ARRAY_ID => 1
-    });
+      });
     
     $html->tpl_show(_include('osbb_import_file_form', 'Osbb'),
       {
@@ -184,42 +195,38 @@ sub _osbb_users_import {
     
     return 1;
   }
-  elsif ($FORM{preview}) {
-  
+  elsif ( $FORM{preview} ) {
+    
     $html->message('info alert-sm', $lang{TIP}, $lang{FILL_DEFAULT_VALUES_THAT_WILL_REPLACE_EMPTY_FILE_FIELDS});
     
-    my ($columns, $rows)  = osbb_parse_import_file($FORM{FILE_FORMAT}, $FORM{FILE});
+    my ($file_columns, $rows) = osbb_parse_import_file($FORM{FILE_FORMAT}, $FORM{FILE});
     
     my $table = $html->table( {
-      width   => '100%',
-      caption => "$lang{IMPORT} : $lang{PREVIEW}",
-      border  => 1,
-      title   => $columns,
-      qs      => $pages_qs,
-      ID      => 'OSBB_IMPORT_PREVIEW_TABLE'
+      width       => '100%',
+      caption     => "$lang{IMPORT} : $lang{PREVIEW}",
+      border      => 1,
+      title_plain => $file_columns,
+      qs          => $pages_qs,
+      ID          => 'OSBB_IMPORT_PREVIEW_TABLE'
     } );
-  
-    foreach my $imported_user ( @$rows ) {
-      $table->addrow(@$imported_user);
-    }
-  
-    print $table->show();
     
-    print $html->form_main({
-      HIDDEN  => {
-        'index' => $index
-      },
-      METHOD  => 'post',
-      ENCTYPE => 'multipart/form-data',
-      SUBMIT  => {
-        a_return  => $lang{BACK},
-        import  => $lang{IMPORT}
+    foreach my $imported_user ( @{$rows} ) {
+      $table->addrow(@{$imported_user});
+    }
+    
+    print $table->show();
+  
+    $html->tpl_show(_include('osbb_import_preview_form', 'Osbb'),
+      {
+        COLUMNS  => JSON::to_json(\%columns),
+        TABLE_ID => $table->{ID} . '_',
+        HEADINGS => JSON::to_json([ map { $columns{$_} || '' } @$file_columns ])
       }
-    });
+    );
     
     return 1;
   }
-  elsif ($FORM{import}){
+  elsif ( $FORM{import} ) {
     
   }
   

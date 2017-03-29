@@ -35,7 +35,7 @@
             </div>
 
             <div class='form-group'>
-                <label class='control-label col-md-3' for='APARTMENT_AREA'>_{APARTMENT_AREA}_</label>
+                <label class='control-label col-md-3' for='APARTMENT_AREA'>_{TOTAL_SPACE}_</label>
                 <div class='col-md-9'>
                     <input id='APARTMENT_AREA' name='APARTMENT_AREA' value='%APARTMENT_AREA%' placeholder='%APARTMENT_AREA%'
                            class='form-control' type='text' readonly>
@@ -43,7 +43,7 @@
             </div>
 
             <div class='form-group'>
-                <label class='control-label col-md-3' for='APARTMENT_AREA'>_{TYPE}_</label>
+                <label class='control-label col-md-3' for='TYPE'>_{TYPE}_</label>
                 <div class='col-md-9'>
                     %SEL_TYPE%
                 </div>
