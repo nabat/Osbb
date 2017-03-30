@@ -11,6 +11,7 @@ use warnings FATAL => 'all';
 use Osbb::db::Osbb;
 use Abills::Base qw/convert _bp/;
 use JSON;
+use Users;
 
 our(
   %lang,
@@ -23,6 +24,8 @@ our(
 );
 
 my $Osbb = Osbb->new($db, $admin, \%conf);
+my $User = Users->new($db, $admin, \%conf);
+
 #our %space_type = (
 #  0  => '',
 #  1  => $lang{COMMERCIAL}
@@ -292,7 +295,52 @@ sub osbb_parse_import_file {
 sub osbb_payments {
   my ($attr) = @_;
 
+  if($FORM{add}){
+    use Finance;
+    my $Payments = Finance->payments($db, $admin, \%conf);
+    $User->info($FORM{UID});
+    $Payments->add($User, {SUM => $FORM{SUM},DSC => $FORM{DESCRIBE}, });
+
+    if ( !$Payments->{errno} ){
+      $html->message( 'info', $lang{PAYMENTS}, "$lang{ADDED}" );
+    }
+  }
+
+  $Osbb->{USERS_SELECT} = $html->form_select(
+  'UID',
+  {
+    SELECTED => $FORM{UID} || q{},
+    SEL_LIST => $User->list({ FIO => '_SHOW', COLS_NAME => 1 }),
+    SEL_KEY  => 'uid',
+    SEL_VALUE=> 'fio',
+    NO_ID    => 1,
+  });
+
   $html->tpl_show( _include( 'osbb_payments', 'Osbb' ), $Osbb );
+
+  # result_former({
+  #   INPUT_DATA      => $Osbb,
+  #   FUNCTION        => 'spending_type_list',
+  #   BASE_FIELDS     => 4,
+  #   FUNCTION_FIELDS => 'change,del',
+  #   SKIP_USER_TITLE => 1,
+  #   EXT_TITLES      => {
+  #     uid         => $lang{USER},
+  #     sum         => $lang{SUM},
+  #     comments    => $lang{DESCRIBE},
+  #   },
+  #   TABLE           => {
+  #     width   => '100%',
+  #     caption => "$lang{PAYMENTS}",
+  #     qs      => $pages_qs,
+  #     ID      => 'PAYMENTS',
+  #     EXPORT  => 1,
+  #     MENU    => "$lang{ADD}:index=$index&add_form=1&$pages_qs:add",
+  #   },
+  #   MAKE_ROWS       => 1,
+  #   SEARCH_FORMER   => 1,
+  #   TOTAL           => 1
+  # });
 
   return 1;
 }
@@ -364,4 +412,3 @@ sub osbb_registration {
 }
 
 1;
-
