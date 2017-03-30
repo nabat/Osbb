@@ -1,11 +1,16 @@
-<div class="row">
-  <form action='$SELF_URL'>
-    <input type='hidden' name='index' value='$index'>
-    <input type='hidden' name='import' value='1'>
+<form name='%FORM_NAME%' id='form_%FORM_NAME%' method='post' class='form form-horizontal'>
+  <input type='hidden' name='index' value='$index'/>
+  <input type='hidden' name='import' value='1'/>
+  <input type='hidden' name='file_columns' value='%FILE_COLUMNS%'/>
+
+  %TABLE%
+
+  <div class='box-footer text-center'>
     <a href='?index=$index' class='btn btn-default'>_{BACK}_</a>
     <input type='submit' class='btn btn-primary' name='import' value='_{IMPORT}_'>
-  </form>
-</div>
+  </div>
+</form>
+
 
 <script>
 
@@ -27,7 +32,7 @@
     };
 
     this.hasColumn = function (column) {
-      return this.columns[column] !== 'undefined';
+      return this.columns.hasOwnProperty(column);
     };
 
     this.getColumnName = function (column) {
@@ -38,7 +43,7 @@
       var menu = jQuery('<ul/>', {'class': 'dropdown-menu'});
 
       this.col_names.forEach(function (col_name) {
-        var new_a = jQuery('<a/>', {'data-target': '#', 'data-value': col_name});
+        var new_a  = jQuery('<a/>', {'data-target': '#', 'data-value': col_name});
         var new_li = jQuery('<li>');
         if (col_name === current) new_li.addClass('active');
 
@@ -67,7 +72,9 @@
 
     this.dropdown.on('show.bs.dropdown', this.dropdownRenew.bind(this));
 
-    this.button = this.createButtonHTML(this.all_options.hasColumn(this.value));
+    var hasValue = this.all_options.hasColumn(this.value);
+    console.log(this.value, hasValue);
+    this.button = this.createButtonHTML(hasValue);
     this.renewButtonHTML(this.all_options.getColumnName(this.value));
 
     // Update button after select was made
@@ -133,8 +140,6 @@
       self.renewButtonHTML(self.all_options.getColumnName(self.value))
     });
 
-
-
   };
 
 
@@ -161,7 +166,7 @@
 
       var selectableHeading = new DropdownSelectable(i, {
         options : possible_column_names,
-        selected: (typeof (columns_for_import[col_name]) !== 'undefined') ? col_name : false
+        selected: col_name
       });
 
       jcol.html(selectableHeading);

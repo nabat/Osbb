@@ -18,6 +18,14 @@
           <input type='file' class='form-control' required='required' name='FILE'  id='FILE_ID'  />
         </div>
       </div>
+
+      <div class='form-group'>
+        <label class='control-label col-md-3 required' for='FLATS_COUNT_ID'>_{COUNT}_ _{FLAT}_</label>
+        <div class='col-md-9'>
+          <input type='number' class='form-control' required='required' name='FLATS_COUNT' id='FLATS_COUNT_ID'/>
+        </div>
+      </div>
+
     </form>
 
   </div>
