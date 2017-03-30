@@ -9,6 +9,52 @@
 
 <script>
 
+  var PossibleColumns = function (columns) {
+    var self = this;
+
+    this.columns   = columns;
+    this.col_names = Object.keys(columns);
+
+    // Holds register for used columns (to prevent duplicates)
+    this.registry = {};
+
+    this.setState = function (column, state) {
+      this.registry[column] = state;
+    };
+
+    this.isColumnActive = function (column) {
+      return this.registry.hasOwnProperty(column) && this.registry[column] === true;
+    };
+
+    this.hasColumn = function (column) {
+      return this.columns[column] !== 'undefined';
+    };
+
+    this.getColumnName = function (column) {
+      return this.columns[column];
+    };
+
+    this.getView = function (current, onclick) {
+      var menu = jQuery('<ul/>', {'class': 'dropdown-menu'});
+
+      this.col_names.forEach(function (col_name) {
+        var new_a = jQuery('<a/>', {'data-target': '#', 'data-value': col_name});
+        var new_li = jQuery('<li>');
+        if (col_name === current) new_li.addClass('active');
+
+        if (self.hasColumn(col_name) && self.isColumnActive(col_name)) {
+          new_li.addClass('disabled');
+        }
+
+        new_a.on('click', onclick);
+
+        menu.append(new_li.html(new_a.text(self.getColumnName(col_name))));
+      });
+
+      return menu;
+    }
+  };
+
   function DropdownSelectable(num, attr) {
     var self = this;
 
@@ -18,31 +64,27 @@
     this.value       = attr.selected;
 
     this.dropdown = jQuery('<div/>', {'class': 'dropdown'});
-    this.menu     = jQuery('<ul/>', {'class': 'dropdown-menu'});
 
-//    this.dropdown.on('show.bs.dropdown', this.dropdownRenew.bind(this));
-    // Dropdown menu
-    this.all_values.forEach(function (e) {
-      var new_a = jQuery('<a/>', {'data-target': '#', 'data-value': e})
-          .text(self.all_options[e]);
+    this.dropdown.on('show.bs.dropdown', this.dropdownRenew.bind(this));
 
-      new_a.on('click', function (e) {
-//        cancelEvent(e);
-        var _a = jQuery(this);
-        self.setValue(_a.data('value'));
-//        _a.addClass('active');
-//        self.dropdown.dropdown('toggle');
-      });
+    this.button = this.createButtonHTML(this.all_options.hasColumn(this.value));
+    this.renewButtonHTML(this.all_options.getColumnName(this.value));
 
-      self.menu.append(jQuery('<li>').html(new_a));
+    // Update button after select was made
+    this.dropdown.on('hidden.bs.dropdown', function () {
+      if (self.value && self.button.hasClass('btn-warning')) {
+        self.button.addClass('btn-primary');
+        self.button.removeClass('btn-warning');
+      }
     });
 
-    this.button = this.createButtonHTML(typeof(this.all_options[this.value]) !== undefined);
-    this.renewButtonHTML(this.all_options[this.value]);
+    this.dropdownRenew();
 
     this.dropdown.empty()
         .append(this.button)
         .append(this.menu);
+
+//    this.dropdown.dropdown();
 
     return this.dropdown;
   }
@@ -56,30 +98,42 @@
 
   };
 
-  DropdownSelectable.prototype.renewButtonHTML  = function (html) {
+  DropdownSelectable.prototype.renewButtonHTML = function (html) {
     if (!html) {
       html = '_{CHOOSE}_';
-      if (this.button.hasClass('btn-primary')) {
-        this.button.addClass('btn-warning');
-        this.button.removeClass('btn-primary');
-      }
-    }
-
-    if (this.button.hasClass('btn-warning')) {
-      this.button.addClass('btn-primary');
-      this.button.removeClass('btn-warning');
     }
 
     this.button.html(html + '<span class="caret"></span>');
   };
 
-  DropdownSelectable.prototype.setValue         = function (value) {
+  DropdownSelectable.prototype.setValue = function (value) {
+    jQuery.data('value', value);
+
+    Events.emit('dropdown_selectable.value_selected', value);
+
     var text = this.all_options[value];
     this.renewButtonHTML(text);
-    jQuery.data('value', value);
   };
 
-  DropdownSelectable.prototype.dropdownRenew = function () {
+  DropdownSelectable.prototype.dropdownRenew = function (e) {
+    var self = this;
+
+    this.menu = this.all_options.getView(this.value, function () {
+      var clicked   = jQuery(this);
+      var new_value = clicked.data('value');
+
+      if (self.value !== 'undefined') {
+        self.all_options.setState(self.value, false);
+      }
+
+      self.all_options.setState(new_value, true);
+
+      self.value = new_value;
+
+      self.renewButtonHTML(self.all_options.getColumnName(self.value))
+    });
+
+
 
   };
 
@@ -87,9 +141,6 @@
   jQuery(function () {
     // All existing columns
     var columns_for_import = JSON.parse('%COLUMNS%');
-
-    // Current accepted table headings
-    var headings = JSON.parse('%HEADINGS%');
 
     var table_id = '%TABLE_ID%';
 
@@ -101,16 +152,15 @@
     // Goal is to add a selector for each table header
     var th = table.find('thead').find('th');
 
-    console.log(th);
+    var possible_column_names = new PossibleColumns(columns_for_import);
 
     th.each(function (i, col) {
       var jcol = jQuery(col);
 
       var col_name = jcol.text();
-      console.log(col_name, columns_for_import[col_name]);
 
       var selectableHeading = new DropdownSelectable(i, {
-        options : columns_for_import,
+        options : possible_column_names,
         selected: (typeof (columns_for_import[col_name]) !== 'undefined') ? col_name : false
       });
 
