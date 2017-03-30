@@ -1,11 +1,16 @@
-<div class="row">
-  <form action='$SELF_URL'>
-    <input type='hidden' name='index' value='$index'>
-    <input type='hidden' name='import' value='1'>
+<form name='%FORM_NAME%' id='form_%FORM_NAME%' method='post' class='form form-horizontal'>
+  <input type='hidden' name='index' value='$index'/>
+  <input type='hidden' name='import' value='1'/>
+  <input type='hidden' name='file_columns' value='%FILE_COLUMNS%'/>
+
+  %TABLE%
+
+  <div class='box-footer text-center'>
     <a href='?index=$index' class='btn btn-default'>_{BACK}_</a>
     <input type='submit' class='btn btn-primary' name='import' value='_{IMPORT}_'>
-  </form>
-</div>
+  </div>
+</form>
+
 
 <script>
 
