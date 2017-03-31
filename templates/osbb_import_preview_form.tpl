@@ -25,6 +25,7 @@
 
     this.setState = function (column, state) {
       this.registry[column] = state;
+      Events.emit('PossibleColumns.column_state_change', { column : column, state : state });
     };
 
     this.isColumnActive = function (column) {
@@ -45,15 +46,35 @@
       this.col_names.forEach(function (col_name) {
         var new_a  = jQuery('<a/>', {'data-target': '#', 'data-value': col_name});
         var new_li = jQuery('<li>');
-        if (col_name === current) new_li.addClass('active');
 
-        if (self.hasColumn(col_name) && self.isColumnActive(col_name)) {
+        if (col_name === current){
+          new_li.addClass('active');
+        }
+        else if (self.registry[col_name] === true) {
           new_li.addClass('disabled');
         }
 
         new_a.on('click', onclick);
 
-        menu.append(new_li.html(new_a.text(self.getColumnName(col_name))));
+        menu.append(
+            new_li.html(
+                new_a.text(self.getColumnName(col_name))
+            )
+        );
+
+      });
+
+
+      Events.on('PossibleColumns.column_state_change', function (col_changed) {
+        var state = col_changed.state;
+        var col_name = col_changed.column;
+
+        var column_li = menu.find('a[data-value='+ col_name +']').parent();
+
+        state
+            ? column_li.addClass('disabled')
+            : column_li.removeClass('disabled');
+
       });
 
       return menu;
@@ -70,10 +91,8 @@
 
     this.dropdown = jQuery('<div/>', {'class': 'dropdown'});
 
-    this.dropdown.on('show.bs.dropdown', this.dropdownRenew.bind(this));
-
     var hasValue = this.all_options.hasColumn(this.value);
-    console.log(this.value, hasValue);
+
     this.button = this.createButtonHTML(hasValue);
     this.renewButtonHTML(this.all_options.getColumnName(this.value));
 
@@ -85,6 +104,7 @@
       }
     });
 
+    // Writes this.menu as side effect
     this.dropdownRenew();
 
     this.dropdown.empty()
@@ -125,14 +145,21 @@
   DropdownSelectable.prototype.dropdownRenew = function (e) {
     var self = this;
 
-    this.menu = this.all_options.getView(this.value, function () {
+    this.menu = null;
+    this.menu = this.all_options.getView(this.value, function (e) {
       var clicked   = jQuery(this);
+
+      // Cancel click on disabled element
+      if (clicked.parent().hasClass('disabled')) return cancelEvent(e);
+
       var new_value = clicked.data('value');
 
+      // Clear last saved option
       if (self.value !== 'undefined') {
         self.all_options.setState(self.value, false);
       }
 
+      // Tell other dropdowns that field is used
       self.all_options.setState(new_value, true);
 
       self.value = new_value;
@@ -158,6 +185,13 @@
     var th = table.find('thead').find('th');
 
     var possible_column_names = new PossibleColumns(columns_for_import);
+
+
+    // Before creating dropdown, should set active all existing headers
+    th.each(function (i, th) {
+      var col_name = jQuery(th).text();
+      possible_column_names.setState(col_name, true);
+    });
 
     th.each(function (i, col) {
       var jcol = jQuery(col);

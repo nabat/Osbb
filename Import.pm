@@ -30,7 +30,8 @@ sub _osbb_users_import {
     address_district => $lang{DISTRICT},
     address_street   => $lang{STREET},
     address_build    => $lang{BUILD},
-    address_flat     => $lang{FLAT}
+    address_flat     => $lang{FLAT},
+    
   );
   
   if ( !$FORM{FILE} ) {
