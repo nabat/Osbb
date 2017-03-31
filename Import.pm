@@ -62,24 +62,40 @@ sub _osbb_users_import {
       qs          => $pages_qs,
       ID          => 'OSBB_IMPORT_PREVIEW_TABLE'
     } );
-    
+  
     my $current_row_num = 0;
-    my $create_table_row = sub {
-      my @row = @_;
-      
-      
-    };
+    # Take every row, and make input from row
+    # Now using column names from file, later will receive normal names
     
-    foreach my $imported_user ( @{$rows} ) {
-      $table->addrow(@{$imported_user});
+    my @table_rows = ();
+    for ( my $i = 0, my $len = scalar @$rows; $i < $len; $i++ ) {
+      my @new_row = ();
       
+      my $current_file_row = $rows->[$i];
+      for ( my $j = 0, my $columns_number = scalar @$file_columns; $j < $columns_number; $j++ ) {
+        
+        push (@new_row,
+          $html->form_input(
+            $i . '_' . $file_columns->[$j],
+            $current_file_row->[$j],
+            {
+              EX_PARAMS => ' data-original-column-name="' . $file_columns->[$j] . '"'
+            }
+          )
+        );
+        
+      }
+      
+      push ( @table_rows,  [ @new_row ]);
     }
-    
-    print $table->show();
+  
+    $table->addrow(@$_) for @table_rows;
     
     $html->tpl_show(_include('osbb_import_preview_form', 'Osbb'), {
-        COLUMNS  => JSON::to_json(\%columns),
-        TABLE_ID => $table->{ID} . '_',
+        TABLE        => $table->show(),
+        COLUMNS      => JSON::to_json(\%columns),
+        TABLE_ID     => $table->{ID} . '_',
+        FILE_COLUMNS => join(',', @$file_columns)
       });
     
     return 1;
