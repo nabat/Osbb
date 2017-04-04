@@ -298,4 +298,46 @@ sub osbb_registration {
   return 0;
 }
 
+#**********************************************************
+=head2 osbb_simple_build_select()
+
+=cut
+#**********************************************************
+sub osbb_simple_build_select {
+  my ($attr) = @_;
+  
+  require Address;
+  Address->import();
+  my $Address = Address->new($db, $admin, \%conf);
+  
+  my $builds_list = $Address->build_list({
+    NUMBER        => '_SHOW',
+    DISTRICT_ID   => '_SHOW',
+    DISTRICT_NAME => '_SHOW',
+    STREET_ID     => '_SHOW',
+    STREET_NAME   => '_SHOW',
+    
+    COLS_NAME => 1,
+    PAGE_ROWS => 10000
+  });
+  _error_show($Address);
+  
+  my @full_name_builds_list = map {
+    {
+      id   => $_->{id},
+      name =>  join (', ', $_->{district_name}, $_->{street_name}, $_->{number})
+    }
+  } @$builds_list;
+  
+  return $html->form_select('LOCATION_ID', {
+      SELECTED    => $FORM{LOCATION_ID} || '',
+      SEL_LIST    => \@full_name_builds_list,
+    
+      NO_ID       => 1,
+      SEL_OPTIONS => { '' => '' },
+      MAIN_MENU   =>  get_function_index('form_districts'),
+      %{ $attr // {} }
+    });
+}
+
 1;
