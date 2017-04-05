@@ -25,6 +25,7 @@ sub _osbb_users_import {
   
   my %columns = (
     uid              => 'UID',
+    password         => $lang{PASSWD},
     fio              => $lang{FIO},
     phone            => $lang{PHONE},
     address_district => $lang{DISTRICT},
@@ -43,7 +44,8 @@ sub _osbb_users_import {
     
     $html->tpl_show(_include('osbb_import_file_form', 'Osbb'),
       {
-        FILE_FORMAT_SELECT => $type_select
+        FILE_FORMAT_SELECT => $type_select,
+        LOCATION_ID_SELECT => osbb_simple_build_select({ REQUIRED => 1 })
       }
     );
     
@@ -63,10 +65,6 @@ sub _osbb_users_import {
       qs          => $pages_qs,
       ID          => 'OSBB_IMPORT_PREVIEW_TABLE'
     } );
-  
-    my $current_row_num = 0;
-    # Take every row, and make input from row
-    # Now using column names from file, later will receive normal names
     
     my @table_rows = ();
     for ( my $i = 0, my $len = scalar @$rows; $i < $len; $i++ ) {
@@ -92,11 +90,14 @@ sub _osbb_users_import {
   
     $table->addrow(@$_) for @table_rows;
     
+    delete $FORM{__BUFFER};
     $html->tpl_show(_include('osbb_import_preview_form', 'Osbb'), {
+        %FORM,
         TABLE        => $table->show(),
         COLUMNS      => JSON::to_json(\%columns),
         TABLE_ID     => $table->{ID} . '_',
-        FILE_COLUMNS => join(',', @$file_columns)
+        FILE_COLUMNS => join(',', @$file_columns),
+        LOCATION_ID_SELECT => osbb_simple_build_select({REQUIRED => 1})
       });
     
     return 1;

@@ -3,6 +3,28 @@
   <input type='hidden' name='import' value='1'/>
   <input type='hidden' name='file_columns' value='%FILE_COLUMNS%'/>
 
+  <div class='box box-theme box-form'>
+    <div class='box-body'>
+
+      <div class='form-group'>
+        <label class='control-label col-md-3 required' for='LOCATION_ID'>_{ADDRESS}_</label>
+        <div class='col-md-9'>
+          %LOCATION_ID_SELECT%
+        </div>
+      </div>
+
+      <div class='form-group'>
+        <label class='control-label col-md-3 required' for='PASSWORD_ID'>_{PASSWD}_</label>
+        <div class='col-md-9'>
+          <input type='text' class='form-control' name='PASSWORD' id='password' value='%PASSWORD%'
+                 data-event-onchange='1'>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
   %TABLE%
 
   <div class='box-footer text-center'>
@@ -25,7 +47,7 @@
 
     this.setState = function (column, state) {
       this.registry[column] = state;
-      Events.emit('PossibleColumns.column_state_change', { column : column, state : state });
+      Events.emit('PossibleColumns.column_state_change', {column: column, state: state});
     };
 
     this.isColumnActive = function (column) {
@@ -47,7 +69,7 @@
         var new_a  = jQuery('<a/>', {'data-target': '#', 'data-value': col_name});
         var new_li = jQuery('<li>');
 
-        if (col_name === current){
+        if (col_name === current) {
           new_li.addClass('active');
         }
         else if (self.registry[col_name] === true) {
@@ -64,12 +86,18 @@
 
       });
 
-
+      Events.off('PossibleColumns.column_state_change');
       Events.on('PossibleColumns.column_state_change', function (col_changed) {
-        var state = col_changed.state;
+        var state    = col_changed.state;
         var col_name = col_changed.column;
 
-        var column_li = menu.find('a[data-value='+ col_name +']').parent();
+        var column_li = menu.find('a[data-value=' + col_name + ']').parent();
+
+        if (col_name === current){
+          state
+              ? column_li.addClass('active')
+              : column_li.removeClass('active');
+        }
 
         state
             ? column_li.addClass('disabled')
@@ -89,16 +117,22 @@
     this.num         = num;
     this.value       = attr.selected;
 
+    // For each table row, retrieve it's *num* td
+    this.trs = attr.table.find('tbody').find('tr');
+    this.tds = this.trs.map(function () {
+      return jQuery(this).find('td').get(num);
+    });
+
     this.dropdown = jQuery('<div/>', {'class': 'dropdown'});
 
     var hasValue = this.all_options.hasColumn(this.value);
 
     this.button = this.createButtonHTML(hasValue);
-    this.renewButtonHTML(this.all_options.getColumnName(this.value));
+    this.setValue(this.value);
 
     // Update button after select was made
     this.dropdown.on('hidden.bs.dropdown', function () {
-      if (self.value && self.button.hasClass('btn-warning')) {
+      if (self.all_options.hasColumn(self.value) && self.button.hasClass('btn-warning')) {
         self.button.addClass('btn-primary');
         self.button.removeClass('btn-warning');
       }
@@ -110,8 +144,6 @@
     this.dropdown.empty()
         .append(this.button)
         .append(this.menu);
-
-//    this.dropdown.dropdown();
 
     return this.dropdown;
   }
@@ -134,12 +166,24 @@
   };
 
   DropdownSelectable.prototype.setValue = function (value) {
-    jQuery.data('value', value);
+    this.value = value;
+    this.renewButtonHTML(this.all_options.getColumnName(value));
 
-    Events.emit('dropdown_selectable.value_selected', value);
+    // Set listeners for table inputs
+    this.tds.each(function(i, e){
+      var input = jQuery(e).find('input');
 
-    var text = this.all_options[value];
-    this.renewButtonHTML(text);
+      // Clear previous listener if present
+      if (input.data('listens_for')){
+        Events.off('input_change.' + input.data('listens_for'))
+      }
+
+      if (value &&! input.val()){
+        Events.on('input_change.' + value, input.val.bind(input));
+        input.data('listens_for', value)
+      }
+
+    });
   };
 
   DropdownSelectable.prototype.dropdownRenew = function (e) {
@@ -147,28 +191,27 @@
 
     this.menu = null;
     this.menu = this.all_options.getView(this.value, function (e) {
-      var clicked   = jQuery(this);
+      var clicked = jQuery(this);
 
       // Cancel click on disabled element
       if (clicked.parent().hasClass('disabled')) return cancelEvent(e);
 
       var new_value = clicked.data('value');
 
-      // Clear last saved option
-      if (self.value !== 'undefined') {
+      // Tell other dropdowns that previous value is now free
+      if (typeof (self.value) !== 'undefined') {
         self.all_options.setState(self.value, false);
       }
 
-      // Tell other dropdowns that field is used
+      // Tell other dropdowns that value is used now
       self.all_options.setState(new_value, true);
 
-      self.value = new_value;
+      // Change active
 
-      self.renewButtonHTML(self.all_options.getColumnName(self.value))
+      self.setValue(new_value);
     });
 
   };
-
 
   jQuery(function () {
     // All existing columns
@@ -186,7 +229,6 @@
 
     var possible_column_names = new PossibleColumns(columns_for_import);
 
-
     // Before creating dropdown, should set active all existing headers
     th.each(function (i, th) {
       var col_name = jQuery(th).text();
@@ -200,10 +242,15 @@
 
       var selectableHeading = new DropdownSelectable(i, {
         options : possible_column_names,
-        selected: col_name
+        selected: col_name,
+        table   : table
       });
 
       jcol.html(selectableHeading);
+    });
+
+    jQuery('input[data-event-onchange=1]').on('input', function () {
+      Events.emit('input_change.' + this.id, this.value);
     });
 
   });
