@@ -12,6 +12,7 @@ use Osbb::db::Osbb;
 use Abills::Base qw/convert _bp/;
 use JSON;
 use Users;
+use Multidoms;
 
 our(
   %lang,
@@ -214,16 +215,24 @@ sub osbb_registration {
           A_LOGIN     => $FORM{PHONE},
           DOMAIN_ID   => $Multidoms->{INSERT_ID},
         });
-
+        
         if ($admin->{errno}) {
           $html->message('err', $lang{ERROR}, "[$admin->{errno}] $err_strs{$admin->{errno}}");
-          return 1;
         }
-        else { 
-          my $message = $html->tpl_show(_include('osbb_reg_complete_mail', 'Osbb'), { %$Osbb, %FORM, PASSWORD => "$password" }, { OUTPUT2RETURN => 1 });
-          sendmail("$conf{ADMIN_MAIL}", "$FORM{EMAIL}", "$lang{REGISTRATION}", "$message", "$conf{MAIL_CHARSET}", '');
-          $html->message('info', "Реєстрація успішна.", "На пошту вам надіслано листа з інформацію про наступні дії.");
-          return 1;
+        else {
+          $Multidoms->admin_change({
+            AID       => $admin->{AID},
+            DOMAIN_ID => $Multidoms->{INSERT_ID},
+          });
+          if ($Multidoms->{errno}) {
+            $html->message('err', $lang{ERROR});
+          }
+          else {
+            my $message = $html->tpl_show(_include('osbb_reg_complete_mail', 'Osbb'), { %$Osbb, %FORM, PASSWORD => "$password" }, { OUTPUT2RETURN => 1 });
+            sendmail("$conf{ADMIN_MAIL}", "$FORM{EMAIL}", "$lang{REGISTRATION}", "$message", "$conf{MAIL_CHARSET}", '');
+            $html->message('info', "Реєстрація успішна.", "На пошту вам надіслано листа з інформацію про наступні дії.");
+            return 1;
+          }
         }
       }
     }

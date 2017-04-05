@@ -55,7 +55,12 @@
     <div class='form-group text-center'>
       <label class='control-element col-md-12 '>_{RULES}_</label>
       <div class='col-md-12'>
-        <textarea cols=60 rows=7 class='form-control' readonly style='resize: none; overflow: auto;'> %_RULES_%</textarea>
+        <textarea cols=60 rows=7 class='form-control' readonly style='resize: none; overflow: auto;'>
+'Twas brillig, and the slithy toves
+Did gyre and gimble in the wabe;
+All mimsy were the borogoves,
+And the mome raths outgrabe.
+        </textarea>
       </div>
     </div>
       <div class='checkbox pull-right'>
