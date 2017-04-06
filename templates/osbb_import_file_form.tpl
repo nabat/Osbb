@@ -20,11 +20,12 @@
       </div>
 
       <div class='form-group'>
-        <label class='control-label col-md-3 required' for='FLATS_COUNT_ID'>_{COUNT}_ _{FLAT}_</label>
+        <label class='control-label col-md-3 required' for='FILE_ID'>_{ADDRESS}_</label>
         <div class='col-md-9'>
-          <input type='number' class='form-control' required='required' name='FLATS_COUNT' id='FLATS_COUNT_ID'/>
+          %LOCATION_ID_SELECT%
         </div>
       </div>
+
 
     </form>
 
