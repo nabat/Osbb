@@ -12,9 +12,21 @@
     </div>
     <div class='box-body'>
       <div class='form-group'>
-        <label class='control-label col-md-3' for='CITY'>_{CITY}_</label>
-        <div class='col-md-9'>
+        <label class='control-label col-md-2 col-lg-2 col-lg-offset-3' for='CITY'>_{CITY}_</label>
+        <div class='col-md-10 col-lg-4'>
           <input name='CITY' value='%CITY%' class='form-control' type='text'>
+        </div>
+      </div>
+      <div class='form-group'>
+        <label class='control-label col-md-2 col-lg-2 col-lg-offset-3' for='ADDRESS_STREET'>_{ADDRESS_STREET}_</label>
+        <div class='col-md-10 col-lg-4'>
+          <input name='ADDRESS_STREET' value='%ADDRESS_STREET%' class='form-control' type='text'>
+        </div>
+      </div>
+      <div class='form-group'>
+        <label class='control-label col-md-2 col-lg-2 col-lg-offset-3' for='ADDRESS_BUILD'>_{ADDRESS_BUILD}_</label>
+        <div class='col-md-10 col-lg-4'>
+          <input name='ADDRESS_BUILD' value='%ADDRESS_BUILD%' class='form-control' type='text'>
         </div>
       </div>
     </div>
