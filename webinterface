@@ -13,6 +13,8 @@ use Abills::Base qw/convert _bp/;
 use JSON;
 use Users;
 use Multidoms;
+use Address;
+
 
 our(
   %lang,
@@ -224,8 +226,42 @@ sub osbb_registration {
             AID       => $admin->{AID},
             DOMAIN_ID => $Multidoms->{INSERT_ID},
           });
+          
+          $admin->set_permissions({
+            0 => {0 => 1, 1 => 1, 2 => 1, 3 => 1, 4 => 1, 5 => 1, 6 => 1},
+            1 => {0 => 1, 1 => 1, 2 => 1, 3 => 1, 4 => 1},
+            2 => {0 => 1, 1 => 1, 2 => 1, 3 => 1},
+            3 => {0 => 1, 1 => 1, 2 => 1, 3 => 1},
+            4 => {0 => 1, 1 => 1, 2 => 1, 3 => 1},
+            6 => { 0 => 1 },
+            7 => { 0 => 1 },
+            8 => { 0 => 1 },
+          }, {});
+          
+          my $Address = Address->new( $db, $admin, \%conf );
+          $Address->district_add({
+            DOMAIN_ID => $Multidoms->{INSERT_ID},
+            NAME      => $FORM{PHONE},
+            CITY      => $FORM{CITY},
+          });
+          
+          $Address->street_add({
+            DISTRICT_ID  => $Address->{INSERT_ID},
+            NAME         => $FORM{ADDRESS_STREET},
+          });
+          
+          $Address->build_add({
+            STREET_ID => $Address->{INSERT_ID},
+            NUMBER    => $FORM{ADDRESS_BUILD},
+          });
+          
+          _error_show($Address);
+          
           if ($Multidoms->{errno}) {
-            $html->message('err', $lang{ERROR});
+            $html->message('err', $lang{ERROR}, "Помилка Multidoms");
+          }
+          elsif ($Address->{errno}) {
+            $html->message('err', $lang{ERROR}, "Помилка Address");
           }
           else {
             my $message = $html->tpl_show(_include('osbb_reg_complete_mail', 'Osbb'), { %$Osbb, %FORM, PASSWORD => "$password" }, { OUTPUT2RETURN => 1 });
@@ -235,6 +271,8 @@ sub osbb_registration {
           }
         }
       }
+      _error_show($admin);
+      _error_show($Multidoms);
     }
   }
   
