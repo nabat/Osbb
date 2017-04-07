@@ -1,5 +1,5 @@
 $lang{LIVING_SPACE}='Жила проща';
-$lang{UTILITY_ROOM}='Не жила проща';
+$lang{UTILITY_ROOM}='Нежила площа';
 $lang{COMMERCIAL}='Комерційні приміщення';
 $lang{OSBB}='ОСББ';
 $lang{RENT}='Квартплата';
