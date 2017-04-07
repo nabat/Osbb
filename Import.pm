@@ -28,11 +28,11 @@ sub _osbb_users_import {
     password         => $lang{PASSWD},
     fio              => $lang{FIO},
     phone            => $lang{PHONE},
-    address_district => $lang{DISTRICT},
-    address_street   => $lang{STREET},
-    address_build    => $lang{BUILD},
     address_flat     => $lang{FLAT},
-    
+    type             => $lang{TYPE},
+    living_space     => $lang{LIVING_SPACE},
+    utility_room     => $lang{UTILITY_ROOM},
+    total_space      => $lang{TOTAL_SPACE},
   );
   
   if ( !$FORM{FILE} ) {
@@ -93,10 +93,10 @@ sub _osbb_users_import {
     delete $FORM{__BUFFER};
     $html->tpl_show(_include('osbb_import_preview_form', 'Osbb'), {
         %FORM,
-        TABLE        => $table->show(),
-        COLUMNS      => JSON::to_json(\%columns),
-        TABLE_ID     => $table->{ID} . '_',
-        FILE_COLUMNS => join(',', @$file_columns),
+        TABLE              => $table->show(),
+        COLUMNS            => JSON::to_json(\%columns),
+        TABLE_ID           => $table->{ID} . '_',
+        FILE_COLUMNS       => join(',', @$file_columns),
         LOCATION_ID_SELECT => osbb_simple_build_select({REQUIRED => 1})
       });
     
