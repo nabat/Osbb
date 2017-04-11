@@ -179,4 +179,49 @@ sub osbb_spending_types {
   return 1;
 }
 
+#**********************************************************
+=head2 osbb_user_main()
+
+=cut
+#**********************************************************
+sub osbb_user_main {
+  my %TEMPLATE_ARGS = ();
+  my $show_add_form = $FORM{add_form} || 0;
+  
+  if ($FORM{add}) {
+    $Osbb->user_add({%FORM});
+    $show_add_form = show_result($Osbb, $lang{ADDED});
+  }
+  elsif ($FORM{change}) {
+    $Osbb->user_change({%FORM});
+    show_result($Osbb, $lang{CHANGED});
+    $show_add_form = 1;
+  }
+  elsif ($FORM{chg}) {
+    my $tp_info = $Osbb->user_info($FORM{chg});
+    if (!_error_show($Osbb)) {
+      %TEMPLATE_ARGS = %{$tp_info};
+      $show_add_form = 1;
+    }
+  }
+  elsif ($FORM{del} && $FORM{COMMENTS}) {
+    $Osbb->user_del({ ID => $FORM{del}, COMMENTS => $FORM{COMMENTS} });
+    show_result($Osbb, $lang{DELETED});
+  }
+  
+  if ($show_add_form) {
+    
+    
+    $html->tpl_show(
+      _include('osbb_user', 'Osbb'),
+      {
+        %TEMPLATE_ARGS,
+        %FORM,
+        SUBMIT_BTN_ACTION => ($FORM{chg}) ? 'change' : 'add',
+        SUBMIT_BTN_NAME   => ($FORM{chg}) ? $lang{CHANGE} : $lang{ADD},
+      }
+    );
+  }
+}
+
 1;
