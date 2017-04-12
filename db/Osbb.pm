@@ -254,8 +254,9 @@ sub user_list{
    $EXT_TABLES
    $self->{EXT_TABLES}
    $WHERE ORDER BY $SORT $DESC LIMIT $PG, $PAGE_ROWS;", undef, {
-    COLS_NAME => 1,
-    %{ $attr // {}}}
+     COLS_NAME => 1,
+     %{ $attr // {} }
+   }
   );
 
   return [] if $self->{errno};
