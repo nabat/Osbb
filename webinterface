@@ -69,16 +69,6 @@ if(%ADMIN_REPORT) {
 sub osbb_user {
   return 0 unless $FORM{UID};
   
-  $Osbb->{debug} = 1;
-    delete $Osbb->{admin};
-      delete $Osbb->{db};
-      delete $Osbb->{conf};
-      delete $Osbb->{COL_NAMES_ARR};
-    
-      _bp('$OBJECT', $Osbb, { EXIT => 0 });
-      
-      
-  
   my $tp_info = $Osbb->user_info($FORM{UID});
   _error_show($Osbb);
   
