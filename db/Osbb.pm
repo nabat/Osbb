@@ -1,22 +1,23 @@
 package Osbb;
 =head1 NAME
 
- DHCP server managment and user control
+ Osbb users management
 
 =cut
 
 use strict;
 use parent 'main';
 my $MODULE = 'Osbb';
+
 my Admins $admin;
 my $CONF;
-my $SORT      = 1;
-my $DESC      = '';
-my $PG        = 0;
-my $PAGE_ROWS = 25;
+
+use Abills::Base qw/_bp/;
 
 #**********************************************************
-# Init
+=head2 new($db, $admin, \%conf) - constructor for Osbb DB manage module 
+
+=cut
 #**********************************************************
 sub new {
   my $class = shift;
@@ -38,71 +39,155 @@ sub new {
 
 
 #**********************************************************
-=head2 user_info($id) - Get user info
+=head2 AUTOLOAD
 
+  Because all namings are standart, 'add', 'change', 'del', 'info' can be generated automatically.
+  
+=head2 SYNOPSIS
+
+  AUTOLOAD is called when undefined function was called in Package::Foo.
+  global $AUTOLOAD var is filled with full name of called undefined function (Package::Foo::some_function)
+  
+  Because in this module DB tables and columns are named same as template variables, in all logic for custom operations
+  the only thing that changes is table name.
+  
+  We can parse it from called function name and generate 'add', 'change', 'del', 'info' functions on the fly
+   
+=head2 USAGE
+
+  You should use this function as usual, nothing changes in webinterface logic.
+  Just call $Osbb->user_info($cable_type_id)
+  
   Arguments:
-    $id
-    $attr
-
+    arguments are typical for operations, assuming we are working with ID column as primary key
+    
   Returns:
-    Object
+    returns same result as usual operation functions ( Generally nothing )
 
 =cut
 #**********************************************************
-sub user_info {
-  my $self = shift;
-  my ($attr) = @_;
+sub AUTOLOAD {
+  our $AUTOLOAD;
+  my ($entity_name, $operation) = $AUTOLOAD =~ /.*::(.*)_(add|del|change|info)$/;
+  
+  return if $AUTOLOAD =~ /::DESTROY$/;
+  
+  die "Undefined function $AUTOLOAD. ()" unless ($operation && $entity_name);
+  
+  my ($self, $data, $attr) = @_;
+  
+  my $table = lc(__PACKAGE__) . '_' . $entity_name;
+  
+  if ($self->{debug}){
+    _bp($table, { data => $data, attr => $attr});
+  }
+  
+  if ($operation eq 'add'){
+    $self->query_add( $table, $data );
+    return $self->{errno} ? 0 : $self->{INSERT_ID};
+  }
+  elsif ($operation eq 'del'){
+    return $self->query_del( $table, $data, $attr );
+  }
+  elsif ($operation eq 'change'){
+    return $self->changes2( {
+      CHANGE_PARAM => 'ID',
+      TABLE        => $table,
+      DATA         => $data,
+    } );
+  }
+  elsif ($operation eq 'info'){
+    my $list_func_name = $entity_name . "_list";
+    
+    if ($data && ref $data ne 'HASH'){
+      $attr->{ID} = $data
+    }
+    
+    my $list = $self->$list_func_name({
+      SHOW_ALL_COLUMNS => 1,
+      COLS_UPPER => 1,
+      COLS_NAME => 1,
+      PAGE_ROWS => 1,
+      %{ $attr ? $attr : {} }
+    });
+    
+    return $list->[0] || { };
+  }
+  
+  die "Wrong call $AUTOLOAD";
+}
 
-  $self->query2("SELECT * FROM osbb_main
-    WHERE uid= ? ;",
-    undef,
-    { INFO => 1,
-      Bind => [ $attr->{UID} ] }
-  );
+#**********************************************************
+=head2 user_info() -
 
-  return $self;
+  Arguments:
+    $uid - UID for user
+    
+  Returns:
+    hashref
+    
+=cut
+#**********************************************************
+sub user_info() {
+  my ($self, $uid ) = @_;
+  
+  my $list = $self->user_list({
+    UID              => $uid,
+    SHOW_ALL_COLUMNS => 1,
+    COLS_UPPER       => 1,
+    COLS_NAME        => 1,
+    PAGE_ROWS        => 1
+  });
+  
+  return $list->[0] || { };
 }
 
 
 #**********************************************************
-=head2 user_add($attr) - add service to db
-
-  Arguments:
-
-  Returns:
-
-  Example:
-
-    $Osbb->user_add(\%FORM);
+=head2 user_add($attr)
 
 =cut
 #**********************************************************
 sub user_add {
   my $self = shift;
   my ($attr) = @_;
-
+  
   $self->query_add('osbb_main', $attr);
-
+  return [ ] if ($self->{errno});
+  
+  $admin->system_action_add("OSBB USERS: $self->{INSERT_ID}", { TYPE => 1 });
   return $self;
-
 }
 
 #**********************************************************
-=head2 user_change($attr) - change user info
+=head2  user_del($id)
 
-  Arguments:
+=cut
+#**********************************************************
+sub user_del {
+  my $self = shift;
+  my ($id) = @_;
+  
+  $self->query_del('osbb_main', { ID => $id });
+  
+  return [ ] if ($self->{errno});
+  
+  $admin->system_action_add("OSBB USERS: $id", { TYPE => 10 });
+  
+  return $self;
+}
 
-  Returns:
-
-  Example:
-
+#**********************************************************
+=head2 user_change($attr)
 
 =cut
 #**********************************************************
 sub user_change {
   my $self = shift;
   my ($attr) = @_;
-
+  
+  $attr->{DISABLE} = defined( $attr->{DISABLE} );
+  
   $self->changes2(
     {
       CHANGE_PARAM => 'UID',
@@ -110,95 +195,73 @@ sub user_change {
       DATA         => $attr
     }
   );
-
-  return $self;
-}
-
-#**********************************************************
-=head2 user_del($attr) - user del
-
-  Arguments:
-
-  Returns:
-
-  Example:
-    $Equipment->vlan_del({ID => $FORM{del}});
-
-=cut
-#**********************************************************
-sub user_del {
-  my $self = shift;
-  my ($attr) = @_;
-
-  $self->query_del('osbb_main', $attr);
-
+  
   return $self;
 }
 
 
 #**********************************************************
-=head2 user_list($attr) - get users list
+=head2 users_list($attr)
 
   Arguments:
-
+    $attr - hash_ref
 
   Returns:
+    list
 
 =cut
 #**********************************************************
-sub user_list {
-  my $self = shift;
-  my ($attr) = @_;
-
-  delete $self->{COL_NAMES_ARR};
-
-  $SORT      = ($attr->{SORT})      ? $attr->{SORT}      : 1;
-  $DESC      = ($attr->{DESC})      ? $attr->{DESC}      : '';
-  $PG        = ($attr->{PG})        ? $attr->{PG}        : 0;
-  $PAGE_ROWS = ($attr->{PAGE_ROWS}) ? $attr->{PAGE_ROWS} : 25;
-
-  my $WHERE =  $self->search_former($attr, [
-      ['TYPE',           'INT', 'osbb.type',             1],
-      ['LIVING_SPACE',   'INT', 'osbb.living_space',     1],
-      ['UTILITY_ROOM',   'INT', 'osbb.utility_room',     1],
-      ['UID',            'INT', 'osbb.uid',              1],
-    ],
-    { WHERE            => 1,
-      USERS_FIELDS_PRE => 1,
-      USE_USER_PI      => 1,
-      SKIP_USERS_FIELDS=> [ 'UID' ]
+sub user_list{
+  my ($self, $attr) = @_;
+  
+  _bp('', $attr);
+  
+  my $SORT = $attr->{SORT} || 'id';
+  my $DESC = ($attr->{DESC}) ? '' : 'DESC';
+  my $PG = $attr->{PG} || '0';
+  my $PAGE_ROWS = $attr->{PAGE_ROWS} || 25;
+  
+  my $search_columns = [
+    [ 'UID',            'INT', 'om.uid',            1 ],
+    [ 'OWNERSHIP_TYPE', 'INT', 'om.ownership_type', 1 ],
+    [ 'TOTAL_AREA',     'INT', 'om.total_area',     1 ],
+    [ 'LIVING_AREA',    'INT', 'om.living_area',    1 ],
+    [ 'UTILITY_AREA',   'INT', 'om.utility_area',   1 ],
+    [ 'BALCONY_AREA',   'INT', 'om.balcony_area',   1 ],
+    [ 'USEFUL_AREA',    'INT', 'om.useful_area',    1 ],
+    [ 'ROOMS_COUNT',    'INT', 'om.rooms_count',    1 ],
+    [ 'PEOPLE_COUNT',   'INT', 'om.people_count',   1 ],
+  ];
+  
+  if ($attr->{SHOW_ALL_COLUMNS}){
+    map { $attr->{$_->[0]} = '_SHOW' unless exists $attr->{$_->[0]} } @$search_columns;
+  }
+  
+  my $WHERE =  $self->search_former($attr, $search_columns, {
+      WHERE             => 1,
+      USERS_FIELDS_PRE  => 1,
+      USE_USER_PI       => 1,
+      SKIP_USERS_FIELDS => [ 'UID' ]
     }
   );
+  
+  my $EXT_TABLES = '';
 
-  my $EXT_TABLE = $self->{EXT_TABLES};
-
-  $self->query2("SELECT
-      $self->{SEARCH_FIELDS}
-      osbb.uid
-    FROM osbb_main osbb
-    INNER JOIN users u ON (u.uid=osbb.uid)
-    $EXT_TABLE
-    $WHERE
-    ORDER BY $SORT $DESC LIMIT $PG, $PAGE_ROWS;",
-    undef,
-    $attr
+  
+  $self->query2( "SELECT $self->{SEARCH_FIELDS} om.uid
+   FROM osbb_main om
+   LEFT JOIN users u USING (uid)
+   $EXT_TABLES
+   $self->{EXT_TABLES}
+   $WHERE ORDER BY $SORT $DESC LIMIT $PG, $PAGE_ROWS;", undef, {
+     COLS_NAME => 1,
+     %{ $attr // {} }
+   }
   );
 
-  my $list = $self->{list};
+  return [] if $self->{errno};
 
-  return $self->{list} if (defined($attr->{TOTAL}) && $attr->{TOTAL} < 1);
-
-  $self->query2(
-    "SELECT COUNT(*) AS total
-     FROM osbb_main osbb
-     INNER JOIN users u ON (u.uid=osbb.uid)
-     $EXT_TABLE
-     $WHERE",
-    undef,
-    { INFO => 1 }
-  );
-
-  return $list;
+  return $self->{list};
 }
 
 
@@ -284,11 +347,11 @@ sub area_type_change {
 sub area_type_list {
   my $self   = shift;
   my ($attr) = @_;
-
-  $SORT      = ($attr->{SORT})      ? $attr->{SORT}      : 1;
-  $DESC      = ($attr->{DESC})      ? $attr->{DESC}      : '';
-  $PG        = ($attr->{PG})        ? $attr->{PG}        : 0;
-  $PAGE_ROWS = ($attr->{PAGE_ROWS}) ? $attr->{PAGE_ROWS} : 25;
+  
+  my $SORT = $attr->{SORT} || 'id';
+  my $DESC = ($attr->{DESC}) ? '' : 'DESC';
+  my $PG = $attr->{PG} || '0';
+  my $PAGE_ROWS = $attr->{PAGE_ROWS} || 25;
 
   my $WHERE =  $self->search_former($attr, [
       ['LIVING_SPACE',   'INT', 'living_space',    ],
@@ -411,11 +474,11 @@ sub spending_type_change {
 sub spending_type_list {
   my $self   = shift;
   my ($attr) = @_;
-
-  $SORT      = ($attr->{SORT})      ? $attr->{SORT}      : 1;
-  $DESC      = ($attr->{DESC})      ? $attr->{DESC}      : '';
-  $PG        = ($attr->{PG})        ? $attr->{PG}        : 0;
-  $PAGE_ROWS = ($attr->{PAGE_ROWS}) ? $attr->{PAGE_ROWS} : 25;
+  
+  my $SORT = $attr->{SORT} || 'id';
+  my $DESC = ($attr->{DESC}) ? '' : 'DESC';
+  my $PG = $attr->{PG} || '0';
+  my $PAGE_ROWS = $attr->{PAGE_ROWS} || 25;
 
   my $WHERE =  $self->search_former($attr, [
     ],
@@ -447,5 +510,6 @@ sub spending_type_list {
 }
 
 
+DESTROY {}
 
 1;

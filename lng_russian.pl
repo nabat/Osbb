@@ -1,6 +1,12 @@
-$lang{LIVING_SPACE}='Жилая прощадь';
-$lang{UTILITY_ROOM}='Нежилая площадь';
-$lang{TOTAL_SPACE}='Общая площадь';
+$lang{OWNERSHIP_TYPE} = 'Тип собственности';
+$lang{TOTAL_AREA} = 'Общая площадь';
+$lang{LIVING_AREA} = 'Жилая площадь';
+$lang{UTILITY_AREA} = 'Дополнительная площадь';
+$lang{BALCONY_AREA} = 'Площадь балкона';
+$lang{USEFUL_AREA} = 'Полезная площадь';
+$lang{ROOMS_COUNT} = 'Количество комнат';
+$lang{PEOPLE_COUNT} = 'Количество жильцов';
+
 $lang{COMMERCIAL}='Коммерческое помещение';
 $lang{OSBB}='ОСББ';
 $lang{RENT}='Квартплата';
