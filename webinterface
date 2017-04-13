@@ -309,7 +309,7 @@ sub osbb_simple_build_select {
   my @full_name_builds_list = map {
     {
       id   => $_->{id},
-      name =>  join (', ', $_->{district_name}, $_->{street_name}, $_->{number})
+      name =>  join (', ', $_->{street_name}, $_->{number})
     }
   } @$builds_list;
   
@@ -319,9 +319,71 @@ sub osbb_simple_build_select {
     
       NO_ID       => 1,
       SEL_OPTIONS => { '' => '' },
-      MAIN_MENU   =>  get_function_index('form_districts'),
-      %{ $attr // {} }
     });
+}
+
+#**********************************************************
+=head2 osbb_add_user()
+
+=cut
+#**********************************************************
+sub osbb_add_user{
+  my ($attr) = @_;
+  
+  if (!defined($FORM{sub}) || $FORM{sub} eq '' ) {
+    $FORM{sub} = 1;
+  }
+  
+  my $active_button->{$FORM{sub}} = { class => 'active' };
+  my %nav_tabs = (
+    1 => "User",
+    2 => "MultyUser",
+    3 => "Import",
+  );
+    
+  my $buttons = '';
+  foreach( sort { $a <=> $b } keys(%nav_tabs) ){
+    $buttons .= $html->li( $html->button( $nav_tabs{$_}, "index=$index&sub=$_" ), $active_button->{$_} )
+  }
+  
+  print $html->element( 'div',
+    $html->element( 'ul', $buttons, { class => 'nav navbar-nav' }) ,
+    { class => 'navbar navbar-default' } );
+  
+  if($FORM{sub} == 3) {
+    #TODO
+    $html->message('info', "Under construction");
+    return 1;
+  }
+  elsif($FORM{sub} == 2) {
+    #TODO
+    $html->message('info', "Under construction");
+    return 1;
+  }
+  else {
+    if ($FORM{add}){
+      $User->{debug} = 1;
+      $Osbb->{debug} = 1;
+      
+      $User->add({ %FORM,  CREATE_BILL => 1, LOGIN => "$FORM{LOCATION_ID}_$FORM{ADDRESS_FLAT}" });
+      _error_show($User);
+      $User->pi_add({ %FORM, UID => $User->{INSERT_ID} });
+      $Osbb->user_add({ %FORM, UID => $User->{INSERT_ID}});
+      _error_show($User);
+      _error_show($Osbb);
+      if($Osbb->{errno} && $User->{errno}) {
+        $html->message('err', "$lang{ERROR}");
+      }
+      else {
+        $html->message('info', "$lang{SUCCESS}", "$lang{ADDED}");
+      }
+      #TODO
+    }
+  
+    my $build_sel = osbb_simple_build_select();
+    $html->tpl_show(_include('osbb_form_add_user', 'Osbb'), { BUILD_SEL => $build_sel });
+  }
+  return 1;
 }
 
 1;
