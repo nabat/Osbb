@@ -20,6 +20,7 @@ our(
   %lang,
   $html,
   $admin,
+  $users,
   $db,
   %permissions,
   %ADMIN_REPORT,
@@ -28,6 +29,16 @@ our(
 
 my $Osbb = Osbb->new($db, $admin, \%conf);
 my $User = Users->new($db, $admin, \%conf);
+
+if (form_purchase_module({
+  HEADER          => $users->{UID},
+  MODULE          => 'Multidoms',
+  REQUIRE_VERSION => 1.06
+})) {
+  exit;
+}
+
+
 
 #our %space_type = (
 #  0  => '',
@@ -57,57 +68,47 @@ if(%ADMIN_REPORT) {
 =cut
 #**********************************************************
 sub osbb_user {
-  my($attr) = @_;
-
-  if ( $FORM{add} ){
-    $Osbb->user_add( { %FORM } );
-    if ( !$Osbb->{errno} ){
-      $html->message( 'info', $lang{BOXES}, "$lang{ADDED}" );
-    }
-  }
-  elsif ( $FORM{change} ){
-    $Osbb->user_change( \%FORM );
-    if ( !_error_show( $Osbb ) ){
-      $html->message( 'info', $lang{BOXES}, "$lang{CHANGED}" );
-    }
-  }
-  elsif ( $FORM{del} && $FORM{COMMENTS} ){
-    $Osbb->user_del( "$FORM{del}" );
-    if ( !$Osbb->{errno} ){
-      $html->message( 'info', $lang{BOXES}, "$lang{DELETED}" );
-    }
-  }
-
+  return 0 unless $FORM{UID};
+  
+  $Osbb->{debug} = 1;
+    delete $Osbb->{admin};
+      delete $Osbb->{db};
+      delete $Osbb->{conf};
+      delete $Osbb->{COL_NAMES_ARR};
+    
+      _bp('$OBJECT', $Osbb, { EXIT => 0 });
+      
+      
+  
+  my $tp_info = $Osbb->user_info($FORM{UID});
   _error_show($Osbb);
-
-  if ( $FORM{UID} ){
-    $Osbb->user_info({ UID =>  $FORM{UID} });
-
-    if ( !$Osbb->{errno} ){
-      $FORM{chg}=1;
-      $Osbb->{APARTMENT_AREA} = sprintf("%.2f", $Osbb->{LIVING_SPACE} + $Osbb->{UTILITY_ROOM});
-    }
+  
+  my %TEMPLATE_ARGS = %{$tp_info};
+  
+  if ( $FORM{add} ) {
+    $Osbb->user_add({ %FORM });
+    show_result($Osbb, $lang{ADDED});
   }
-
-  $Osbb->{SEL_TYPE} = $html->form_select(
-    'TYPE',
-    {
-      SELECTED => $Osbb->{TYPE},
-      SEL_LIST => $Osbb->area_type_list({ COLS_NAME => 1, COLS_NAME => 1000 }),
-      NO_ID    => 1,
-      ID       => 'TYPE',
-    }
-  );
-
+  elsif ( $FORM{change} ) {
+    $Osbb->user_change({ %FORM });
+    show_result($Osbb, $lang{CHANGED});
+  }
+  elsif ( $FORM{del} && $FORM{COMMENTS} ) {
+    $Osbb->user_del({ ID => $FORM{del}, COMMENTS => $FORM{COMMENTS} });
+    show_result($Osbb, $lang{DELETED});
+  }
+  
   $html->tpl_show(
-    _include( 'osbb_user', 'Osbb' ),
+    _include('osbb_user', 'Osbb'),
     {
-      %$Osbb,
-      ACTION     => ($FORM{chg}) ? 'change' : 'add',
-      LNG_ACTION => ($FORM{chg}) ? $lang{CHANGE} : $lang{REGISTRATION},
+      %TEMPLATE_ARGS,
+      %FORM,
+      SUBMIT_BTN_ACTION => ($FORM{chg}) ? 'change' : 'add',
+      SUBMIT_BTN_NAME   => ($FORM{chg}) ? $lang{CHANGE} : $lang{ADD},
     }
   );
-
+  
+  
   return 1;
 }
 
