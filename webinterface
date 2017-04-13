@@ -327,7 +327,7 @@ sub osbb_simple_build_select {
 
 =cut
 #**********************************************************
-sub osbb_add_user{
+sub osbb_user_add{
   my ($attr) = @_;
   
   if (!defined($FORM{sub}) || $FORM{sub} eq '' ) {
@@ -362,28 +362,34 @@ sub osbb_add_user{
   }
   else {
     if ($FORM{add}){
-      $User->{debug} = 1;
-      $Osbb->{debug} = 1;
-      
       $User->add({ %FORM,  CREATE_BILL => 1, LOGIN => "$FORM{LOCATION_ID}_$FORM{ADDRESS_FLAT}" });
-      _error_show($User);
-      $User->pi_add({ %FORM, UID => $User->{INSERT_ID} });
-      $Osbb->user_add({ %FORM, UID => $User->{INSERT_ID}});
-      _error_show($User);
-      _error_show($Osbb);
-      if($Osbb->{errno} && $User->{errno}) {
+      if ($User->{errno}){
         $html->message('err', "$lang{ERROR}");
       }
       else {
-        $html->message('info', "$lang{SUCCESS}", "$lang{ADDED}");
+        $User->pi_add({ %FORM, UID => $User->{INSERT_ID} });
+        $Osbb->user_add({ %FORM, UID => $User->{INSERT_ID}});
+        if($Osbb->{errno} && $User->{errno}) {
+          $html->message('err', "$lang{ERROR}");
+        }
+        else {
+          $html->message('info', "$lang{SUCCESS}", "$lang{ADDED}");
+        }
       }
-      #TODO
     }
   
     my $build_sel = osbb_simple_build_select();
-    $html->tpl_show(_include('osbb_form_add_user', 'Osbb'), { BUILD_SEL => $build_sel });
+    $html->tpl_show(_include('osbb_form_user_add', 'Osbb'), { BUILD_SEL => $build_sel });
   }
   return 1;
 }
 
+#**********************************************************
+=head2 osbb_payments_add()
+
+=cut
+#**********************************************************
+sub osbb_add_payments{
+
+}
 1;
