@@ -124,6 +124,13 @@
 
     var after_col = isDefined(after_col_) ? after_col_ : (this.headings.length - 1);
 
+    // Append td forEachRow
+    // This should go first, because DropdownSelectable will look for this tds when created
+    this.rows.map(function () {
+      var new_input = jQuery('<input/>').addClass('form-control');
+      jQuery('<td/>').html(new_input).insertAfter(jQuery(this).find('td').get(after_col));
+    });
+
     // Append new DropdownSelectable
     var selectableHeading = new DropdownSelectable(after_col + 1, {
       options : this.headings_selectable,
@@ -131,13 +138,6 @@
     });
 
     jQuery('<th/>').html(selectableHeading).insertAfter(this.getHeading(after_col));
-
-
-    // Append td forEachRow
-    this.rows.map(function () {
-      var new_input = jQuery('<input/>').addClass('form-control');
-      jQuery('<td/>').html(new_input).insertAfter(jQuery(this).find('td').get(after_col));
-    });
 
     this.renewDOM();
   };
@@ -335,6 +335,9 @@
     // Tell other dropdowns that previous value is now free
     if (typeof (this.value) !== 'undefined') {
       this.all_options.setState(this.value, false);
+    }
+    else {
+      // Should update input names
     }
 
     if (new_value === 'delete') {
