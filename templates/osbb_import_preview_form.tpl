@@ -36,6 +36,56 @@
 
 <script>
 
+  /**
+   * DynamicTable is wrapper above DOM <table> that is aware of its headings, rows, columns
+   * @constructor
+   */
+  var DynamicTable = function(id){
+
+    this.table = jQuery('#' + id);
+    this.thead = this.table.find('thead');
+    this.tbody = this.table.find('tbody');
+
+    this.rows = null;
+    this.tds_for_row = null;
+    this.headings = null;
+
+    this.renewDom = function (){
+      // Collect headings
+      this.headings = this.thead.find('tr');
+
+      // Collect rows
+      this.rows = this.tbody.find('tr');
+
+      // Collect columns
+      this.rows.each(function (row_num, row_) {
+        var row = jQuery(row_);
+
+
+      })
+    };
+
+    this.getRow = function(row_num){
+
+    };
+    this.getTd = function(row_num, col_num){
+
+    };
+    this.appendRow = function(){
+
+    };
+    this.deleteRow = function (row_num) {
+
+    };
+    this.appendColumn = function(after_col){
+
+    };
+    this.deleteColumn = function(col_num){
+
+    };
+
+  };
+
   var PossibleColumns = function (columns) {
     var self = this;
 
@@ -63,6 +113,7 @@
     };
 
     this.getView = function (current, onclick) {
+      var self = this;
       var menu = jQuery('<ul/>', {'class': 'dropdown-menu'});
 
       this.col_names.forEach(function (col_name) {
@@ -82,9 +133,14 @@
             new_li.html(
                 new_a.text(self.getColumnName(col_name))
             )
-        );
+        )
 
       });
+      var delete_link = "<li class='bg-red'><a data-target='#' data-value='delete' style='color : #fff'>_{REMOVE}_</a></li>";
+      jQuery(delete_link).on('click', function(){
+        Events.emit('PossibleColumns.column_deleted', self.current);
+      });
+      menu.append(delete_link);
 
       Events.off('PossibleColumns.column_state_change');
       Events.on('PossibleColumns.column_state_change', function (col_changed) {
