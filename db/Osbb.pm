@@ -214,11 +214,9 @@ sub user_change {
 sub user_list{
   my ($self, $attr) = @_;
   
-  _bp('', $attr);
-  
-  my $SORT = $attr->{SORT} || 'id';
-  my $DESC = ($attr->{DESC}) ? '' : 'DESC';
-  my $PG = $attr->{PG} || '0';
+  my $SORT      = $attr->{SORT}      || 'id';
+  my $DESC      = ($attr->{DESC}) ? '' : 'DESC';
+  my $PG        = $attr->{PG}        || '0';
   my $PAGE_ROWS = $attr->{PAGE_ROWS} || 25;
   
   my $search_columns = [
