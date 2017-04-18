@@ -13,5 +13,12 @@ $lang{RENT}='Квартплата';
 $lang{FILL_DEFAULT_VALUES_THAT_WILL_REPLACE_EMPTY_FILE_FIELDS} = 'Заполните значения общие для всех жильцов';
 $lang{SPENDING}='Расход';
 
+$lang{TARIFS}        = 'Тарифы';
+$lang{TARIF}         = 'Тариф';
+$lang{PAYMENT_TYPE}  = 'Тип начислений';
+$lang{PRICE}         = 'Цена';
+$lang{DOCUMENT_BASE} = 'Документ-основание';
+$lang{PAYMENT_NAME}  = 'Наименование услуги';
+$lang{ADD_TARIF}     = 'Добавить тариф';
 
 1;
