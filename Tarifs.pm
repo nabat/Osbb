@@ -124,7 +124,7 @@ sub osbb_tarifs {
 sub _get_payment_type {
   my ($payment_type_id) = @_;
 
-  return @payment_type[$payment_type_id];
+  return $payment_type[$payment_type_id];
 }
 
 1
