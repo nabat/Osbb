@@ -15,4 +15,12 @@ $lang{FILL_DEFAULT_VALUES_AND_CHOOSE_FILE_FOR_IMPORT} = 'Заповніть зн
 $lang{TOTAL_SPACE}='Загальна площа';
 $lang{SPACE_TYPES}='Види приміщень';
 $lang{SPENDING}='Розхід';
+
+$lang{TARIFS}        = 'Тарифи';
+$lang{TARIF}         = 'Тариф';
+$lang{PAYMENT_TYPE}  = 'Тип нарахуваннь';
+$lang{PRICE}         = 'Ціна';
+$lang{DOCUMENT_BASE} = 'Документ-привід';
+$lang{PAYMENT_NAME}  = 'Назва послуги';
+$lang{ADD_TARIF}     = 'Добавити тариф';
 1;

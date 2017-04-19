@@ -46,3 +46,14 @@ CREATE TABLE IF NOT EXISTS `osbb_spending_types` (
   `comments` TEXT,
   PRIMARY KEY (`id`)
 ) COMMENT = 'OSBB spending types';
+
+CREATE TABLE IF NOT EXISTS `osbb_tarifs` (
+  `id`            smallint(5)  unsigned NOT NULL AUTO_INCREMENT,
+  `name`          varchar(40)           NOT NULL DEFAULT '',
+  `payment_type`  tinyint(1)            NOT NULL DEFAULT '0',
+  `price`         double(10,2) unsigned NOT NULL DEFAULT '0.00',
+  `document_base` varchar(120)          NOT NULL DEFAULT '',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id` (`id`),
+  UNIQUE KEY `name` (`name`)
+  ) COMMENT = 'Osbb Tarifs';
