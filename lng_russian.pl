@@ -12,6 +12,6 @@ $lang{OSBB}='ОСББ';
 $lang{RENT}='Квартплата';
 $lang{FILL_DEFAULT_VALUES_THAT_WILL_REPLACE_EMPTY_FILE_FIELDS} = 'Заполните значения общие для всех жильцов';
 $lang{SPENDING}='Расход';
-
+$lang{USERS}='Жильцы';
 
 1;
