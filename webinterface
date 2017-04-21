@@ -56,6 +56,7 @@ if($permissions{3}) {
 if($permissions{4}) {
   require Osbb::Configure;
   require Osbb::Import;
+  require Osbb::Tarifs;
 }
 
 if(%ADMIN_REPORT) {
@@ -70,22 +71,12 @@ if(%ADMIN_REPORT) {
 #**********************************************************
 sub osbb_user {
   return 0 unless $FORM{UID};
-  
-  $Osbb->{debug} = 1;
-    delete $Osbb->{admin};
-      delete $Osbb->{db};
-      delete $Osbb->{conf};
-      delete $Osbb->{COL_NAMES_ARR};
-    
-      _bp('$OBJECT', $Osbb, { EXIT => 0 });
-      
-      
-  
+
   my $tp_info = $Osbb->user_info($FORM{UID});
   _error_show($Osbb);
-  
+
   my %TEMPLATE_ARGS = %{$tp_info};
-  
+
   if ( $FORM{add} ) {
     $Osbb->user_add({ %FORM });
     show_result($Osbb, $lang{ADDED});
@@ -98,7 +89,7 @@ sub osbb_user {
     $Osbb->user_del({ ID => $FORM{del}, COMMENTS => $FORM{COMMENTS} });
     show_result($Osbb, $lang{DELETED});
   }
-  
+
   $html->tpl_show(
     _include('osbb_user', 'Osbb'),
     {
@@ -108,8 +99,8 @@ sub osbb_user {
       SUBMIT_BTN_NAME   => ($FORM{chg}) ? $lang{CHANGE} : $lang{ADD},
     }
   );
-  
-  
+
+
   return 1;
 }
 
@@ -126,7 +117,7 @@ sub osbb_users_list {
   elsif ($FORM{import}){
     return &_osbb_users_import;
   }
-  
+
   result_former({
     INPUT_DATA      => $Osbb,
     FUNCTION        => 'user_list',
@@ -200,7 +191,7 @@ sub osbb_registration {
       })) {
         exit;
       }
-  
+
       my $Multidoms = Multidoms->new($db, $admin, \%conf);
       $Multidoms->multidoms_domain_add({ NAME => "$FORM{PHONE}" });
       if ($Multidoms->{errno}) {
@@ -215,7 +206,7 @@ sub osbb_registration {
           A_LOGIN     => $FORM{PHONE},
           DOMAIN_ID   => $Multidoms->{INSERT_ID},
         });
-        
+
         if ($admin->{errno}) {
           $html->message('err', $lang{ERROR}, "[$admin->{errno}] $err_strs{$admin->{errno}}");
         }
@@ -224,7 +215,7 @@ sub osbb_registration {
             AID       => $admin->{AID},
             DOMAIN_ID => $Multidoms->{INSERT_ID},
           });
-          
+
           $admin->set_permissions({
             0 => {0 => 1, 1 => 1, 2 => 1, 3 => 1, 4 => 1, 5 => 1, 6 => 1},
             1 => {0 => 1, 1 => 1, 2 => 1, 3 => 1, 4 => 1},
@@ -235,26 +226,26 @@ sub osbb_registration {
             7 => { 0 => 1 },
             8 => { 0 => 1 },
           }, {});
-          
+
           my $Address = Address->new( $db, $admin, \%conf );
           $Address->district_add({
             DOMAIN_ID => $Multidoms->{INSERT_ID},
             NAME      => $FORM{PHONE},
             CITY      => $FORM{CITY},
           });
-          
+
           $Address->street_add({
             DISTRICT_ID  => $Address->{INSERT_ID},
             NAME         => $FORM{ADDRESS_STREET},
           });
-          
+
           $Address->build_add({
             STREET_ID => $Address->{INSERT_ID},
             NUMBER    => $FORM{ADDRESS_BUILD},
           });
-          
+
           _error_show($Address);
-          
+
           if ($Multidoms->{errno}) {
             $html->message('err', $lang{ERROR}, "Помилка Multidoms");
           }
@@ -273,7 +264,7 @@ sub osbb_registration {
       _error_show($Multidoms);
     }
   }
-  
+
   $html->tpl_show(_include('osbb_registration', 'Osbb'), { %$Osbb, %$attr, %FORM }, { ID => 'OSBB_REGISTRATION' });
 
   return 0;
@@ -286,23 +277,23 @@ sub osbb_registration {
 #**********************************************************
 sub osbb_simple_build_select {
   my ($attr) = @_;
-  
+
   require Address;
   Address->import();
   my $Address = Address->new($db, $admin, \%conf);
-  
+
   my $builds_list = $Address->build_list({
     NUMBER        => '_SHOW',
     DISTRICT_ID   => '_SHOW',
     DISTRICT_NAME => '_SHOW',
     STREET_ID     => '_SHOW',
     STREET_NAME   => '_SHOW',
-    
+
     COLS_NAME => 1,
     PAGE_ROWS => 10000
   });
   _error_show($Address);
-  
+
   my @full_name_builds_list = map {
     {
       id   => $_->{id},
@@ -312,7 +303,7 @@ sub osbb_simple_build_select {
   return $html->form_select('LOCATION_ID', {
       SELECTED    => $attr->{LOCATION_ID} || $FORM{LOCATION_ID} || '',
       SEL_LIST    => \@full_name_builds_list,
-    
+
       NO_ID       => 1,
       %{
       $attr->{AUTO_SUBMIT} ? {EX_PARAMS => "data-auto-submit='form'"} : {'' => ''}

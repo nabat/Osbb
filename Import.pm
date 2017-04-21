@@ -24,15 +24,19 @@ our(
 sub _osbb_users_import {
   
   my %columns = (
-    uid              => 'UID',
-    password         => $lang{PASSWD},
-    fio              => $lang{FIO},
-    phone            => $lang{PHONE},
-    address_flat     => $lang{FLAT},
-    type             => $lang{TYPE},
-    living_space     => $lang{LIVING_SPACE},
-    utility_room     => $lang{UTILITY_ROOM},
-    total_space      => $lang{TOTAL_SPACE},
+    uid          => 'UID',
+    password     => $lang{PASSWD},
+    fio          => $lang{FIO},
+    phone        => $lang{PHONE},
+    address_flat => $lang{FLAT},
+    type         => $lang{TYPE},
+    total_area   => $lang{TOTAL_AREA},
+    living_area  => $lang{LIVING_AREA},
+    utility_area => $lang{UTILITY_AREA},
+    balcony_area => $lang{BALCONY_AREA},
+    useful_area  => $lang{USEFUL_AREA},
+    rooms_count  => $lang{ROOMS_COUNT},
+    people_count => $lang{PEOPLE_COUNT},
   );
   
   if ( !$FORM{FILE} ) {
