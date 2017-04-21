@@ -509,6 +509,23 @@ sub spending_type_list {
   return $list;
 }
 
+#**********************************************************
+=head2 payments_add($attr)
+
+=cut
+#**********************************************************
+sub payments_add {
+  my $self = shift;
+  my ($attr) = @_;
+  
+  $self->query_add('payments', $attr);
+  return [ ] if ($self->{errno});
+  
+  $admin->system_action_add("OSBB PAYMENTS: $self->{INSERT_ID}", { TYPE => 1 });
+  return $self;
+}
+
+
 
 DESTROY {}
 

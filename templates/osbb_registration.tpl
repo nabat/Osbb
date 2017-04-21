@@ -9,6 +9,7 @@
         document.getElementById('REFERER').value = location.href;
     }
 </script>
+<script src='https://www.google.com/recaptcha/api.js'></script>
 
 <link href='/styles/default_adm/css/client.css' rel='stylesheet'>
 
@@ -96,14 +97,15 @@ And the mome raths outgrabe.
         </textarea>
       </div>
     </div>
-      <div class='checkbox pull-right'>
-        <label>
-          <input type='checkbox' name='ACCEPT_RULES'>
-          <strong>_{ACCEPT}_</strong>
-        </label>
-      </div>
-
-%CAPTCHA%
+    <div class='checkbox pull-right'>
+      <label>
+        <input type='checkbox' name='ACCEPT_RULES'>
+        <strong>_{ACCEPT}_</strong>
+      </label>
+    </div>
+    <div class='col-md-6'>
+      %CAPTCHA%
+    </div>
   </div>
 
 <div class='box-footer'>

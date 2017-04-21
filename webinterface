@@ -22,6 +22,7 @@ our(
   $admin,
   $users,
   $db,
+  %conf,
   %permissions,
   %ADMIN_REPORT,
   %err_strs
@@ -181,10 +182,7 @@ sub osbb_registration {
   my ($attr) = @_;
 
   if ($FORM{reg}) {
-    if ($attr->{CAPTCHA} && $attr->{CAPTCHA_OBJ}->check_code("$FORM{CCODE}", "$FORM{C}") != 1) {
-      $Osbb->{MESSAGE} = $html->message('err', $lang{ERROR}, "$lang{ERR_WRONG_CAPTCHA}", { ID => 991 });
-    }
-    elsif ($FORM{EMAIL} !~ /^(([^<>()[\]\\.,;:\s\@\"]+(\.[^<>()[\]\\.,;:\s\@\"]+)*)|(\".+\"))\@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/) {
+    if($FORM{EMAIL} !~ /^(([^<>()[\]\\.,;:\s\@\"]+(\.[^<>()[\]\\.,;:\s\@\"]+)*)|(\".+\"))\@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/) {
       $Osbb->{MESSAGE} = $html->message('err', $lang{ERROR}, "$lang{ERR_WRONG_EMAIL}");
     }
     elsif ($conf{REGISTRATION_CHECK_PHONE}
@@ -195,7 +193,6 @@ sub osbb_registration {
       $html->message('err', $lang{ERROR}, "$lang{ERR_ACCEPT_RULES} -");
     }
     else {
-      
       if (form_purchase_module({
         HEADER          => $user->{UID} || $html->{show_header},
         MODULE          => 'Multidoms',
@@ -312,15 +309,17 @@ sub osbb_simple_build_select {
       name =>  join (', ', $_->{street_name}, $_->{number})
     }
   } @$builds_list;
-  
   return $html->form_select('LOCATION_ID', {
-      SELECTED    => $FORM{LOCATION_ID} || '',
+      SELECTED    => $attr->{LOCATION_ID} || $FORM{LOCATION_ID} || '',
       SEL_LIST    => \@full_name_builds_list,
     
       NO_ID       => 1,
-      SEL_OPTIONS => { '' => '' },
+      %{
+      $attr->{AUTO_SUBMIT} ? {EX_PARAMS => "data-auto-submit='form'"} : {'' => ''}
+      },
     });
 }
+
 
 #**********************************************************
 =head2 osbb_add_user()
@@ -363,12 +362,15 @@ sub osbb_user_add{
   else {
     if ($FORM{add}){
       $User->add({ %FORM,  CREATE_BILL => 1, LOGIN => "$FORM{LOCATION_ID}_$FORM{ADDRESS_FLAT}" });
+      _error_show($User);
       if ($User->{errno}){
         $html->message('err', "$lang{ERROR}");
       }
       else {
         $User->pi_add({ %FORM, UID => $User->{INSERT_ID} });
+        _error_show($User);
         $Osbb->user_add({ %FORM, UID => $User->{INSERT_ID}});
+        _error_show($Osbb);
         if($Osbb->{errno} && $User->{errno}) {
           $html->message('err', "$lang{ERROR}");
         }
@@ -389,7 +391,136 @@ sub osbb_user_add{
 
 =cut
 #**********************************************************
-sub osbb_add_payments{
+sub osbb_payments_add{
+  if (!defined($FORM{sub}) || $FORM{sub} eq '' ) {
+    $FORM{sub} = 1;
+  }
+  
+  my $active_button->{$FORM{sub}} = { class => 'active' };
+  my %nav_tabs = (
+    1 => "Pay",
+    2 => "Payments",
+    3 => "Import",
+  );
+    
+  my $buttons = '';
+  foreach( sort { $a <=> $b } keys(%nav_tabs) ){
+    $buttons .= $html->li( $html->button( $nav_tabs{$_}, "index=$index&sub=$_" ), $active_button->{$_} )
+  }
+  
+  print $html->element( 'div',
+    $html->element( 'ul', $buttons, { class => 'nav navbar-nav' }) ,
+    { class => 'navbar navbar-default' } );
+  
+  if($FORM{sub} == 3) {
+    #TODO
+    $html->message('info', "Under construction");
+    return 1;
+  }
+  elsif($FORM{sub} == 2) {
+    #TODO
+    $html->message('info', "Under construction");
+    return 1;
+  }
+  else {
+    if ($FORM{add} && $FORM{SUM}){
+      $FORM{SUM} =~ s/,/\./g;
+      if ($FORM{SUM} !~ /[0-9\.]+/) {
+        $html->message( 'err', $lang{ERROR}, "$lang{ERR_WRONG_SUM} SUM: $FORM{SUM}");
+        return 0;
+      }
+      
+      my $user_info = $User->info($FORM{UID});
 
+      $Osbb->payments_add({ %FORM, BILL_ID => $user_info->{BILL_ID} });
+      $Osbb->{debug} = 1;
+      _error_show($Osbb);
+      if (!$Osbb->{errno}) {
+        $html->message('info', "$lang{ADDED}");
+        delete $FORM{SUM};
+      }
+    }
+    my $Address = Address->new($db, $admin, \%conf);
+    my $builds_list = $Address->build_list({ COLS_NAME => 1, PAGE_ROWS => 1 });
+    _error_show($Address);
+    
+    $FORM{LOCATION_ID} = $FORM{LOCATION_ID} || $builds_list->[0]->{id};
+    my $build_sel = osbb_simple_build_select({ AUTO_SUBMIT => 1 , %FORM});
+    my $users_sel = _osbb_user_select();
+    my $ptype_sel = _osbb_payments_type_select();
+      
+    if (!$FORM{DATE}) {
+      $FORM{DATE} = $DATE;
+    }
+      
+    $html->tpl_show(_include('osbb_form_payments_add', 'Osbb'), {
+            PTYPE_SEL => $ptype_sel,
+            BUILD_SEL => $build_sel,
+            USERS_SEL => $users_sel,
+            %FORM
+            });
+  }
+  return 1;
 }
+
+#**********************************************************
+=head2 _osbb_payments_type_select()
+
+=cut
+#**********************************************************
+sub _osbb_payments_type_select {
+  my ($attr) = @_;
+  
+  use Payments;
+  my $Payments = Payments->new($db, $admin, \%conf);
+  my $ptype_list = $Payments->payment_type_list({
+    COLS_NAME => 1,
+    SORT      => 'id',
+  });
+  _error_show($Payments);
+  
+  return $html->form_select('METHOD', {
+      SELECTED    => $FORM{METHOD} || '',
+      SEL_LIST    => $ptype_list,
+    
+      NO_ID       => 1,
+  });
+}
+
+#**********************************************************
+=head2 _osbb_user_select()
+
+=cut
+#**********************************************************
+sub _osbb_user_select {
+  my ($attr) = @_;
+  
+  my $users_list = $User->list({
+    LOCATION_ID   => $FORM{LOCATION_ID},
+    FIO           => '_SHOW',
+    ADDRESS_FLAT  => '_SHOW',
+    UID       => '_SHOW',
+    COLS_NAME     => 1,
+    PAGE_ROWS     => 10000
+  });
+  _error_show($User);
+  my @full_name_users_list = map {
+    {
+      id        => $_->{uid},
+      name      =>  join (', ', $_->{address_flat}, $_->{fio})
+    }
+  } @$users_list;
+  
+  return $html->form_select('UID', {
+      SELECTED    => $FORM{UID} || '',
+      SEL_LIST    => \@full_name_users_list,
+    
+      NO_ID       => 1,
+      SEL_OPTIONS => { '' => '' },
+  });
+}
+
+
+
+
 1;
