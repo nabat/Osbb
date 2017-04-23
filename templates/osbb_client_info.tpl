@@ -1,5 +1,5 @@
 <div class='box box-theme box-form'>
-  <div class='box-header with-border'><h4 class='box-title'>%PANEL_HEADING%</h4></div>
+  <div class='box-header with-border box-big-form'><h4 class='box-title'>%PANEL_HEADING%</h4></div>
   <div class='box-body'>
     <form name='OSBB_SINGLE_USER_ADD' id='form_OSBB_SINGLE_USER_ADD' method='post' class='form form-horizontal'>
       <input type='hidden' name='index' value='$index' />
