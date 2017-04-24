@@ -515,10 +515,10 @@ sub spending_type_list {
 sub payments_add {
   my $self = shift;
   my ($attr) = @_;
-  
+
   $self->query_add('payments', $attr);
   return [ ] if ($self->{errno});
-  
+
   $admin->system_action_add("OSBB PAYMENTS: $self->{INSERT_ID}", { TYPE => 1 });
   return $self;
 }
@@ -612,11 +612,13 @@ sub osbb_tarifs_list {
   my @WHERE_RULES = ();
 
   my $WHERE = $self->search_former($attr, [
-      ['ID',           'INT',  'ot.id',            1],
-      ['NAME',         'STR',  'ot.name',          1],
-      ['PAYMENT_TYPE', 'INT',  'ot.payment_type',  1],
-      ['PRICE',        'INT',  'ot.price',         1],
-      ['DOCUMENT_BASE', 'INT', 'ot.document_base', 1],
+      ['ID',            'INT',  'ot.id',            1],
+      ['NAME',          'STR',  'ot.name',          1],
+      ['UNIT',          'INT',  'ot.unit',          1],
+      ['PRICE',         'INT',  'ot.price',         1],
+      ['DOCUMENT_BASE', 'INT',  'ot.document_base', 1],
+      ['START_DATE',    'DATE', 'ot.start_date',    1],
+      ['SET_ALL',       'INT',  'ot.set_all',       1],
     ],
     { WHERE => 1,
       WHERE_RULES => \@WHERE_RULES
