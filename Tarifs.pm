@@ -17,7 +17,7 @@ our (
 
 my $Osbb = Osbb->new($db, $admin, \%conf);
 
-my @payment_type = ('', 'По площади', 'По количетву физ. лиц');
+my @unit_type = ('', 'По площади', 'По количетву физ. лиц');
 
 #**********************************************************
 =head2 osbb_tarifs()
@@ -30,9 +30,9 @@ sub osbb_tarifs {
 
   if($FORM{add_form} || $FORM{chg}){
 
-    $Osbb->{PAYMENT_TYPE_SEL} = $html->form_select('PAYMENT_TYPE', {
-      SELECTED    =>  $FORM{PAYMENT_TYPE} || '',
-      SEL_ARRAY    => \@payment_type,
+    $Osbb->{UNIT_SEL} = $html->form_select('UNIT', {
+      SELECTED    =>  $FORM{UNIT} || '',
+      SEL_ARRAY    => \@unit_type,
       ARRAY_NUM_ID => 1
     });
   }
@@ -94,18 +94,18 @@ sub osbb_tarifs {
   result_former({
     INPUT_DATA      => $Osbb,
     FUNCTION        => 'osbb_tarifs_list',
-    DEFAULT_FIELDS  => 'ID, NAME, PAYMENT_TYPE, PRICE, DOCUMENT_BASE',
+    DEFAULT_FIELDS  => 'ID, NAME, UNIT, PRICE, DOCUMENT_BASE',
     FUNCTION_FIELDS => 'change,del',
     EXT_TITLES      => {
       id            => '#',
       name          => $lang{NAME},
-      payment_type  => $lang{PAYMENT_TYPE},
+      unit          => $lang{PAYMENT_TYPE},
       price         => $lang{PRICE},
       document_base => $lang{DOCUMENT_BASE},
     },
     SKIP_USER_TITLE => 1,
     FILTER_COLS  => {
-      payment_type => '_get_payment_type',
+      unit => '_get_unit_type',
     },
     TABLE           => {
       width   => '100%',
@@ -121,10 +121,10 @@ sub osbb_tarifs {
  return 1;
 }
 
-sub _get_payment_type {
-  my ($payment_type_id) = @_;
+sub _get_unit_type {
+  my ($unit_type_id) = @_;
 
-  return $payment_type[$payment_type_id];
+  return $unit_type[$unit_type_id];
 }
 
 1
