@@ -65,7 +65,7 @@
 
     // Set table inputs update value when template values has been changed
     //  Exceptions are
-    //  1. Already have value
+    //  1. Already have value and it was not assigned from template
     //  2. Has flag indicating it was changed by hands
 
     jQuery('#import-form-body-wrapper').find('input').on('input', function () {
