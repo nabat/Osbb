@@ -71,18 +71,20 @@ sub _osbb_users_import {
     } );
     
     my @table_rows = ();
-    for ( my $i = 0, my $len = scalar @$rows; $i < $len; $i++ ) {
+    for ( my $row_num = 0, my $len = scalar @$rows; $row_num < $len; $row_num++ ) {
       my @new_row = ();
       
-      my $current_file_row = $rows->[$i];
+      my $current_file_row = $rows->[$row_num];
       for ( my $j = 0, my $columns_number = scalar @$file_columns; $j < $columns_number; $j++ ) {
         
         push (@new_row,
           $html->form_input(
-            $i . '_' . $file_columns->[$j],
+            $row_num . '_' . $file_columns->[$j],
             $current_file_row->[$j],
             {
               EX_PARAMS => ' data-original-column-name="' . $file_columns->[$j] . '"'
+                . ' data-original-column-row="' . $row_num . '"'
+                
             }
           )
         );

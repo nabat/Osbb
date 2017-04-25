@@ -46,7 +46,7 @@
    * @constructor
    */
   var DynamicTable = function (id, options) {
-    var self = this;
+    var self   = this;
     this.table = jQuery('#' + id);
 
     if (!this.table.length) {
@@ -63,23 +63,17 @@
 
     this.renewDOM();
 
-    this.headings_selectable = options.headings;
-    if (this.headings_selectable){
+    if (options.headings) {
+      this.headings_selectable = options.headings;
       this.setSelectableHeadings(this.headings_selectable);
     }
+    this.headings.last().after(this.getAddColumnButton());
 
-    var add_new_column_button = jQuery('<button></button>')
-        .text('+')
-        .addClass('form-control btn-success')
-        .on('click', function(e){
-          cancelEvent(e);
-          self.appendColumn();
-        });
-
-    this.headings.last().after(add_new_column_button);
+    this.add_row_btn = this.getAddRowButton();
+    this.table.after(this.add_row_btn);
   };
 
-  DynamicTable.prototype.renewDOM        = function () {
+  DynamicTable.prototype.renewDOM = function () {
     var self = this;
 
     // Collect headings
@@ -93,34 +87,68 @@
       self.tds_for_row[row_num] = jQuery(row).find('td');
     })
   };
-  DynamicTable.prototype.getRow          = function (row_num) {
+
+  DynamicTable.prototype.getRow = function (row_num) {
     return this.rows[row_num];
   };
-  DynamicTable.prototype.getRows         = function () {
+
+  DynamicTable.prototype.getRows = function () {
     return this.rows;
   };
-  DynamicTable.prototype.getTd           = function (row_num, col_num) {
+
+  DynamicTable.prototype.getTd = function (row_num, col_num) {
     return this.tds_for_row[row_num].get(col_num);
   };
+
   DynamicTable.prototype.getTdsForColumn = function (col_num) {
     // For each table row, retrieve it's *num* td
     return this.rows.map(function () {
       return jQuery(this).find('td').get(col_num);
     });
   };
-  DynamicTable.prototype.getHeading      = function (head_num) {
+
+  DynamicTable.prototype.getHeading = function (head_num) {
     return this.headings.get(head_num);
   };
-  DynamicTable.prototype.getHeadings     = function () {
+
+  DynamicTable.prototype.getHeadings = function () {
     return this.headings;
   };
-  DynamicTable.prototype.appendRow       = function () {
+
+  DynamicTable.prototype.appendRow = function (e) {
+    cancelEvent(e);
+    var row_num = this.rows.length;
+
+    var new_row = jQuery('<tr></tr>');
+    for (var i = 0; i < this.headings.length; i++) {
+      var dropdown = jQuery(this.headings[i]).find('div.dropdown').data('dropdown_selectable');
+      var name     = dropdown.value;
+
+      var new_input = jQuery('<input/>', {
+        'class'                    : 'form-control',
+        'type'                     : 'text',
+        name                       : row_num + '_' + name,
+        id                         : row_num + '_' + name,
+        'data-original-column-name': name,
+        'data-original-column-row' : row_num
+      });
+
+      new_row.append(jQuery('<td></td>').html(new_input));
+
+      setTableInputListenToFormInput(new_input, name);
+    }
+
+    this.tbody.append(new_row);
+
+    this.renewDOM();
 
   };
-  DynamicTable.prototype.deleteRow       = function (row_num) {
+
+  DynamicTable.prototype.deleteRow = function (row_num) {
 
   };
-  DynamicTable.prototype.appendColumn    = function (after_col_) {
+
+  DynamicTable.prototype.appendColumn = function (after_col_) {
 
     var after_col = isDefined(after_col_) ? after_col_ : (this.headings.length - 1);
 
@@ -133,15 +161,16 @@
 
     // Append new DropdownSelectable
     var selectableHeading = new DropdownSelectable(after_col + 1, {
-      options : this.headings_selectable,
-      table   : this
+      options: this.headings_selectable,
+      table  : this
     });
 
     jQuery('<th/>').html(selectableHeading).insertAfter(this.getHeading(after_col));
 
     this.renewDOM();
   };
-  DynamicTable.prototype.deleteColumn    = function (col_num) {
+
+  DynamicTable.prototype.deleteColumn = function (col_num) {
     this.getTdsForColumn(col_num).remove();
     this.getHeading(col_num).remove();
     this.renewDOM();
@@ -172,6 +201,27 @@
     jQuery('input[data-event-onchange=1]').on('input', function () {
       Events.emit('input_change.' + this.id, this.value);
     });
+  };
+
+  DynamicTable.prototype.getAddColumnButton = function () {
+    var self = this;
+
+    return jQuery('<button></button>')
+        .text('+')
+        .addClass('form-control btn-success')
+        .on('click', function (e) {
+          cancelEvent(e);
+          self.appendColumn();
+        });
+  };
+
+  DynamicTable.prototype.getAddRowButton = function () {
+    var self = this;
+
+    return jQuery('<button></button>')
+        .text('+')
+        .addClass('form-control btn-success')
+        .on('click', self.appendRow.bind(self));
   };
 
   var PossibleColumns = function (columns) {
@@ -218,9 +268,8 @@
         new_a.on('click', onclick);
 
         menu.append(
-            new_li.html(
-                new_a.text(self.getColumnName(col_name))
-            )
+            new_li
+                .html(new_a.text(self.getColumnName(col_name)))
         )
 
       });
@@ -266,7 +315,7 @@
 
     this.table    = attr.table;
     this.tds      = attr.table.getTdsForColumn(num);
-    this.dropdown = jQuery('<div/>', {'class': 'dropdown'});
+    this.dropdown = jQuery('<div/>', {'class': 'dropdown'}).data('dropdown_selectable', self);
 
     var hasValue = this.all_options.hasColumn(this.value);
     this.button  = this.createButtonHTML(hasValue);
@@ -315,16 +364,12 @@
     this.tds.each(function (i, e) {
       var input = jQuery(e).find('input');
 
-      // Clear previous listener if present
-      if (input.data('listens_for')) {
-        Events.off('input_change.' + input.data('listens_for'))
-      }
+      input.data('original-column-name', value);
+      var row_num = input.data('original-column-row');
 
-      if (value && !input.val()) {
-        Events.on('input_change.' + value, input.val.bind(input));
-        input.data('listens_for', value)
-      }
+      input.attr('name', row_num + '_' + value);
 
+      setTableInputListenToFormInput(input, value);
     });
   };
 
@@ -365,7 +410,20 @@
 
       self.optionClicked(clicked);
     });
+    this.menu.data('dropdown_selectable', self);
   };
+
+  function setTableInputListenToFormInput(input, name) {
+    // Clear previous listener if present
+    if (input.data('listens_for')) {
+      Events.off('input_change.' + input.data('listens_for'))
+    }
+
+    if (name && !input.val()) {
+      Events.on('input_change.' + name, input.val.bind(input));
+      input.data('listens_for', name)
+    }
+  }
 
   jQuery(function () {
     // All existing columns
@@ -374,7 +432,7 @@
     var table_id = '%TABLE_ID%';
 
     var dynamic_table = new DynamicTable(table_id, {
-      headings : new PossibleColumns(columns_for_import)
+      headings: new PossibleColumns(columns_for_import)
     });
 
     if (!table_id || !dynamic_table) {
