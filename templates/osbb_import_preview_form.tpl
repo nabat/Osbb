@@ -38,6 +38,14 @@
   </div>
 </form>
 
+<script>
+  var IMPORT_LANG = {
+    'REMOVE' : '_{REMOVE}_',
+    'CHOOSE' : '_{CHOOSE}_'
+
+  };
+</script>
+
 
 <script>
 
@@ -78,6 +86,12 @@
 
     // Collect headings
     this.headings = this.thead.find('tr').first().find('th');
+
+    if (this.headings_selectable) {
+      this.headings.each(function (number, heading) {
+        jQuery(heading).find('div.dropdown').data('dropdown_selectable').num = number;
+      });
+    }
 
     // Collect rows
     this.rows = this.tbody.find('tr');
@@ -150,7 +164,9 @@
 
   DynamicTable.prototype.appendColumn = function (after_col_) {
 
-    var after_col = isDefined(after_col_) ? after_col_ : (this.headings.length - 1);
+    var after_col = isDefined(after_col_)
+        ? after_col_
+        : (this.headings.length - 1);
 
     // Append td forEachRow
     // This should go first, because DropdownSelectable will look for this tds when created
@@ -276,7 +292,7 @@
 
       var delete_a  = jQuery('<a/>', {'data-target': '#', 'data-value': 'delete'})
           .css("color", "#fff")
-          .text('_{REMOVE}_');
+          .text(import_translate('REMOVE'));
       var delete_li = jQuery('<li>').addClass('bg-red');
 
       delete_a.on('click', onclick);
@@ -350,7 +366,7 @@
 
   DropdownSelectable.prototype.renewButtonHTML = function (html) {
     if (!html) {
-      html = '_{CHOOSE}_';
+      html = import_translate('CHOOSE');
     }
 
     this.button.html(html + '<span class="caret"></span>');
@@ -381,9 +397,6 @@
     if (typeof (this.value) !== 'undefined') {
       this.all_options.setState(this.value, false);
     }
-    else {
-      // Should update input names
-    }
 
     if (new_value === 'delete') {
       this.table.deleteColumn(this.num);
@@ -394,7 +407,6 @@
     this.all_options.setState(new_value, true);
 
     // Change active
-
     this.setValue(new_value);
 
   };
@@ -423,6 +435,10 @@
       Events.on('input_change.' + name, input.val.bind(input));
       input.data('listens_for', name)
     }
+  }
+  
+  function import_translate(lang_var){
+    return IMPORT_LANG[lang_var] || lang_var.capitalizeFirst();
   }
 
   jQuery(function () {
