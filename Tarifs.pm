@@ -13,7 +13,6 @@ our ($db, $admin, %lang, $html, %ADMIN_REPORT);
 my $Osbb = Osbb->new($db, $admin, \%conf);
 
 my @units = ('', 'По площади', 'По количетву физ. лиц', 'Фиксированная сумма');
-
 #**********************************************************
 
 =head2 osbb_tarifs()

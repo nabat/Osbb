@@ -130,7 +130,6 @@ sub AUTOLOAD {
 #**********************************************************
 sub user_info() {
   my ($self, $uid ) = @_;
-
   my $list = $self->user_list({
     UID              => $uid,
     SHOW_ALL_COLUMNS => 1,
@@ -387,9 +386,6 @@ sub area_type_list {
   return $list;
 }
 
-
-
-
 #**********************************************************
 =head2 area_type_add($attr)
 
@@ -524,6 +520,22 @@ sub payments_add {
 }
 
 #**********************************************************
+=head2 fees_add($attr)
+
+=cut
+#**********************************************************
+sub fees_add {
+  my $self = shift;
+  my ($attr) = @_;
+
+  $self->query_add('fees', $attr);
+  return [ ] if ($self->{errno});
+
+  $admin->system_action_add("OSBB FEES: $self->{INSERT_ID}", { TYPE => 1 });
+  return $self;
+}
+
+#**********************************************************
 =head2 osbb_tarifs_info($id, $attr)
 
 =cut
@@ -541,6 +553,51 @@ sub osbb_tarifs_info {
   );
 
   return $self;
+}
+
+#**********************************************************
+=head2 users_services_list($attr)
+
+=cut
+#**********************************************************
+sub users_services_list {
+  my $self   = shift;
+  my ($attr) = @_;
+
+  my $SORT = $attr->{SORT} || 'id';
+  my $DESC = ($attr->{DESC}) ? '' : 'DESC';
+  my $PG = $attr->{PG} || '0';
+  my $PAGE_ROWS = $attr->{PAGE_ROWS} || 25;
+
+  my $WHERE =  $self->search_former($attr, [
+      ['UID',         'INT', 'uid',    ],
+      ['TP_ID',       'INT', 'tp_id',  ]
+    ],
+    { WHERE => 1,
+    }
+  );
+
+  $self->query2("SELECT
+     uid,
+     tp_id,
+     id
+     FROM osbb_users_services
+     $WHERE
+     ORDER BY $SORT $DESC LIMIT $PG, $PAGE_ROWS;",
+    undef,
+    $attr
+  );
+
+  return [ ] if ($self->{errno});
+
+  my $list = $self->{list};
+
+  if ($self->{TOTAL} >= 0) {
+    $self->query2("SELECT COUNT(id) AS total FROM osbb_user_services $WHERE",
+      undef, { INFO => 1 });
+  }
+
+  return $list;
 }
 
 #**********************************************************

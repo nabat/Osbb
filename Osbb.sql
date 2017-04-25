@@ -59,3 +59,12 @@ CREATE TABLE IF NOT EXISTS `osbb_tarifs` (
   UNIQUE KEY `id` (`id`),
   UNIQUE KEY `name` (`name`)
   ) COMMENT = 'Osbb Tarifs';
+  
+  CREATE TABLE IF NOT EXISTS `osbb_users_services` (
+  `id`            SMALLINT(5)  UNSIGNED NOT NULL AUTO_INCREMENT,
+  `uid`           INT(10)      UNSIGNED NOT NULL,
+  `tp_id`         SMALLINT(5)  UNSIGNED NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id` (`id`),
+  UNIQUE KEY `uid_tp` (`uid`,`tp_id`)
+  ) COMMENT = 'Osbb Users Services';
