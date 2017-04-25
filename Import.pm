@@ -97,13 +97,18 @@ sub _osbb_users_import {
     $table->addrow(@$_) for @table_rows;
     
     delete $FORM{__BUFFER};
-    $html->tpl_show(_include('osbb_import_preview_form', 'Osbb'), {
-        %FORM,
+    $html->tpl_show(templates('form_import_preview'), {
+        FORM_GROUPS        => $html->tpl_show(
+          _include('osbb_import_preview_form', 'Osbb'),
+          {
+            LOCATION_ID_SELECT => osbb_simple_build_select({REQUIRED => 1}),
+            %FORM,
+          },
+          {OUTPUT2RETURN => 1}),
         TABLE              => $table->show(),
         COLUMNS            => JSON::to_json(\%columns),
         TABLE_ID           => $table->{ID} . '_',
         FILE_COLUMNS       => join(',', @$file_columns),
-        LOCATION_ID_SELECT => osbb_simple_build_select({REQUIRED => 1})
       });
     
     return 1;
