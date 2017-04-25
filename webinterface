@@ -25,7 +25,8 @@ our(
   %conf,
   %permissions,
   %ADMIN_REPORT,
-  %err_strs
+  %err_strs,
+  @MONTHES,
 );
 
 my $Osbb = Osbb->new($db, $admin, \%conf);
@@ -122,7 +123,7 @@ sub osbb_users_list {
     INPUT_DATA      => $Osbb,
     FUNCTION        => 'user_list',
     BASE_FIELDS     => 0,
-    DEFAULT_FIELDS  => 'FIO,DEPOSIT,ADDRESS_FLAT',
+    DEFAULT_FIELDS  => 'ADDRESS_FLAT,FIO,LIVING_SPACE, PEOPLE_COUNT',
     FUNCTION_FIELDS => 'change,form_payments',
     MULTISELECT     => ($permissions{0}{7}) ? 'IDS:uid:internet_users_list' : '',
     EXT_TITLES      => {
@@ -150,7 +151,7 @@ sub osbb_users_list {
       EXPORT     => 1,
       IMPORT     => "$SELF_URL?qindex=$index&import=1&header=2",
       MENU       =>
-      "$lang{ADD}:index=" . get_function_index('dv_wizard_user') . ':add'
+      "$lang{ADD}:index=" . get_function_index('osbb_user_add') . ':add'
         . ";$lang{SEARCH}:index=$index&search_form=1:search"
     },
     MAKE_ROWS    => 1,
@@ -424,7 +425,6 @@ sub osbb_payments_add{
       my $user_info = $User->info($FORM{UID});
 
       $Osbb->payments_add({ %FORM, BILL_ID => $user_info->{BILL_ID} });
-      $Osbb->{debug} = 1;
       _error_show($Osbb);
       if (!$Osbb->{errno}) {
         $html->message('info', "$lang{ADDED}");
@@ -453,6 +453,142 @@ sub osbb_payments_add{
   }
   return 1;
 }
+
+#**********************************************************
+=head2 osbb_month_fees () -
+
+  Arguments:
+    ATTRIBUTES -
+  Returns:
+
+  Examples:
+
+=cut
+#**********************************************************
+sub osbb_month_fees {
+  my ($attr) = @_;
+  my $Payments = Finance->payments($db, $admin, \%conf);
+  my $Fees = Finance->fees($db, $admin, \%conf);
+  
+  my $params = ();
+  my $fees_hash = ();
+
+  my @YEARS = ('2017', '2018', '2019', '2020', '2021', '2022', '2023');
+
+  my ($year, $month, undef) = split('-', $DATE);
+
+  $month = $FORM{MONTH} if $FORM{MONTH};
+  $year  = $FORM{YEAR}  if $FORM{YEAR};
+
+  $params->{MONTH_SELECT} = $html->form_select(
+    'MONTH',
+    {
+      SELECTED => $FORM{MONTH} || int($month),
+      SEL_ARRAY    => [ '', @MONTHES ],
+      ARRAY_NUM_ID => 1,
+    }
+  );
+
+  $params->{YEAR_SELECT} = $html->form_select(
+    'YEAR',
+    {
+      SELECTED => $FORM{YEAR} || $year,
+      SEL_ARRAY => [ '', @YEARS ],
+
+      # ARRAY_NUM_ID=>1,
+    }
+  );
+
+  my $table = $html->table(
+    {
+      width      => '100%',
+      caption    => "$lang{FEES} : " . ($MONTHES[ int($month - 1) ] . " $year"),
+      border     => 1,
+      title      => [ "$lang{ADDRESS_FLAT}", "$lang{FIO}", "Нарахування", "Пільга"],
+      cols_align => [ 'right', 'right', 'right', 'left'],
+      ID         => 'MONTHLY_FEES',
+    }
+  );
+
+  my $period = sprintf("%s-%#.2d", $year, $month);
+  my $users_list = $Osbb->user_list({
+    LOCATION_ID   => $FORM{LOCATION_ID},
+    FIO           => '_SHOW',
+    ADDRESS_FLAT  => '_SHOW',
+    UID           => '_SHOW',
+    PEOPLE_COUNT  => '_SHOW',
+    LIVING_AREA   => '_SHOW',
+    
+    COLS_NAME     => 1,
+    PAGE_ROWS     => 10000,
+    SORT          => 'pi.address_flat',
+    DESC          => 1
+  });
+  _error_show($User);
+  my $month_fees = $Fees->list({ 
+    DOMAIN_ID => $admin->{DOMAIN_ID},
+    MONTH     => $period,
+    COLS_NAME => 1,
+  });
+  _error_show($Fees);
+  
+  if ($month_fees && $month_fees > 0) {
+    $html->message('info', "Начисления за этот период уже существуют!");
+    #TODO Начисления за период уже есть, спросить пересчитать или добавить.
+  }
+  my $total_fees = 0;
+  foreach my $user_line (@$users_list) {
+    
+    my $total_fee = 0;
+    my $tooltip = '';
+
+    my $servises_list = $Osbb->users_services_list({
+      UID           => $user_line->{uid},
+      COLS_NAME     => 1,
+      PAGE_ROWS     => 10000,
+      SORT          => 'tp_id',
+    });
+        
+    if (ref $servises_list eq 'ARRAY') {
+      foreach my $service (@$servises_list) {
+        my $fee = 0;
+        my $service_info = $Osbb->osbb_tarifs_info($service->{tp_id});
+
+        if ($service_info->{UNIT}==1) {
+          $fee = $service_info->{PRICE} * $user_line->{living_area};
+          $tooltip .= "$service_info->{NAME} : $user_line->{living_area} * $service_info->{PRICE} = $fee<br>";
+        }
+        if ($service_info->{UNIT}==2) {
+          $fee = $service_info->{PRICE} * $user_line->{people_count};
+          $tooltip .= "$service_info->{NAME} : $user_line->{people_count} * $service_info->{PRICE} = $fee<br>";
+        }
+        $total_fee += $fee;
+      }
+
+      $table->addrow($user_line->{address_flat}, $user_line->{fio}, "<p data-tooltip='$tooltip'>$total_fee</p>" , "");
+      $fees_hash->{$user_line->{uid}} = $total_fee;
+    }
+    $total_fees += $total_fee;
+  }
+
+  $table->addrow('-','-','-','-');
+  $table->addrow("$lang{TOTAL} :", scalar( keys %$fees_hash), $total_fees, "");
+
+  $params->{TABLE} = $table->show();
+  
+  $html->tpl_show(_include('osbb_form_month_fees', 'Osbb'), $params);
+
+  # print $table->show();
+  $Fees->{debug} = 1;
+  if ($FORM{add}) { 
+    while( my( $uid, $sum ) = each %$fees_hash ){
+      $Osbb->fees_add( {UID =>$uid, SUM => $sum, DATE => $period . "-01"} );
+    }
+  }
+
+  return 1;
+}
+
 
 #**********************************************************
 =head2 _osbb_payments_type_select()
@@ -490,7 +626,7 @@ sub _osbb_user_select {
     LOCATION_ID   => $FORM{LOCATION_ID},
     FIO           => '_SHOW',
     ADDRESS_FLAT  => '_SHOW',
-    UID       => '_SHOW',
+    UID           => '_SHOW',
     COLS_NAME     => 1,
     PAGE_ROWS     => 10000
   });

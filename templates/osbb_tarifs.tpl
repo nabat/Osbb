@@ -18,7 +18,7 @@
   <div class='form-group'>
     <label class='col-md-3 control-label'>_{PAYMENT_TYPE}_</label>
     <div class='col-md-9'>
-      %PAYMENT_TYPE_SEL%
+      %UNIT_SEL%
     </div>
   </div>
 
