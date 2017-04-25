@@ -12,7 +12,7 @@
 
 <code>
 
- cd /usr/abills/abills/Abills/modules/
+ cd /usr/abills/Abills/modules/
   
  git clone git@github.com:nabat/Osbb.git
   
