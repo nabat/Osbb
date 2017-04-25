@@ -53,6 +53,8 @@ CREATE TABLE IF NOT EXISTS `osbb_tarifs` (
   `unit`          tinyint(1)            NOT NULL DEFAULT '0',
   `price`         double(10,2) unsigned NOT NULL DEFAULT '0.00',
   `document_base` varchar(120)          NOT NULL DEFAULT '',
+  `start_date`    DATE                  NOT NULL,
+  `set_all`       tinyint(1)   UNSIGNED NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id` (`id`),
   UNIQUE KEY `name` (`name`)
