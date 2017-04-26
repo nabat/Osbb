@@ -352,23 +352,7 @@ sub osbb_user_add{
   }
   else {
     if ($FORM{add}){
-      $User->add({ %FORM,  CREATE_BILL => 1, LOGIN => "$FORM{LOCATION_ID}_$FORM{ADDRESS_FLAT}" });
-      _error_show($User);
-      if ($User->{errno}){
-        $html->message('err', "$lang{ERROR}");
-      }
-      else {
-        $User->pi_add({ %FORM, UID => $User->{INSERT_ID} });
-        _error_show($User);
-        $Osbb->user_add({ %FORM, UID => $User->{INSERT_ID}});
-        _error_show($Osbb);
-        if($Osbb->{errno} && $User->{errno}) {
-          $html->message('err', "$lang{ERROR}");
-        }
-        else {
-          $html->message('info', "$lang{SUCCESS}", "$lang{ADDED}");
-        }
-      }
+      _osbb_user_create(\%FORM);
     }
   
     my $build_sel = osbb_simple_build_select();
@@ -512,6 +496,53 @@ sub _osbb_user_select {
 }
 
 
+#**********************************************************
+=head2 _osbb_user_create()
 
+=cut
+#**********************************************************
+sub _osbb_user_create {
+  my $user_hash = shift || \%FORM;
+  
+  my %PARAMS = %{$user_hash};
+  
+  if (! $PARAMS{LOCATION_ID}){
+    $html->message('err', 'No LOCATION_ID');
+    return 0;
+  }
+  if (! $PARAMS{ADDRESS_FLAT}){
+    $html->message('err', 'No ADDRESS_FLAT');
+    return 0;
+  }
+  
+  $User->add({
+    CREATE_BILL => 1,
+    LOGIN => "$PARAMS{LOCATION_ID}_$PARAMS{ADDRESS_FLAT}",
+    %PARAMS,
+  });
+  _error_show($User);
+  
+  my $uid = $User->{INSERT_ID};
+  
+  if ($User->{errno}){
+    $html->message('err', "$lang{ERROR}");
+    return 0;
+  }
+  
+  $User->pi_add({ %PARAMS, UID => $uid });
+  _error_show($User);
+  
+  $Osbb->user_add({ %PARAMS, UID => $uid});
+  _error_show($Osbb);
+  
+  if($Osbb->{errno} && $User->{errno}) {
+    $html->message('err', "$lang{ERROR}");
+  }
+  else {
+    $html->message('info', "$lang{SUCCESS}", "$lang{ADDED}");
+  }
+  
+  return $uid;
+}
 
 1;

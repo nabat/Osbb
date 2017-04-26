@@ -3,6 +3,7 @@ use warnings FATAL => 'all';
 
 use Abills::Base qw/convert _bp/;
 use JSON;
+use Users;
 
 our (
   %lang,
@@ -28,6 +29,7 @@ sub _osbb_users_import {
     password     => $lang{PASSWD},
     fio          => $lang{FIO},
     phone        => $lang{PHONE},
+    email        => $lang{EMAIL},
     address_flat => $lang{FLAT},
     type         => $lang{TYPE},
     total_area   => $lang{TOTAL_AREA},
@@ -39,7 +41,11 @@ sub _osbb_users_import {
     people_count => $lang{PEOPLE_COUNT},
   );
   
-  if ( $FORM{preview} ) {
+  my %template_rows = (
+    location_id => { label => $lang{ADDRESS}, input => osbb_simple_build_select({ REQUIRED => 1 }) },
+  );
+  
+  if ( $FORM{FILE} ) {
     
     $html->message('info alert-sm', $lang{TIP}, $lang{FILL_DEFAULT_VALUES_THAT_WILL_REPLACE_EMPTY_FILE_FIELDS});
     
@@ -91,17 +97,23 @@ sub _osbb_users_import {
           { OUTPUT2RETURN => 1 }),
         TABLE        => $table->show(),
         COLUMNS      => JSON::to_json(\%columns),
-        TABLE_ID     => $table->{ID} . '_',
-        FILE_COLUMNS => join(',', @{$file_columns}),
+        TABLE_ID     => $table->{ID} . '_'
       });
     
     return 1;
   }
-  elsif ( $FORM{import} ) {
+  elsif ( $FORM{FILE_IMPORT} ) {
     # Parse %FORM
-    my @rows = @{ osbb_parse_import_preview_form(keys %columns) };
-    _bp('rows', \@rows);
+    my $rows = osbb_parse_import_preview_form([ keys %template_rows ], [ keys %columns ], $FORM{rows}, {COLS_UPPER => 1});
     
+    if (!$rows){
+      $html->message('err', $lang{ERROR}, "Import error");
+      return 0;
+    }
+    
+    _bp('', $rows);
+    
+    return _osbb_process_imported_rows($rows);
   }
   else {
     
@@ -121,6 +133,26 @@ sub _osbb_users_import {
     
   }
   
+}
+
+#**********************************************************
+=head2 _osbb_process_imported_rows($rows)
+
+=cut
+#**********************************************************
+sub _osbb_process_imported_rows {
+  my ($users) = @_;
+  
+  return 0 unless (ref $users eq 'ARRAY');
+  
+  foreach (@$users) {
+    _osbb_user_create($_);
+  }
+  
+  $html->redirect('?index=' . get_function_index('osbb_users_list'), {
+      MESSAGE => "$lang{IMPORT} : $lang{SUCCESS}",
+    });
+  return 1;
 }
 
 #**********************************************************
@@ -189,26 +221,34 @@ sub osbb_parse_import_file {
 }
 
 #**********************************************************
-=head2 osbb_parse_import_preview_form()
+=head2 osbb_parse_import_preview_form(\@general_col_names, \@table_col_names) - parses preview form
 
 =cut
 #**********************************************************
 sub osbb_parse_import_preview_form {
-  my (@col_names) = @_;
+  my ($general_col_names,  $table_col_names, $rows_count, $attr) = @_;
   my @rows = ();
-  
-  my $rows_count = $FORM{rows};
   
   if ( !$rows_count ) {
     $html->message('err', $lang{ERR_NO_DATA});
     return 0;
   }
+  
+  my $upper_case = $attr->{COLS_UPPER};
+  
   for ( my $row_num = 0; $row_num < $rows_count; $row_num++ ) {
     my %row = ();
     
-    foreach my $col_name ( @col_names ) {
+    foreach my $col_name ( @$table_col_names ) {
       if ( exists $FORM{$row_num . '_' . $col_name} && defined $FORM{$row_num . '_' . $col_name} ) {
-        $row{$col_name} = $FORM{$row_num . '_' . $col_name};
+        $row{$upper_case ? uc $col_name : $col_name} = $FORM{$row_num . '_' . $col_name};
+      }
+    }
+  
+    foreach my $col_name ( @$general_col_names ) {
+      my $template_col_name = uc $col_name;
+      if (exists $FORM{$template_col_name} && defined $FORM{$template_col_name}){
+        $row{$upper_case ? uc $col_name : $col_name} = $FORM{$template_col_name};
       }
     }
     
