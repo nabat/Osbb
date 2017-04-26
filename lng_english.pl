@@ -14,11 +14,14 @@ $lang{FILL_DEFAULT_VALUES_AND_CHOOSE_FILE_FOR_IMPORT} = 'Fill general values and
 $lang{SPACE_TYPES} = 'Space types';
 $lang{SPENDING} = 'Spending';
 
-$lang{TARIFS}        = 'Tarifs';
-$lang{TARIF}         = 'Tarif';
-$lang{PAYMENT_TYPE}  = 'Payment type';
-$lang{PRICE}         = 'Price';
-$lang{DOCUMENT_BASE} = 'Document base';
-$lang{PAYMENT_NAME}  = 'Payment name';
-$lang{ADD_TARIF}     = 'Add tarif';
+$lang{TARIFS}           = 'Tarifs';
+$lang{TARIF}            = 'Tarif';
+$lang{UNIT}             = 'Payment type';
+$lang{PRICE}            = 'Price';
+$lang{DOCUMENT_BASE}    = 'Document base';
+$lang{PAYMENT_NAME}     = 'Payment name';
+$lang{ADD_TARIF}        = 'Add tarif';
+$lang{SET_TARIF_TO_ALL} = 'Set the tariff to everyone';
+$lang{COME_INTO_FORCE}  = 'Comes into force';
+
 1;
