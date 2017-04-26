@@ -111,8 +111,6 @@ sub _osbb_users_import {
       return 0;
     }
     
-    _bp('', $rows);
-    
     return _osbb_process_imported_rows($rows);
   }
   else {
