@@ -9,7 +9,7 @@ use strict;
 use warnings FATAL => 'all';
 
 use Osbb::db::Osbb;
-use Abills::Base qw/convert _bp/;
+use Abills::Base qw/convert _bp mk_unique_value/;
 use JSON;
 use Users;
 use Multidoms;

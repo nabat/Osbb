@@ -102,8 +102,11 @@ sub AUTOLOAD {
     return $self->{errno} ? 0 : $self->{INSERT_ID};
   }
   elsif ( $operation eq 'del' ) {
+    if ( ref $data ne 'HASH'){
+      $data = { ID => $data };
+    }
     $self->query_del($table, $data, $attr);
-    $admin->system_action_add("AREA TYPES: " . ($data || ''), { TYPE => 10 });
+    $admin->system_action_add( uc($entity_name) . ": " . ($data || ''), { TYPE => 10 });
     return $self->{errno} ? 0 : 1;
   }
   elsif ( $operation eq 'change' ) {
@@ -401,7 +404,11 @@ sub users_services_list {
   my $PG = $attr->{PG} || '0';
   my $PAGE_ROWS = $attr->{PAGE_ROWS} || 25;
   
-  my $WHERE = $self->search_former($attr, [ [ 'UID', 'INT', 'uid', ], [ 'TP_ID', 'INT', 'tp_id', ] ], { WHERE => 1, });
+  my $WHERE = $self->search_former($attr, [
+      [ 'UID', 'INT', 'uid', ],
+      [ 'TP_ID', 'INT', 'tp_id', ]
+    ], { WHERE => 1, }
+  );
   
   $self->query2(
     "SELECT
@@ -446,9 +453,14 @@ sub osbb_tarifs_list {
   
   my $WHERE = $self->search_former(
     $attr,
-    [ [ 'ID', 'INT', 'ot.id', 1 ], [ 'NAME', 'STR', 'ot.name', 1 ], [ 'UNIT', 'INT', 'ot.unit', 1 ],
-      [ 'PRICE', 'INT', 'ot.price', 1 ], [ 'DOCUMENT_BASE', 'INT', 'ot.document_base', 1 ],
-      [ 'START_DATE', 'DATE', 'ot.start_date', 1 ], [ 'SET_ALL', 'INT', 'ot.set_all', 1 ], ],
+    [ [ 'ID', 'INT', 'ot.id', 1 ],
+      [ 'NAME', 'STR', 'ot.name', 1 ],
+      [ 'UNIT', 'INT', 'ot.unit', 1 ],
+      [ 'PRICE', 'INT', 'ot.price', 1 ],
+      [ 'DOCUMENT_BASE', 'INT', 'ot.document_base', 1 ],
+      [ 'START_DATE', 'DATE', 'ot.start_date', 1 ],
+      [ 'SET_ALL', 'INT', 'ot.set_all', 1 ],
+    ],
     {
       WHERE       => 1,
       WHERE_RULES => \@WHERE_RULES
