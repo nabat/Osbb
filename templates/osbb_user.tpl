@@ -8,13 +8,6 @@
       <input type=hidden name='step' value='$FORM{step}'>
 
       <div class='form-group'>
-        <label class='control-label col-md-3 required' for='TYPE'>_{TYPE}_</label>
-        <div class='col-md-9'>
-          %TYPE_SELECT%
-        </div>
-      </div>
-
-      <div class='form-group'>
         <label class='control-label col-md-3 required' for='OWNERSHIP_TYPE'>_{OWNERSHIP_TYPE}_</label>
         <div class='col-md-9'>
           %OWNERSHIP_TYPE_SELECT%
