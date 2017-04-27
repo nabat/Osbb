@@ -15,6 +15,7 @@ $lang{FILL_DEFAULT_VALUES_AND_CHOOSE_FILE_FOR_IMPORT} = 'Заповніть зн
 $lang{TOTAL_SPACE}='Загальна площа';
 $lang{SPACE_TYPES}='Види приміщень';
 $lang{SPENDING}='Розхід';
+$lang{SPENDING_TYPES}='Типи розходів';
 
 $lang{TARIFS}           = 'Тарифи';
 $lang{TARIF}            = 'Тариф';

@@ -93,10 +93,6 @@ sub osbb_user {
     show_result($Osbb, $lang{DELETED});
   }
   
-  my $type_select_fn = make_select_from_db_table($Osbb, 'Osbb', 'area_types', 'TYPE', {
-      
-      REQUIRED => 1,
-    });
   my $ownership_type_select_fn = make_select_from_db_table($Osbb, 'Osbb', 'ownership_types', 'OWNERSHIP_TYPE', {
       
       REQUIRED => 1,
@@ -105,9 +101,7 @@ sub osbb_user {
   $html->tpl_show(
     _include('osbb_user', 'Osbb'),
     {
-      TYPE_SELECT => $type_select_fn->(),
       OWNERSHIP_TYPE_SELECT => $ownership_type_select_fn->(),
-      
       %TEMPLATE_ARGS,
       %FORM,
       SUBMIT_BTN_ACTION => ($FORM{chg}) ? 'change' : 'add',

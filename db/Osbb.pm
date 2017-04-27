@@ -302,56 +302,6 @@ sub user_list {
 }
 
 #**********************************************************
-=head2 area_types_list($attr)
-
-=cut
-#**********************************************************
-sub area_types_list {
-  my $self = shift;
-  my ($attr) = @_;
-  
-  my $SORT = $attr->{SORT} || 'id';
-  my $DESC = ($attr->{DESC}) ? '' : 'DESC';
-  my $PG = $attr->{PG} || '0';
-  my $PAGE_ROWS = $attr->{PAGE_ROWS} || 25;
-  
-  my $WHERE = $self->search_former($attr,
-    [
-      [ 'LIVING_SPACE', 'INT', 'living_area AS living_space', ],
-      [ 'UTILITY_ROOM', 'INT', 'utility_area AS utility_room', ],
-      [ 'TOTAL_SPACE', 'INT', 'total_area AS total_space', ],
-      [ 'DOMAIN_ID', 'INT', 'domain_id' ]
-    ],
-      { WHERE => 1 }
-  );
-  
-  $self->query2(
-    "SELECT
-     name,
-     living_area AS living_space,
-     utility_area AS utility_room,
-     total_area AS total_space,
-     $self->{SEARCH_FIELDS}
-     id
-     FROM osbb_area_types
-     $WHERE
-     ORDER BY $SORT $DESC LIMIT $PG, $PAGE_ROWS;",
-    undef,
-    $attr
-  );
-  
-  return [ ] if ($self->{errno});
-  
-  my $list = $self->{list};
-  
-  if ( $self->{TOTAL} >= 0 ) {
-    $self->query2("SELECT COUNT(id) AS total FROM osbb_area_types $WHERE", undef, { INFO => 1 });
-  }
-  
-  return $list;
-}
-
-#**********************************************************
 =head2 spending_types_list($attr)
 
 =cut
