@@ -15,6 +15,11 @@ my $CONF;
 
 use Abills::Base qw/_bp/;
 
+my %UNUSUAL_TABLE_NAMES = (
+  'osbb_payments' => 'payments',
+  'osbb_fees'     => 'fees'
+);
+
 #**********************************************************
 
 =head2 new($db, $admin, \%conf) - constructor for Osbb DB manage module
@@ -24,19 +29,19 @@ use Abills::Base qw/_bp/;
 #**********************************************************
 sub new {
   my $class = shift;
-  my $db    = shift;
+  my $db = shift;
   ($admin, $CONF) = @_;
-
+  
   $admin->{MODULE} = $MODULE;
-
+  
   my $self = {
     db    => $db,
     admin => $admin,
     conf  => $CONF
   };
-
+  
   bless($self, $class);
-
+  
   return $self;
 }
 
@@ -73,27 +78,36 @@ sub new {
 sub AUTOLOAD {
   our $AUTOLOAD;
   my ($entity_name, $operation) = $AUTOLOAD =~ /.*::(.*)_(add|del|change|info)$/;
-
+  
   return if ($AUTOLOAD =~ /::DESTROY$/);
-
+  
   die "Undefined function $AUTOLOAD. ()" unless ($operation && $entity_name);
-
+  
   my ($self, $data, $attr) = @_;
-
+  
   my $table = lc(__PACKAGE__) . '_' . $entity_name;
-
-  if ($self->{debug}) {
+  
+  if ( exists $UNUSUAL_TABLE_NAMES{$table} && $UNUSUAL_TABLE_NAMES{$table} ) {
+    $table = $UNUSUAL_TABLE_NAMES{$table};
+  }
+  
+  if ( $self->{debug} ) {
     _bp($table, { data => $data, attr => $attr });
   }
-
-  if ($operation eq 'add') {
+  
+  if ( $operation eq 'add' ) {
     $self->query_add($table, $data);
+    $admin->system_action_add( uc($entity_name) . ": $self->{INSERT_ID}", { TYPE => 1 });
+    
     return $self->{errno} ? 0 : $self->{INSERT_ID};
   }
-  elsif ($operation eq 'del') {
-    return $self->query_del($table, $data, $attr);
+  elsif ( $operation eq 'del' ) {
+    $self->query_del($table, $data, $attr);
+    $admin->system_action_add("AREA TYPES: " . ($data || ''), { TYPE => 10 });
+    return $self->{errno} ? 0 : 1;
   }
-  elsif ($operation eq 'change') {
+  elsif ( $operation eq 'change' ) {
+    $admin->{MODULE} = $MODULE;
     return $self->changes2(
       {
         CHANGE_PARAM => 'ID',
@@ -102,26 +116,26 @@ sub AUTOLOAD {
       }
     );
   }
-  elsif ($operation eq 'info') {
+  elsif ( $operation eq 'info' ) {
     my $list_func_name = $entity_name . "_list";
-
-    if ($data && ref $data ne 'HASH') {
+    
+    if ( $data && ref $data ne 'HASH' ) {
       $attr->{ID} = $data;
     }
-
+    
     my $list = $self->$list_func_name(
       {
         SHOW_ALL_COLUMNS => 1,
         COLS_UPPER       => 1,
         COLS_NAME        => 1,
         PAGE_ROWS        => 1,
-        %{ $attr ? $attr : {} }
+        %{ $attr ? $attr : { } }
       }
     );
-
-    return $list->[0] || {};
+    
+    return $list->[0] || { };
   }
-
+  
   die "Wrong call $AUTOLOAD";
 }
 
@@ -149,8 +163,8 @@ sub user_info() {
       PAGE_ROWS        => 1
     }
   );
-
-  return $list->[0] || {};
+  
+  return $list->[0] || { };
 }
 
 #**********************************************************
@@ -163,10 +177,10 @@ sub user_info() {
 sub user_add {
   my $self = shift;
   my ($attr) = @_;
-
+  
   $self->query_add('osbb_main', $attr);
-  return [] if ($self->{errno});
-
+  return [ ] if ($self->{errno});
+  
   $admin->system_action_add("OSBB USERS: $self->{INSERT_ID}", { TYPE => 1 });
   return $self;
 }
@@ -181,13 +195,13 @@ sub user_add {
 sub user_del {
   my $self = shift;
   my ($id) = @_;
-
+  
   $self->query_del('osbb_main', { ID => $id });
-
-  return [] if ($self->{errno});
-
+  
+  return [ ] if ($self->{errno});
+  
   $admin->system_action_add("OSBB USERS: $id", { TYPE => 10 });
-
+  
   return $self;
 }
 
@@ -201,9 +215,9 @@ sub user_del {
 sub user_change {
   my $self = shift;
   my ($attr) = @_;
-
+  
   $attr->{DISABLE} = defined($attr->{DISABLE});
-
+  
   $self->changes2(
     {
       CHANGE_PARAM => 'UID',
@@ -211,7 +225,7 @@ sub user_change {
       DATA         => $attr
     }
   );
-
+  
   return $self;
 }
 
@@ -230,28 +244,28 @@ sub user_change {
 #**********************************************************
 sub user_list {
   my ($self, $attr) = @_;
-
+  
   my $SORT = $attr->{SORT} || 'id';
   my $DESC = ($attr->{DESC}) ? '' : 'DESC';
-  my $PG        = $attr->{PG}        || '0';
+  my $PG = $attr->{PG} || '0';
   my $PAGE_ROWS = $attr->{PAGE_ROWS} || 25;
-
+  
   my $search_columns = [
-    [ 'UID',            'INT', 'om.uid',            1 ],
+    [ 'UID', 'INT', 'om.uid', 1 ],
     [ 'OWNERSHIP_TYPE', 'INT', 'om.ownership_type', 1 ],
-    [ 'TOTAL_AREA',     'INT', 'om.total_area',     1 ],
-    [ 'LIVING_AREA',    'INT', 'om.living_area',    1 ],
-    [ 'UTILITY_AREA',   'INT', 'om.utility_area',   1 ],
-    [ 'BALCONY_AREA',   'INT', 'om.balcony_area',   1 ],
-    [ 'USEFUL_AREA',    'INT', 'om.useful_area',    1 ],
-    [ 'ROOMS_COUNT',    'INT', 'om.rooms_count',    1 ],
-    [ 'PEOPLE_COUNT',   'INT', 'om.people_count',   1 ],
+    [ 'TOTAL_AREA', 'INT', 'om.total_area', 1 ],
+    [ 'LIVING_AREA', 'INT', 'om.living_area', 1 ],
+    [ 'UTILITY_AREA', 'INT', 'om.utility_area', 1 ],
+    [ 'BALCONY_AREA', 'INT', 'om.balcony_area', 1 ],
+    [ 'USEFUL_AREA', 'INT', 'om.useful_area', 1 ],
+    [ 'ROOMS_COUNT', 'INT', 'om.rooms_count', 1 ],
+    [ 'PEOPLE_COUNT', 'INT', 'om.people_count', 1 ],
   ];
-
-  if ($attr->{SHOW_ALL_COLUMNS}) {
+  
+  if ( $attr->{SHOW_ALL_COLUMNS} ) {
     map { $attr->{ $_->[0] } = '_SHOW' unless (exists $attr->{ $_->[0] }) } @{$search_columns};
   }
-
+  
   my $WHERE = $self->search_former(
     $attr,
     $search_columns,
@@ -259,12 +273,12 @@ sub user_list {
       WHERE             => 1,
       USERS_FIELDS_PRE  => 1,
       USE_USER_PI       => 1,
-      SKIP_USERS_FIELDS => ['UID']
+      SKIP_USERS_FIELDS => [ 'UID' ]
     }
   );
-
+  
   my $EXT_TABLES = '';
-
+  
   $self->query2(
     "SELECT $self->{SEARCH_FIELDS} om.uid
    FROM osbb_main om
@@ -275,124 +289,45 @@ sub user_list {
     undef,
     {
       COLS_NAME => 1,
-      %{ $attr // {} }
+      %{ $attr // { } }
     }
   );
-
-  return [] if ($self->{errno});
-
+  
+  return [ ] if ($self->{errno});
+  
   return $self->{list};
 }
 
 #**********************************************************
-
-=head2 area_type_add($attr)
+=head2 area_types_list($attr)
 
 =cut
-
 #**********************************************************
-sub area_type_add {
+sub area_types_list {
   my $self = shift;
   my ($attr) = @_;
-
-  $self->query_add('osbb_area_types', $attr);
-  return [] if ($self->{errno});
-
-  $admin->system_action_add("AREA TYPES: $self->{INSERT_ID}", { TYPE => 1 });
-  return $self;
-}
-
-#**********************************************************
-
-=head2 area_type_info($attr)
-
-=cut
-
-#**********************************************************
-sub area_type_info {
-  my $self = shift;
-  my ($id) = @_;
-
-  $self->query2(
-    "SELECT * FROM osbb_area_types WHERE id= ? ;",
-    undef,
-    {
-      INFO => 1,
-      Bind => [$id]
-    }
-  );
-
-  return $self;
-}
-
-#**********************************************************
-
-=head2 area_type_del($id)
-
-=cut
-
-#**********************************************************
-sub area_type_del {
-  my $self = shift;
-  my ($id) = @_;
-
-  $self->query_del('osbb_area_types', { ID => $id });
-
-  return [] if ($self->{errno});
-
-  $admin->system_action_add("AREA TYPES: $id", { TYPE => 10 });
-
-  return $self;
-}
-
-#**********************************************************
-
-=head2 area_type_change($attr)
-
-=cut
-
-#**********************************************************
-sub area_type_change {
-  my $self = shift;
-  my ($attr) = @_;
-
-  $attr->{DISABLE} = (!defined($attr->{DISABLE})) ? 0 : 1;
-
-  $self->changes2(
-    {
-      CHANGE_PARAM => 'ID',
-      TABLE        => 'osbb_area_types',
-      DATA         => $attr
-    }
-  );
-
-  return $self;
-}
-
-#**********************************************************
-
-=head2 area_type_list($attr)
-
-=cut
-
-#**********************************************************
-sub area_type_list {
-  my $self = shift;
-  my ($attr) = @_;
-
+  
   my $SORT = $attr->{SORT} || 'id';
   my $DESC = ($attr->{DESC}) ? '' : 'DESC';
-  my $PG        = $attr->{PG}        || '0';
+  my $PG = $attr->{PG} || '0';
   my $PAGE_ROWS = $attr->{PAGE_ROWS} || 25;
-
-  my $WHERE = $self->search_former($attr, [ [ 'LIVING_SPACE', 'INT', 'living_space', ], [ 'UTILITY_ROOM', 'INT', 'utility_room', ], [ 'TOTAL_SPACE', 'INT', 'total_space', ], [ 'DOMAIN_ID', 'INT', 'domain_id' ] ], { WHERE => 1, });
-
+  
+  my $WHERE = $self->search_former($attr,
+    [
+      [ 'LIVING_SPACE', 'INT', 'living_area AS living_space', ],
+      [ 'UTILITY_ROOM', 'INT', 'utility_area AS utility_room', ],
+      [ 'TOTAL_SPACE', 'INT', 'total_area AS total_space', ],
+      [ 'DOMAIN_ID', 'INT', 'domain_id' ]
+    ],
+      { WHERE => 1 }
+  );
+  
   $self->query2(
     "SELECT
      name,
-     living_space,
-     utility_room,
-     total_space,
+     living_area AS living_space,
+     utility_area AS utility_room,
+     total_area AS total_space,
      $self->{SEARCH_FIELDS}
      id
      FROM osbb_area_types
@@ -401,121 +336,34 @@ sub area_type_list {
     undef,
     $attr
   );
-
-  return [] if ($self->{errno});
-
+  
+  return [ ] if ($self->{errno});
+  
   my $list = $self->{list};
-
-  if ($self->{TOTAL} >= 0) {
+  
+  if ( $self->{TOTAL} >= 0 ) {
     $self->query2("SELECT COUNT(id) AS total FROM osbb_area_types $WHERE", undef, { INFO => 1 });
   }
-
+  
   return $list;
 }
 
 #**********************************************************
-
-=head2 area_type_add($attr)
+=head2 spending_types_list($attr)
 
 =cut
-
 #**********************************************************
-sub spending_type_add {
+sub spending_types_list {
   my $self = shift;
   my ($attr) = @_;
-
-  $self->query_add('osbb_spending_types', $attr);
-  return [] if ($self->{errno});
-
-  $admin->system_action_add("AREA TYPES: $self->{INSERT_ID}", { TYPE => 1 });
-  return $self;
-}
-
-#**********************************************************
-
-=head2 area_type_info($attr)
-
-=cut
-
-#**********************************************************
-sub spending_type_info {
-  my $self = shift;
-  my ($id) = @_;
-
-  $self->query2(
-    "SELECT * FROM osbb_spending_types WHERE id= ? ;",
-    undef,
-    {
-      INFO => 1,
-      Bind => [$id]
-    }
-  );
-
-  return $self;
-}
-
-#**********************************************************
-
-=head2 area_type_del($id)
-
-=cut
-
-#**********************************************************
-sub spending_type_del {
-  my $self = shift;
-  my ($id) = @_;
-
-  $self->query_del('osbb_spending_types', { ID => $id });
-
-  return [] if ($self->{errno});
-
-  $admin->system_action_add("AREA TYPES: $id", { TYPE => 10 });
-
-  return $self;
-}
-
-#**********************************************************
-
-=head2 area_type_change($attr)
-
-=cut
-
-#**********************************************************
-sub spending_type_change {
-  my $self = shift;
-  my ($attr) = @_;
-
-  $attr->{DISABLE} = (!defined($attr->{DISABLE})) ? 0 : 1;
-
-  $self->changes2(
-    {
-      CHANGE_PARAM => 'ID',
-      TABLE        => 'osbb_spending_types',
-      DATA         => $attr
-    }
-  );
-
-  return $self;
-}
-
-#**********************************************************
-
-=head2 spending_type_list($attr)
-
-=cut
-
-#**********************************************************
-sub spending_type_list {
-  my $self = shift;
-  my ($attr) = @_;
-
+  
   my $SORT = $attr->{SORT} || 'id';
   my $DESC = ($attr->{DESC}) ? '' : 'DESC';
-  my $PG        = $attr->{PG}        || '0';
+  my $PG = $attr->{PG} || '0';
   my $PAGE_ROWS = $attr->{PAGE_ROWS} || 25;
-
-  my $WHERE = $self->search_former($attr, [], { WHERE => 1, });
-
+  
+  my $WHERE = $self->search_former($attr, [ ], { WHERE => 1, });
+  
   $self->query2(
     "SELECT
      name,
@@ -527,97 +375,34 @@ sub spending_type_list {
     undef,
     $attr
   );
-
-  return [] if ($self->{errno});
-
+  
+  return [ ] if ($self->{errno});
+  
   my $list = $self->{list};
-
-  if ($self->{TOTAL} >= 0) {
+  
+  if ( $self->{TOTAL} >= 0 ) {
     $self->query2("SELECT COUNT(id) AS total FROM osbb_spending_types $WHERE", undef, { INFO => 1 });
   }
-
+  
   return $list;
 }
 
 #**********************************************************
-
-=head2 payments_add($attr)
-
-=cut
-
-#**********************************************************
-sub payments_add {
-  my $self = shift;
-  my ($attr) = @_;
-
-  $self->query_add('payments', $attr);
-  return [] if ($self->{errno});
-
-  $admin->system_action_add("OSBB PAYMENTS: $self->{INSERT_ID}", { TYPE => 1 });
-  return $self;
-}
-
-#**********************************************************
-
-=head2 fees_add($attr)
-
-=cut
-
-#**********************************************************
-sub fees_add {
-  my $self = shift;
-  my ($attr) = @_;
-
-  $self->query_add('fees', $attr);
-  return [] if ($self->{errno});
-
-  $admin->system_action_add("OSBB FEES: $self->{INSERT_ID}", { TYPE => 1 });
-  return $self;
-}
-
-#**********************************************************
-
-=head2 osbb_tarifs_info($id, $attr)
-
-=cut
-
-#**********************************************************
-sub osbb_tarifs_info {
-  my $self = shift;
-  my ($id) = @_;
-
-  $self->query2(
-    "SELECT *
-    FROM osbb_tarifs
-  WHERE id= ? ",
-    undef,
-    {
-      INFO => 1,
-      Bind => [$id]
-    }
-  );
-
-  return $self;
-}
-
-#**********************************************************
-
 =head2 users_services_list($attr)
 
 =cut
-
 #**********************************************************
 sub users_services_list {
   my $self = shift;
   my ($attr) = @_;
-
+  
   my $SORT = $attr->{SORT} || 'id';
   my $DESC = ($attr->{DESC}) ? '' : 'DESC';
-  my $PG        = $attr->{PG}        || '0';
+  my $PG = $attr->{PG} || '0';
   my $PAGE_ROWS = $attr->{PAGE_ROWS} || 25;
-
+  
   my $WHERE = $self->search_former($attr, [ [ 'UID', 'INT', 'uid', ], [ 'TP_ID', 'INT', 'tp_id', ] ], { WHERE => 1, });
-
+  
   $self->query2(
     "SELECT
      uid,
@@ -629,74 +414,16 @@ sub users_services_list {
     undef,
     $attr
   );
-
-  return [] if ($self->{errno});
-
+  
+  return [ ] if ($self->{errno});
+  
   my $list = $self->{list};
-
-  if ($self->{TOTAL} >= 0) {
+  
+  if ( $self->{TOTAL} >= 0 ) {
     $self->query2("SELECT COUNT(id) AS total FROM osbb_user_services $WHERE", undef, { INFO => 1 });
   }
-
+  
   return $list;
-}
-
-#**********************************************************
-
-=head2 osbb_tarifs_change($attr)
-
-=cut
-
-#**********************************************************
-sub osbb_tarifs_change {
-  my $self = shift;
-  my ($attr) = @_;
-
-  $admin->{MODULE} = $MODULE;
-  $self->changes2(
-    {
-      CHANGE_PARAM => 'ID',
-      TABLE        => 'osbb_tarifs',
-      DATA         => $attr,
-    }
-  );
-
-  return $self->{result};
-}
-
-#**********************************************************
-
-=head2 osbb_tarifs_del
-
-=cut
-
-#**********************************************************
-sub osbb_tarifs_del {
-  my $self = shift;
-  my ($attr) = @_;
-
-  $self->query_del('osbb_tarifs', $attr);
-
-  $admin->system_action_add("TARIFS:$attr->{ID}", { TYPE => 10 });
-
-  return $self;
-}
-
-#**********************************************************
-
-=head2 osbb_tarifs_add($attr)
-
-=cut
-
-#**********************************************************
-sub osbb_tarifs_add {
-  my $self = shift;
-  my ($attr) = @_;
-
-  $self->query_add('osbb_tarifs', $attr);
-
-  $admin->system_action_add("TARIFS:$self->{INSERT_ID}", { TYPE => 1 });
-  return $self;
 }
 
 #**********************************************************
@@ -709,23 +436,25 @@ sub osbb_tarifs_add {
 sub osbb_tarifs_list {
   my $self = shift;
   my ($attr) = @_;
-
-  my $SORT      = ($attr->{SORT})      ? $attr->{SORT}      : 1;
-  my $DESC      = ($attr->{DESC})      ? $attr->{DESC}      : 'DESC';
-  my $PG        = ($attr->{PG})        ? $attr->{PG}        : 0;
+  
+  my $SORT = ($attr->{SORT}) ? $attr->{SORT} : 1;
+  my $DESC = ($attr->{DESC}) ? $attr->{DESC} : 'DESC';
+  my $PG = ($attr->{PG}) ? $attr->{PG} : 0;
   my $PAGE_ROWS = ($attr->{PAGE_ROWS}) ? $attr->{PAGE_ROWS} : 25;
-
+  
   my @WHERE_RULES = ();
-
+  
   my $WHERE = $self->search_former(
     $attr,
-    [ [ 'ID', 'INT', 'ot.id', 1 ], [ 'NAME', 'STR', 'ot.name', 1 ], [ 'UNIT', 'INT', 'ot.unit', 1 ], [ 'PRICE', 'INT', 'ot.price', 1 ], [ 'DOCUMENT_BASE', 'INT', 'ot.document_base', 1 ], [ 'START_DATE', 'DATE', 'ot.start_date', 1 ], [ 'SET_ALL', 'INT', 'ot.set_all', 1 ], ],
+    [ [ 'ID', 'INT', 'ot.id', 1 ], [ 'NAME', 'STR', 'ot.name', 1 ], [ 'UNIT', 'INT', 'ot.unit', 1 ],
+      [ 'PRICE', 'INT', 'ot.price', 1 ], [ 'DOCUMENT_BASE', 'INT', 'ot.document_base', 1 ],
+      [ 'START_DATE', 'DATE', 'ot.start_date', 1 ], [ 'SET_ALL', 'INT', 'ot.set_all', 1 ], ],
     {
       WHERE       => 1,
       WHERE_RULES => \@WHERE_RULES
     }
   );
-
+  
   $self->query2(
     "SELECT ot.*
   FROM osbb_tarifs ot
@@ -736,9 +465,9 @@ sub osbb_tarifs_list {
     undef,
     $attr
   );
-
+  
   my $list = $self->{list};
-
+  
   $self->query2(
     "SELECT COUNT(*) AS total
     FROM osbb_tarifs ot
@@ -746,9 +475,51 @@ sub osbb_tarifs_list {
     undef,
     { INFO => 1 },
   );
-
+  
   return $list;
 }
+
+#**********************************************************
+=head2 ownership_types_list($attr)
+
+  Arguments:
+    $attr - hash_ref
+
+  Returns:
+    list
+
+=cut
+#**********************************************************
+sub ownership_types_list{
+  my ($self, $attr) = @_;
+  
+  my $SORT = $attr->{SORT} || 'id';
+  my $DESC = ($attr->{DESC}) ? '' : 'DESC';
+  my $PG = $attr->{PG} || '0';
+  my $PAGE_ROWS = $attr->{PAGE_ROWS} || 25;
+  
+  my $search_columns = [
+    [ 'ID', 'INT', 'id', 1 ],
+    [ 'NAME', 'STR', 'name', 1 ],
+  ];
+  
+  if ( $attr->{SHOW_ALL_COLUMNS} ) {
+    map { $attr->{$_->[0]} = '_SHOW' unless (exists $attr->{$_->[0]}) } @{$search_columns};
+  }
+  my $WHERE = $self->search_former($attr, $search_columns, { WHERE => 1 });
+  
+  $self->query2( "SELECT $self->{SEARCH_FIELDS} id
+   FROM osbb_ownership_types
+   $WHERE ORDER BY $SORT $DESC LIMIT $PG, $PAGE_ROWS;", undef, {
+      COLS_NAME => 1,
+      %{ $attr // { }} }
+  );
+  
+  return [ ] if ($self->{errno});
+  
+  return $self->{list};
+}
+
 
 DESTROY { }
 

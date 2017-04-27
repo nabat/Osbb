@@ -45,7 +45,7 @@ sub osbb_monthly_fees {
 
   $users = Users->new($db, $admin, \%conf);
   $Osbb->{debug} = 1 if ($debug > 6);
-  my $tarif_list = $Osbb->area_type_list({
+  my $tarif_list = $Osbb->area_types_list({
     DOMAIN_ID   => '_SHOW',
     %LIST_PARAMS,
     COLS_NAME   => 1,
