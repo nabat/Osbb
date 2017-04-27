@@ -1,6 +1,13 @@
+DROP TABLE IF EXISTS `osbb_ownership_types`;
+DROP TABLE IF EXISTS `osbb_main`;
+DROP TABLE IF EXISTS `osbb_area_types`;
+DROP TABLE IF EXISTS `osbb_spending_types`;
+DROP TABLE IF EXISTS `osbb_tarifs`;
+DROP TABLE IF EXISTS `osbb_users_services`;
+
 CREATE TABLE IF NOT EXISTS `osbb_ownership_types` (
   `id` TINYINT(3) UNSIGNED,
-  `name` VARCHAR(32) NOT NULL,
+  `name` VARCHAR(64) NOT NULL,
   PRIMARY KEY (`id`)
 ) COMMENT = 'Osbb ownership types';
 
