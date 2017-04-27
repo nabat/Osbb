@@ -41,19 +41,19 @@ sub osbb_area_types{
   $Osbb->{LNG_ACTION} = "$lang{ADD}";
 
   if ( $FORM{add} ){
-    $Osbb->area_type_add( { %FORM } );
+    $Osbb->area_types_add( { %FORM } );
     if ( !$Osbb->{errno} ){
       $html->message( 'info', $lang{AREA_TYPES}, "$lang{ADDED}" );
     }
   }
   elsif ( $FORM{change} ){
-    $Osbb->area_type_change( \%FORM );
+    $Osbb->area_types_change( \%FORM );
     if ( !_error_show( $Osbb ) ){
       $html->message( 'info', $lang{AREA_TYPES}, "$lang{CHANGED}" );
     }
   }
   elsif ( $FORM{chg} ){
-    $Osbb->area_type_info( "$FORM{chg}" );
+    $Osbb->area_types_info( "$FORM{chg}" );
 
     if ( !$Osbb->{errno} ){
       $Osbb->{ACTION} = 'change';
@@ -63,7 +63,7 @@ sub osbb_area_types{
     }
   }
   elsif ( $FORM{del} && $FORM{COMMENTS} ){
-    $Osbb->area_type_del( "$FORM{del}" );
+    $Osbb->area_types_del( "$FORM{del}" );
     if ( !$Osbb->{errno} ){
       $html->message( 'info', $lang{AREA_TYPES}, "$lang{DELETED}" );
     }
@@ -77,7 +77,7 @@ sub osbb_area_types{
 
   result_former({
     INPUT_DATA      => $Osbb,
-    FUNCTION        => 'area_type_list',
+    FUNCTION        => 'area_types_list',
     BASE_FIELDS     => 4,
     FUNCTION_FIELDS => 'change,del',
     SKIP_USER_TITLE => 1,
@@ -121,19 +121,19 @@ sub osbb_spending_types {
   $Osbb->{LNG_ACTION} = $lang{ADD};
 
    if ( $FORM{add} ){
-    $Osbb->spending_type_add( { %FORM } );
+    $Osbb->spending_types_add( { %FORM } );
     if ( !$Osbb->{errno} ){
       $html->message( 'info', $lang{AREA_TYPES}, "$lang{ADDED}" );
     }
   }
   elsif ( $FORM{change} ){
-    $Osbb->spending_type_change( \%FORM );
+    $Osbb->spending_types_change( \%FORM );
     if ( !_error_show( $Osbb ) ){
       $html->message( 'info', $lang{AREA_TYPES}, "$lang{CHANGED}" );
     }
   }
   elsif ( $FORM{chg} ){
-    $Osbb->spending_type_info( "$FORM{chg}" );
+    $Osbb->spending_types_info( "$FORM{chg}" );
 
     if ( !$Osbb->{errno} ){
       $Osbb->{ACTION} = 'change';
@@ -143,7 +143,7 @@ sub osbb_spending_types {
     }
   }
   elsif ( $FORM{del} && $FORM{COMMENTS} ){
-    $Osbb->area_type_del( "$FORM{del}" );
+    $Osbb->spending_types_del( "$FORM{del}" );
     if ( !$Osbb->{errno} ){
       $html->message( 'info', $lang{AREA_TYPES}, "$lang{DELETED}" );
     }

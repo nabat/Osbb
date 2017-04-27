@@ -9,11 +9,13 @@ use strict;
 use warnings FATAL => 'all';
 
 use Osbb::db::Osbb;
-use Abills::Base qw/convert _bp/;
+use Abills::Base qw/convert _bp mk_unique_value/;
 use JSON;
 use Users;
 use Multidoms;
 use Address;
+
+use Abills::Experimental;
 
 
 our(
@@ -90,10 +92,22 @@ sub osbb_user {
     $Osbb->user_del({ ID => $FORM{del}, COMMENTS => $FORM{COMMENTS} });
     show_result($Osbb, $lang{DELETED});
   }
-
+  
+  my $type_select_fn = make_select_from_db_table($Osbb, 'Osbb', 'area_types', 'TYPE', {
+      
+      REQUIRED => 1,
+    });
+  my $ownership_type_select_fn = make_select_from_db_table($Osbb, 'Osbb', 'ownership_types', 'OWNERSHIP_TYPE', {
+      
+      REQUIRED => 1,
+    });
+  
   $html->tpl_show(
     _include('osbb_user', 'Osbb'),
     {
+      TYPE_SELECT => $type_select_fn->(),
+      OWNERSHIP_TYPE_SELECT => $ownership_type_select_fn->(),
+      
       %TEMPLATE_ARGS,
       %FORM,
       SUBMIT_BTN_ACTION => ($FORM{chg}) ? 'change' : 'add',
