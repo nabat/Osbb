@@ -146,9 +146,6 @@ sub osbb_users_list {
         1 => $lang{COMMERCIAL}
       }
     },
-#    FILTER_COLS  => {
-#      ip_num   => 'int2ip',
-#    },
     TABLE           => {
       width      => '100%',
       caption    => "$lang{OSBB} - $lang{HOUSING}",
@@ -159,15 +156,13 @@ sub osbb_users_list {
       EXPORT     => 1,
       IMPORT     => "$SELF_URL?qindex=$index&import=1&header=2",
       MENU       =>
-      "$lang{ADD}:index=" . get_function_index('osbb_user_add') . ':add'
-        . ";$lang{SEARCH}:index=$index&search_form=1:search"
+      "$lang{ADD}:index=" . get_function_index('osbb_user_add') . ':btn bg-olive margin'
+        . ";$lang{SEARCH}:index=$index&search_form=1:btn bg-purple margin"
     },
     MAKE_ROWS    => 1,
     SEARCH_FORMER=> 1,
     MODULE       => 'Osbb',
     TOTAL        => 1,
-    #SHOW_MORE_THEN=>1,
-    #OUTPUT2RETURN =>1
   });
 
   return 1;
