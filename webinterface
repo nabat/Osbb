@@ -127,6 +127,10 @@ sub osbb_users_list {
     return &_osbb_users_import;
   }
 
+  if($admin->{DOMAIN_ID}) {
+    delete $LIST_PARAMS{DOMAIN_ID};
+  }
+
   result_former({
     INPUT_DATA      => $Osbb,
     FUNCTION        => 'user_list',

@@ -233,7 +233,6 @@ sub user_change {
 }
 
 #**********************************************************
-
 =head2 users_list($attr)
 
   Arguments:
@@ -243,52 +242,52 @@ sub user_change {
     list
 
 =cut
-
 #**********************************************************
 sub user_list {
   my ($self, $attr) = @_;
   
   my $SORT = $attr->{SORT} || 'id';
   my $DESC = ($attr->{DESC}) ? '' : 'DESC';
-  my $PG = $attr->{PG} || '0';
+  my $PG   = $attr->{PG} || '0';
   my $PAGE_ROWS = $attr->{PAGE_ROWS} || 25;
   
   my $search_columns = [
-    [ 'UID', 'INT', 'om.uid', 1 ],
-    [ 'OWNERSHIP_TYPE', 'INT', 'om.ownership_type', 1 ],
-    [ 'TOTAL_AREA', 'INT', 'om.total_area', 1 ],
-    [ 'LIVING_AREA', 'INT', 'om.living_area', 1 ],
-    [ 'UTILITY_AREA', 'INT', 'om.utility_area', 1 ],
-    [ 'BALCONY_AREA', 'INT', 'om.balcony_area', 1 ],
-    [ 'USEFUL_AREA', 'INT', 'om.useful_area', 1 ],
-    [ 'ROOMS_COUNT', 'INT', 'om.rooms_count', 1 ],
-    [ 'PEOPLE_COUNT', 'INT', 'om.people_count', 1 ],
+    [ 'OWNERSHIP_TYPE','INT', 'om.ownership_type', 1 ],
+    [ 'TOTAL_AREA',    'INT', 'om.total_area',   1 ],
+    [ 'LIVING_AREA',   'INT', 'om.living_area',  1 ],
+    [ 'UTILITY_AREA',  'INT', 'om.utility_area', 1 ],
+    [ 'BALCONY_AREA',  'INT', 'om.balcony_area', 1 ],
+    [ 'USEFUL_AREA',   'INT', 'om.useful_area',  1 ],
+    [ 'ROOMS_COUNT',   'INT', 'om.rooms_count',  1 ],
+    [ 'PEOPLE_COUNT',  'INT', 'om.people_count', 1 ],
+    [ 'UID',           'INT', 'om.uid',          1 ],
   ];
   
-  if ( $attr->{SHOW_ALL_COLUMNS} ) {
-    map { $attr->{ $_->[0] } = '_SHOW' unless (exists $attr->{ $_->[0] }) } @{$search_columns};
-  }
+#  if ( $attr->{SHOW_ALL_COLUMNS} ) {
+#    map { $attr->{ $_->[0] } = '_SHOW' unless (exists $attr->{ $_->[0] }) } @{$search_columns};
+#  }
   
   my $WHERE = $self->search_former(
     $attr,
     $search_columns,
     {
       WHERE             => 1,
-      USERS_FIELDS_PRE  => 1,
+      USERS_FIELDS      => 1,
       USE_USER_PI       => 1,
       SKIP_USERS_FIELDS => [ 'UID' ]
     }
   );
   
-  my $EXT_TABLES = '';
+  my $EXT_TABLES = $self->{EXT_TABLES} || q{};
   
   $self->query2(
     "SELECT $self->{SEARCH_FIELDS} om.uid
    FROM osbb_main om
-   LEFT JOIN users u USING (uid)
+   LEFT JOIN users u ON (u.uid=om.uid)
    $EXT_TABLES
-   $self->{EXT_TABLES}
-   $WHERE ORDER BY $SORT $DESC LIMIT $PG, $PAGE_ROWS;",
+   $WHERE
+   ORDER BY $SORT $DESC
+   LIMIT $PG, $PAGE_ROWS;",
     undef,
     {
       COLS_NAME => 1,
