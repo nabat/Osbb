@@ -24,5 +24,6 @@ $lang{PAYMENT_NAME}     = 'Payment name';
 $lang{ADD_TARIF}        = 'Add tarif';
 $lang{SET_TARIF_TO_ALL} = 'Set the tariff to everyone';
 $lang{COME_INTO_FORCE}  = 'Comes into force';
+$lang{HOUSING}          = 'Housing';
 
 1;

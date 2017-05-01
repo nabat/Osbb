@@ -26,5 +26,6 @@ $lang{PAYMENT_NAME}     = 'Назва послуги';
 $lang{ADD_TARIF}        = 'Добавити тариф';
 $lang{SET_TARIF_TO_ALL} = 'Встановити тариф всім';
 $lang{COME_INTO_FORCE}  = 'Вступає в силу з';
+$lang{HOUSING}          = 'Жильці';
 
 1;

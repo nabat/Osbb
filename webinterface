@@ -9,11 +9,13 @@ use strict;
 use warnings FATAL => 'all';
 
 use Osbb::db::Osbb;
-use Abills::Base qw/convert _bp mk_unique_value/;
+use Abills::Base qw(convert _bp mk_unique_value sendmail);
+use Abills::Filters qw(human_exp);
 use JSON;
 use Users;
 use Multidoms;
 use Address;
+use Payments;
 
 use Abills::Experimental;
 
@@ -41,8 +43,6 @@ if (form_purchase_module({
 })) {
   exit;
 }
-
-
 
 #our %space_type = (
 #  0  => '',
@@ -131,7 +131,7 @@ sub osbb_users_list {
     INPUT_DATA      => $Osbb,
     FUNCTION        => 'user_list',
     BASE_FIELDS     => 0,
-    DEFAULT_FIELDS  => 'ADDRESS_FLAT,FIO,LIVING_SPACE, PEOPLE_COUNT',
+    DEFAULT_FIELDS  => 'ADDRESS_FLAT,FIO,LIVING_SPACE,DEPOSIT',
     FUNCTION_FIELDS => 'change,form_payments',
     MULTISELECT     => ($permissions{0}{7}) ? 'IDS:uid:internet_users_list' : '',
     EXT_TITLES      => {
@@ -151,7 +151,7 @@ sub osbb_users_list {
 #    },
     TABLE           => {
       width      => '100%',
-      caption    => "$lang{OSBB} - $lang{USERS}",
+      caption    => "$lang{OSBB} - $lang{HOUSING}",
       qs         => $pages_qs,
       ID         => 'OSBB_USERS_LIST',
       #header     => $status_bar,
@@ -287,8 +287,6 @@ sub osbb_registration {
 sub osbb_simple_build_select {
   my ($attr) = @_;
 
-  require Address;
-  Address->import();
   my $Address = Address->new($db, $admin, \%conf);
 
   my $builds_list = $Address->build_list({
@@ -297,27 +295,27 @@ sub osbb_simple_build_select {
     DISTRICT_NAME => '_SHOW',
     STREET_ID     => '_SHOW',
     STREET_NAME   => '_SHOW',
-
     COLS_NAME => 1,
     PAGE_ROWS => 10000
   });
+
   _error_show($Address);
 
   my @full_name_builds_list = map {
     {
       id   => $_->{id},
-      name =>  join (', ', $_->{street_name}, $_->{number})
+      name =>  join (', ', ($_->{street_name} || q{}), ($_->{number} || q{}) )
     }
   } @$builds_list;
-  return $html->form_select('LOCATION_ID', {
-      SELECTED    => $attr->{LOCATION_ID} || $FORM{LOCATION_ID} || '',
-      SEL_LIST    => \@full_name_builds_list,
 
-      NO_ID       => 1,
-      %{
+  return $html->form_select('LOCATION_ID', {
+    SELECTED    => $attr->{LOCATION_ID} || $FORM{LOCATION_ID} || '',
+    SEL_LIST    => \@full_name_builds_list,
+    NO_ID       => 1,
+    %{
       $attr->{AUTO_SUBMIT} ? {EX_PARAMS => "data-auto-submit='form'"} : {'' => ''}
-      },
-    });
+    },
+  });
 }
 
 
@@ -327,7 +325,7 @@ sub osbb_simple_build_select {
 =cut
 #**********************************************************
 sub osbb_user_add{
-  my ($attr) = @_;
+  #my ($attr) = @_;
   
   if (!defined($FORM{sub}) || $FORM{sub} eq '' ) {
     $FORM{sub} = 1;
@@ -458,8 +456,9 @@ sub osbb_payments_add{
 =cut
 #**********************************************************
 sub osbb_month_fees {
-  my ($attr) = @_;
-  my $Payments = Finance->payments($db, $admin, \%conf);
+  #my ($attr) = @_;
+
+  #my $Payments = Finance->payments($db, $admin, \%conf);
   my $Fees = Finance->fees($db, $admin, \%conf);
   
   my $params = ();
@@ -588,9 +587,6 @@ sub osbb_month_fees {
 =cut
 #**********************************************************
 sub _osbb_payments_type_select {
-  my ($attr) = @_;
-  
-  use Payments;
   my $Payments = Payments->new($db, $admin, \%conf);
   my $ptype_list = $Payments->payment_type_list({
     COLS_NAME => 1,
@@ -601,9 +597,9 @@ sub _osbb_payments_type_select {
   return $html->form_select('METHOD', {
       SELECTED    => $FORM{METHOD} || '',
       SEL_LIST    => $ptype_list,
-    
       NO_ID       => 1,
   });
+
 }
 
 #**********************************************************
@@ -612,8 +608,7 @@ sub _osbb_payments_type_select {
 =cut
 #**********************************************************
 sub _osbb_user_select {
-  my ($attr) = @_;
-  
+
   my $users_list = $User->list({
     LOCATION_ID   => $FORM{LOCATION_ID},
     FIO           => '_SHOW',
@@ -631,11 +626,10 @@ sub _osbb_user_select {
   } @$users_list;
   
   return $html->form_select('UID', {
-      SELECTED    => $FORM{UID} || '',
-      SEL_LIST    => \@full_name_users_list,
-    
-      NO_ID       => 1,
-      SEL_OPTIONS => { '' => '' },
+    SELECTED    => $FORM{UID} || '',
+    SEL_LIST    => \@full_name_users_list,
+    NO_ID       => 1,
+    SEL_OPTIONS => { '' => '' },
   });
 }
 

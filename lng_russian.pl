@@ -14,6 +14,7 @@ $lang{FILL_DEFAULT_VALUES_THAT_WILL_REPLACE_EMPTY_FILE_FIELDS} = 'Заполни
 $lang{SPENDING}='Расход';
 $lang{SPENDING_TYPES}='Типы расходов';
 $lang{USERS}='Жильцы';
+$lang{HOUSING}          = 'Жильцы';
 
 $lang{TARIFS}           = 'Тарифы';
 $lang{TARIF}            = 'Тариф';
