@@ -1,3 +1,4 @@
+#!perl
 =head1 NAME
 
   Osbb managment module
@@ -459,21 +460,39 @@ sub osbb_month_fees {
 
   #my $Payments = Finance->payments($db, $admin, \%conf);
   my $Fees = Finance->fees($db, $admin, \%conf);
+  my $Address = Address->new($db, $admin, \%conf);
+  my $builds_list = $Address->build_list({ COLS_NAME => 1, PAGE_ROWS => 1 });
+  _error_show($Address);
+    
+  $FORM{LOCATION_ID} = $FORM{LOCATION_ID} || $builds_list->[0]->{id};
   
   my $params = ();
   my $fees_hash = ();
+  
+  $params->{BUTTON} = $lang{ADD};
+  $params->{ACTION} = 'add';
 
   my @YEARS = ('2017', '2018', '2019', '2020', '2021', '2022', '2023');
 
   my ($year, $month, undef) = split('-', $DATE);
 
-  $month = $FORM{MONTH} if $FORM{MONTH};
-  $year  = $FORM{YEAR}  if $FORM{YEAR};
-
+  if ($FORM{MONTH}) {
+    $month = $FORM{MONTH};
+  }
+  else {
+    $FORM{MONTH} = int($month);
+  }
+  if ($FORM{YEAR}) {
+    $year  = $FORM{YEAR};
+  }
+  else {
+    $FORM{YEAR} = $year;
+  }
+  
   $params->{MONTH_SELECT} = $html->form_select(
     'MONTH',
     {
-      SELECTED => $FORM{MONTH} || int($month),
+      SELECTED => $FORM{MONTH},
       SEL_ARRAY    => [ '', @MONTHES ],
       ARRAY_NUM_ID => 1,
     }
@@ -482,20 +501,25 @@ sub osbb_month_fees {
   $params->{YEAR_SELECT} = $html->form_select(
     'YEAR',
     {
-      SELECTED => $FORM{YEAR} || $year,
+      SELECTED => $FORM{YEAR},
       SEL_ARRAY => [ '', @YEARS ],
 
       # ARRAY_NUM_ID=>1,
     }
   );
+  
+  $params->{BUILD_SELECT} = osbb_simple_build_select();
+  
+  my $qs = "LOCATION_ID=$FORM{LOCATION_ID}&MONTH=$FORM{MONTH}&YEAR=$FORM{YEAR}";
 
   my $table = $html->table(
     {
       width      => '100%',
-      caption    => "$lang{FEES} : " . ($MONTHES[ int($month - 1) ] . " $year"),
+      caption    => "Нарахування :  " . ($MONTHES[ int($month - 1) ] . " $year"),
       border     => 1,
-      title      => [ "$lang{ADDRESS_FLAT}", "$lang{FIO}", "<div class='text-center'>Нарахування</div>"],
+      title      => [ "$lang{ADDRESS_FLAT}", "$lang{FIO}", "<div class='text-center'>Нарахування (грн.)</div>"],
       ID         => 'MONTHLY_FEES',
+      MENU       => "$lang{PRINT}:qindex=$index&header=2&print_form=1&$qs:print",
     }
   );
 
@@ -514,18 +538,24 @@ sub osbb_month_fees {
     DESC          => 1
   });
   _error_show($User);
+  
+  
   my $month_fees = $Fees->list({ 
-    DOMAIN_ID => $admin->{DOMAIN_ID},
-    MONTH     => $period,
-    COLS_NAME => 1,
+    LOCATION_ID   => $FORM{LOCATION_ID},
+    DOMAIN_ID     => $admin->{DOMAIN_ID},
+    MONTH         => $period,
+    COLS_NAME     => 1,
   });
   _error_show($Fees);
   
-  if ($month_fees && $month_fees > 0) {
-    $html->message('info', "Начисления за этот период уже существуют!");
-    #TODO Начисления за период уже есть, спросить пересчитать или добавить.
+  if ($Fees->{SUM} > 0 && !$FORM{print_form}) {
+    $html->message('info', "За цей період вже нараховано: " . sprintf('%.2f',$Fees->{SUM}));
+    $params->{CHANGE} = $html->form_input('change', $lang{CHANGE_}, { TYPE => 'submit' });
   }
+  
   my $total_fees = 0;
+  my $users_print_table = '';
+  
   foreach my $user_line (@$users_list) {
     
     my $total_fee = 0;
@@ -556,20 +586,60 @@ sub osbb_month_fees {
 
       $table->addrow($user_line->{address_flat}, $user_line->{fio}, "<div class='text-center' data-tooltip='$tooltip' data-tooltip-position='top'>$total_fee</div>");
       $fees_hash->{$user_line->{uid}} = $total_fee;
+
+    $users_print_table .=
+        "<tr><td>" . $user_line->{address_flat}
+      . "</td><td>" . $user_line->{fio}
+      . "</td><td>" . sprintf('%.2f', $total_fee)
+      . "</td></tr>";
     }
     $total_fees += $total_fee;
   }
 
   $table->addrow('-','-',"<div class='text-center'>-</div>");
-  $table->addrow("$lang{TOTAL} :", scalar( keys %$fees_hash), "<div class='text-center'>$total_fees</div>");
+  $table->addrow("Разом :", scalar( keys %$fees_hash), "<div class='text-center'>$total_fees</div>");
+  
+  $users_print_table .= "<tr><td>Разом</td><td></td><td>" . sprintf('%.2f', $total_fees) . "</td></tr>";
+    
+  my $print_table = qq{
+    <table width="100%" cellspacing="0" border="1">
+      <thead>
+        <tr>
+          <td>$lang{ADDRESS_FLAT}</td>
+          <td>$lang{FIO}</td>
+          <td>Нарахування</td>
+        </tr>
+      <thead>
+  <tbody>
+  $users_print_table
+  </tbody>
+  </table>
+  };
+
+  if ($FORM{print_form}) {
+    $Address->address_info($FORM{LOCATION_ID});
+    $html->tpl_show(
+      _include('osbb_month_fees_print', 'Osbb'),
+      {
+        TABLE   => $print_table,
+        PERIOD  => ($MONTHES[ int($month - 1) ] . " $year"),
+        ADDRESS => $Address->{ADDRESS_STREET} . ", " . $Address->{ADDRESS_BUILD},
+      }
+    );
+
+    return 1;
+  }  
 
   $params->{TABLE} = $table->show();
   
   $html->tpl_show(_include('osbb_form_month_fees', 'Osbb'), $params);
 
-  # print $table->show();
-  $Fees->{debug} = 1;
-  if ($FORM{add}) { 
+  if ($FORM{add} || $FORM{change}) { 
+    if ($FORM{change}) {
+      foreach (@$month_fees) {
+        $Fees->del(undef, $_->{id});
+      }
+    }  
     while( my( $uid, $sum ) = each %$fees_hash ){
       $Osbb->fees_add( {UID =>$uid, SUM => $sum, DATE => $period . "-01"} );
     }

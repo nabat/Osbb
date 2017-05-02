@@ -1,4 +1,4 @@
-<form action='$SELF_URL' METHOD=POST>
+<form action='$SELF_URL' METHOD=GET>
 
 <input type='hidden' name='index' value='$index'>
 
@@ -8,12 +8,13 @@
 
 <div class='box-body'>
   <div class='form-group'>
-    <label class='col-md-3 control-label'>_{MONTH}_</label>
-    <div class='col-md-9 no-margin'>%MONTH_SELECT%</div>
+    <label class='col-md-3 control-label'>_{ADDRESS_BUILD}_</label>
+    <div class='col-md-9 no-margin'>%BUILD_SELECT%</div>
   </div>
   <div class='form-group'>
-    <label class='col-md-3 control-label'>_{YEAR}_</label>
-    <div class='col-md-9 no-margin'>%YEAR_SELECT%</div>
+    <label class='col-md-3 control-label'>_{PERIOD}_</label>
+    <div class='col-md-5 no-margin'>%MONTH_SELECT%</div>
+    <div class='col-md-4 no-margin'>%YEAR_SELECT%</div>
   </div>
 </div>
 
@@ -25,7 +26,8 @@
 
 %TABLE%
 <div class='box-footer'>
-  <input type='submit' class='btn btn-primary' value='_{ADD}_' name='add'>
+  <input type='submit' class='btn btn-primary' value=%BUTTON% name=%ACTION%>
+  %CHANGE%
 </div>
 
 </form>

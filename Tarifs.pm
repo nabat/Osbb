@@ -46,7 +46,7 @@ sub osbb_tarifs {
     $html->tpl_show(_include('osbb_tarifs', 'Osbb'), {%$Osbb});
   }
   elsif ($FORM{added}) {
-    $Osbb->osbb_tarifs_add({%FORM});
+    $Osbb->tarifs_add({%FORM});
 
     if (!$Osbb->{errno}) {
       $html->message('info', $lang{INFO}, "$lang{ADDED}");
