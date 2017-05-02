@@ -9,11 +9,15 @@ use strict;
 use warnings FATAL => 'all';
 
 use Osbb::db::Osbb;
-use Abills::Base qw/convert _bp/;
+use Abills::Base qw(convert _bp mk_unique_value sendmail);
+use Abills::Filters qw(human_exp);
 use JSON;
 use Users;
 use Multidoms;
 use Address;
+use Payments;
+
+use Abills::Experimental;
 
 
 our(
@@ -39,8 +43,6 @@ if (form_purchase_module({
 })) {
   exit;
 }
-
-
 
 #our %space_type = (
 #  0  => '',
@@ -90,10 +92,16 @@ sub osbb_user {
     $Osbb->user_del({ ID => $FORM{del}, COMMENTS => $FORM{COMMENTS} });
     show_result($Osbb, $lang{DELETED});
   }
-
+  
+  my $ownership_type_select_fn = make_select_from_db_table($Osbb, 'Osbb', 'ownership_types', 'OWNERSHIP_TYPE', {
+      
+      REQUIRED => 1,
+    });
+  
   $html->tpl_show(
     _include('osbb_user', 'Osbb'),
     {
+      OWNERSHIP_TYPE_SELECT => $ownership_type_select_fn->(),
       %TEMPLATE_ARGS,
       %FORM,
       SUBMIT_BTN_ACTION => ($FORM{chg}) ? 'change' : 'add',
@@ -119,11 +127,15 @@ sub osbb_users_list {
     return &_osbb_users_import;
   }
 
+  if($admin->{DOMAIN_ID}) {
+    delete $LIST_PARAMS{DOMAIN_ID};
+  }
+
   result_former({
     INPUT_DATA      => $Osbb,
     FUNCTION        => 'user_list',
     BASE_FIELDS     => 0,
-    DEFAULT_FIELDS  => 'ADDRESS_FLAT,FIO,LIVING_SPACE, PEOPLE_COUNT',
+    DEFAULT_FIELDS  => 'ADDRESS_FLAT,FIO,LIVING_SPACE,DEPOSIT',
     FUNCTION_FIELDS => 'change,form_payments',
     MULTISELECT     => ($permissions{0}{7}) ? 'IDS:uid:internet_users_list' : '',
     EXT_TITLES      => {
@@ -138,12 +150,9 @@ sub osbb_users_list {
         1 => $lang{COMMERCIAL}
       }
     },
-#    FILTER_COLS  => {
-#      ip_num   => 'int2ip',
-#    },
     TABLE           => {
       width      => '100%',
-      caption    => "$lang{OSBB} - $lang{USERS}",
+      caption    => "$lang{OSBB} - $lang{HOUSING}",
       qs         => $pages_qs,
       ID         => 'OSBB_USERS_LIST',
       #header     => $status_bar,
@@ -151,15 +160,13 @@ sub osbb_users_list {
       EXPORT     => 1,
       IMPORT     => "$SELF_URL?qindex=$index&import=1&header=2",
       MENU       =>
-      "$lang{ADD}:index=" . get_function_index('osbb_user_add') . ':add'
-        . ";$lang{SEARCH}:index=$index&search_form=1:search"
+      "$lang{ADD}:index=" . get_function_index('osbb_user_add') . ':btn bg-olive margin'
+        . ";$lang{SEARCH}:index=$index&search_form=1:btn bg-purple margin"
     },
     MAKE_ROWS    => 1,
     SEARCH_FORMER=> 1,
     MODULE       => 'Osbb',
     TOTAL        => 1,
-    #SHOW_MORE_THEN=>1,
-    #OUTPUT2RETURN =>1
   });
 
   return 1;
@@ -279,8 +286,6 @@ sub osbb_registration {
 sub osbb_simple_build_select {
   my ($attr) = @_;
 
-  require Address;
-  Address->import();
   my $Address = Address->new($db, $admin, \%conf);
 
   my $builds_list = $Address->build_list({
@@ -289,27 +294,27 @@ sub osbb_simple_build_select {
     DISTRICT_NAME => '_SHOW',
     STREET_ID     => '_SHOW',
     STREET_NAME   => '_SHOW',
-
     COLS_NAME => 1,
     PAGE_ROWS => 10000
   });
+
   _error_show($Address);
 
   my @full_name_builds_list = map {
     {
       id   => $_->{id},
-      name =>  join (', ', $_->{street_name}, $_->{number})
+      name =>  join (', ', ($_->{street_name} || q{}), ($_->{number} || q{}) )
     }
   } @$builds_list;
-  return $html->form_select('LOCATION_ID', {
-      SELECTED    => $attr->{LOCATION_ID} || $FORM{LOCATION_ID} || '',
-      SEL_LIST    => \@full_name_builds_list,
 
-      NO_ID       => 1,
-      %{
+  return $html->form_select('LOCATION_ID', {
+    SELECTED    => $attr->{LOCATION_ID} || $FORM{LOCATION_ID} || '',
+    SEL_LIST    => \@full_name_builds_list,
+    NO_ID       => 1,
+    %{
       $attr->{AUTO_SUBMIT} ? {EX_PARAMS => "data-auto-submit='form'"} : {'' => ''}
-      },
-    });
+    },
+  });
 }
 
 
@@ -319,7 +324,7 @@ sub osbb_simple_build_select {
 =cut
 #**********************************************************
 sub osbb_user_add{
-  my ($attr) = @_;
+  #my ($attr) = @_;
   
   if (!defined($FORM{sub}) || $FORM{sub} eq '' ) {
     $FORM{sub} = 1;
@@ -353,23 +358,7 @@ sub osbb_user_add{
   }
   else {
     if ($FORM{add}){
-      $User->add({ %FORM,  CREATE_BILL => 1, LOGIN => "$FORM{LOCATION_ID}_$FORM{ADDRESS_FLAT}" });
-      _error_show($User);
-      if ($User->{errno}){
-        $html->message('err', "$lang{ERROR}");
-      }
-      else {
-        $User->pi_add({ %FORM, UID => $User->{INSERT_ID} });
-        _error_show($User);
-        $Osbb->user_add({ %FORM, UID => $User->{INSERT_ID}});
-        _error_show($Osbb);
-        if($Osbb->{errno} && $User->{errno}) {
-          $html->message('err', "$lang{ERROR}");
-        }
-        else {
-          $html->message('info', "$lang{SUCCESS}", "$lang{ADDED}");
-        }
-      }
+      _osbb_user_create(\%FORM);
     }
   
     my $build_sel = osbb_simple_build_select();
@@ -466,8 +455,9 @@ sub osbb_payments_add{
 =cut
 #**********************************************************
 sub osbb_month_fees {
-  my ($attr) = @_;
-  my $Payments = Finance->payments($db, $admin, \%conf);
+  #my ($attr) = @_;
+
+  #my $Payments = Finance->payments($db, $admin, \%conf);
   my $Fees = Finance->fees($db, $admin, \%conf);
   
   my $params = ();
@@ -595,9 +585,6 @@ sub osbb_month_fees {
 =cut
 #**********************************************************
 sub _osbb_payments_type_select {
-  my ($attr) = @_;
-  
-  use Payments;
   my $Payments = Payments->new($db, $admin, \%conf);
   my $ptype_list = $Payments->payment_type_list({
     COLS_NAME => 1,
@@ -608,9 +595,9 @@ sub _osbb_payments_type_select {
   return $html->form_select('METHOD', {
       SELECTED    => $FORM{METHOD} || '',
       SEL_LIST    => $ptype_list,
-    
       NO_ID       => 1,
   });
+
 }
 
 #**********************************************************
@@ -619,8 +606,7 @@ sub _osbb_payments_type_select {
 =cut
 #**********************************************************
 sub _osbb_user_select {
-  my ($attr) = @_;
-  
+
   my $users_list = $User->list({
     LOCATION_ID   => $FORM{LOCATION_ID},
     FIO           => '_SHOW',
@@ -638,15 +624,61 @@ sub _osbb_user_select {
   } @$users_list;
   
   return $html->form_select('UID', {
-      SELECTED    => $FORM{UID} || '',
-      SEL_LIST    => \@full_name_users_list,
-    
-      NO_ID       => 1,
-      SEL_OPTIONS => { '' => '' },
+    SELECTED    => $FORM{UID} || '',
+    SEL_LIST    => \@full_name_users_list,
+    NO_ID       => 1,
+    SEL_OPTIONS => { '' => '' },
   });
 }
 
 
+#**********************************************************
+=head2 _osbb_user_create()
 
+=cut
+#**********************************************************
+sub _osbb_user_create {
+  my $user_hash = shift || \%FORM;
+  
+  my %PARAMS = %{$user_hash};
+  
+  if (! $PARAMS{LOCATION_ID}){
+    $html->message('err', 'No LOCATION_ID');
+    return 0;
+  }
+  if (! $PARAMS{ADDRESS_FLAT}){
+    $html->message('err', 'No ADDRESS_FLAT');
+    return 0;
+  }
+  
+  $User->add({
+    CREATE_BILL => 1,
+    LOGIN => "$PARAMS{LOCATION_ID}_$PARAMS{ADDRESS_FLAT}",
+    %PARAMS,
+  });
+  _error_show($User);
+  
+  my $uid = $User->{INSERT_ID};
+  
+  if ($User->{errno}){
+    $html->message('err', "$lang{ERROR}");
+    return 0;
+  }
+  
+  $User->pi_add({ %PARAMS, UID => $uid });
+  _error_show($User);
+  
+  $Osbb->user_add({ %PARAMS, UID => $uid});
+  _error_show($Osbb);
+  
+  if($Osbb->{errno} && $User->{errno}) {
+    $html->message('err', "$lang{ERROR}");
+  }
+  else {
+    $html->message('info', "$lang{SUCCESS}", "$lang{ADDED}");
+  }
+  
+  return $uid;
+}
 
 1;

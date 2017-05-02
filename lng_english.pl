@@ -13,12 +13,17 @@ $lang{FILL_DEFAULT_VALUES_THAT_WILL_REPLACE_EMPTY_FILE_FIELDS} = 'Fill dwellers 
 $lang{FILL_DEFAULT_VALUES_AND_CHOOSE_FILE_FOR_IMPORT} = 'Fill general values and choose file for import';
 $lang{SPACE_TYPES} = 'Space types';
 $lang{SPENDING} = 'Spending';
+$lang{SPENDING_TYPES} = 'Spending types';
 
-$lang{TARIFS}        = 'Tarifs';
-$lang{TARIF}         = 'Tarif';
-$lang{PAYMENT_TYPE}  = 'Payment type';
-$lang{PRICE}         = 'Price';
-$lang{DOCUMENT_BASE} = 'Document base';
-$lang{PAYMENT_NAME}  = 'Payment name';
-$lang{ADD_TARIF}     = 'Add tarif';
+$lang{TARIFS}           = 'Tarifs';
+$lang{TARIF}            = 'Tarif';
+$lang{UNIT}             = 'Payment type';
+$lang{PRICE}            = 'Price';
+$lang{DOCUMENT_BASE}    = 'Document base';
+$lang{PAYMENT_NAME}     = 'Payment name';
+$lang{ADD_TARIF}        = 'Add tarif';
+$lang{SET_TARIF_TO_ALL} = 'Set the tariff to everyone';
+$lang{COME_INTO_FORCE}  = 'Comes into force';
+$lang{HOUSING}          = 'Housing';
+
 1;

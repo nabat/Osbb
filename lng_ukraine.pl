@@ -15,12 +15,17 @@ $lang{FILL_DEFAULT_VALUES_AND_CHOOSE_FILE_FOR_IMPORT} = 'Заповніть зн
 $lang{TOTAL_SPACE}='Загальна площа';
 $lang{SPACE_TYPES}='Види приміщень';
 $lang{SPENDING}='Розхід';
+$lang{SPENDING_TYPES}='Типи розходів';
 
-$lang{TARIFS}        = 'Тарифи';
-$lang{TARIF}         = 'Тариф';
-$lang{PAYMENT_TYPE}  = 'Тип нарахуваннь';
-$lang{PRICE}         = 'Ціна';
-$lang{DOCUMENT_BASE} = 'Документ-привід';
-$lang{PAYMENT_NAME}  = 'Назва послуги';
-$lang{ADD_TARIF}     = 'Добавити тариф';
+$lang{TARIFS}           = 'Тарифи';
+$lang{TARIF}            = 'Тариф';
+$lang{UNIT}             = 'Тип нарахуваннь';
+$lang{PRICE}            = 'Ціна';
+$lang{DOCUMENT_BASE}    = 'Документ-привід';
+$lang{PAYMENT_NAME}     = 'Назва послуги';
+$lang{ADD_TARIF}        = 'Добавити тариф';
+$lang{SET_TARIF_TO_ALL} = 'Встановити тариф всім';
+$lang{COME_INTO_FORCE}  = 'Вступає в силу з';
+$lang{HOUSING}          = 'Жильці';
+
 1;
