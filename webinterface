@@ -504,8 +504,7 @@ sub osbb_month_fees {
       width      => '100%',
       caption    => "$lang{FEES} : " . ($MONTHES[ int($month - 1) ] . " $year"),
       border     => 1,
-      title      => [ "$lang{ADDRESS_FLAT}", "$lang{FIO}", "Нарахування", "Пільга"],
-      cols_align => [ 'right', 'right', 'right', 'left'],
+      title      => [ "$lang{ADDRESS_FLAT}", "$lang{FIO}", "<div class='text-center'>Нарахування</div>"],
       ID         => 'MONTHLY_FEES',
     }
   );
@@ -565,14 +564,14 @@ sub osbb_month_fees {
         $total_fee += $fee;
       }
 
-      $table->addrow($user_line->{address_flat}, $user_line->{fio}, "<p data-tooltip='$tooltip'>$total_fee</p>" , "");
+      $table->addrow($user_line->{address_flat}, $user_line->{fio}, "<div class='text-center' data-tooltip='$tooltip' data-tooltip-position='top'>$total_fee</div>");
       $fees_hash->{$user_line->{uid}} = $total_fee;
     }
     $total_fees += $total_fee;
   }
 
-  $table->addrow('-','-','-','-');
-  $table->addrow("$lang{TOTAL} :", scalar( keys %$fees_hash), $total_fees, "");
+  $table->addrow('-','-',"<div class='text-center'>-</div>");
+  $table->addrow("$lang{TOTAL} :", scalar( keys %$fees_hash), "<div class='text-center'>$total_fees</div>");
 
   $params->{TABLE} = $table->show();
   
