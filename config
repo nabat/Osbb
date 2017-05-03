@@ -5,11 +5,11 @@ our %FUNCTIONS_LIST = (
   "10:0:$lang{OSBB}:osbb_config"                           => 5,
   "12:10:$lang{SPENDING}:null"                             => 5,
   "13:12:$lang{SPENDING} $lang{TYPES}:osbb_spending_types" => 5,
-  "14:0:$lang{ADDRESS}:osbb_form_address"                  => 5,
   "15:10:$lang{ADD} $lang{USER}:osbb_user_add"             => 5,
   "16:10:$lang{ADD} $lang{PAYMENTS}:osbb_payments_add"     => 5,
   "17:10:$lang{TARIFS}:osbb_tarifs"                        => 5,
   "18:10:$lang{FEES}:osbb_month_fees"                      => 5,
+  "19:10:Оборотно-сальдова відомість:osbb_calculated_balance" => 5,
 
 );
 
