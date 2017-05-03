@@ -1,4 +1,4 @@
-<form action='$SELF_URL' METHOD=GET>
+<form action='$SELF_URL' METHOD=POST>
 
 <input type='hidden' name='index' value='$index'>
 
@@ -22,12 +22,6 @@
   <input type='submit' class='btn btn-primary' value='_{SHOW}_' name='show'>
 </div>
 
-</div>
-
-%TABLE%
-<div class='box-footer'>
-  <input type='submit' class='btn btn-primary' value=%BUTTON% name=%ACTION%>
-  %CHANGE%
 </div>
 
 </form>

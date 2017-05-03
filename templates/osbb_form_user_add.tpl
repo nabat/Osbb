@@ -41,7 +41,7 @@
       </div>
       
       <div class='form-group'>
-        <label class='control-label col-md-3' for='PEOPLE_COUNT'>Колличество жильцов</label>
+        <label class='control-label col-md-3' for='PEOPLE_COUNT'>Кількість проживаючих</label>
         <div class='col-md-9'>
           <input id='PEOPLE_COUNT' name='PEOPLE_COUNT' value='%PEOPLE_COUNT%' class='form-control' type='text'>
         </div>
