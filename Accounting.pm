@@ -54,10 +54,14 @@ sub osbb_calculated_balance {
     
   $FORM{LOCATION_ID} = $FORM{LOCATION_ID} || $builds_list->[0]->{id};
   my $params = ();
+  my %balance_next_period = ();
 
   my @YEARS = ('2017', '2018', '2019', '2020', '2021', '2022', '2023');
 
   my ($year, $month, undef) = split('-', $DATE);
+
+  $params->{BUTTON} = $lang{ADD};
+  $params->{ACTION} = 'add';
 
   if ($FORM{MONTH}) {
     $month = $FORM{MONTH};
@@ -169,6 +173,7 @@ sub osbb_calculated_balance {
     $total_fees      += $Fees->{SUM};
     $total_payments  += $Payments->{SUM};
     $total_new_saldo += $saldo;
+    $balance_next_period{$user_line->{bill_id}} = $saldo;
   }
 
   $table->addrow('-', '-', '-', '-', '-', '-');
@@ -214,9 +219,37 @@ sub osbb_calculated_balance {
     return 1;
   }
 
+  $params->{TABLE} =  $table->show();
+
   $html->tpl_show(_include('osbb_balance_reports', 'Osbb'), $params);
 
-  print $table->show();
+  if($FORM{add}){
+
+    my $next_month = $FORM{MONTH} + 1;
+    my $next_year  = $FORM{YEAR};
+
+    if($next_month > 12){
+      $next_year += 1;
+      $next_month = 1
+    }
+
+    my $next_period = sprintf("%s-%#.2d", $next_year, $next_month);
+
+    $Extfin->extfin_report_balance_del({PERIOD => $next_period});
+
+    _error_show($Extfin);
+    
+    foreach my $bill_id ( keys %balance_next_period) {
+      my $saldo = $balance_next_period{$bill_id};
+
+      $Extfin->extfin_report_balance_add({BILL_ID => $bill_id, 
+                                          SUM     => $saldo, 
+                                          PERIOD  => $next_period,
+                                          AID     => 1,
+                                          DATE    => $DATE});
+      _error_show($Extfin);
+    }
+  }
 
   return 1;
 }
