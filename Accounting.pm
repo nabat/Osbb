@@ -60,8 +60,8 @@ sub osbb_calculated_balance {
 
   my ($year, $month, undef) = split('-', $DATE);
 
-  $params->{BUTTON} = $lang{ADD};
-  $params->{ACTION} = 'add';
+  $params->{BUTTON} = $lang{SAVE};
+  $params->{ACTION} = 'save';
 
   if ($FORM{MONTH}) {
     $month = $FORM{MONTH};
@@ -102,7 +102,7 @@ sub osbb_calculated_balance {
       width      => '100%',
       caption    => "Оборотно-сальдова відомість за : " . ($MONTHES[ int($month - 1) ] . " $year"),
       border     => 1,
-      title      => [ $lang{ADDRESS_FLAT}, $lang{FIO}, "Сальдо на початок", "Нарахування", "Оплати", "Сальдо на кінець" ],
+      title      => [ $lang{ADDRESS_FLAT}, $lang{FIO}, "Сальдо на початок", "$lang{FEES}", "$lang{PAYMENTS}", "Сальдо на кінець" ],
       ID         => 'OSBB_CALCULATED_BALANCE',
       EXPORT     => 1,
       MENU       => "$lang{PRINT}:qindex=$index&header=2&print_form=1$qs:print"
@@ -197,8 +197,8 @@ sub osbb_calculated_balance {
       <td align='center'>$lang{ADDRESS_FLAT}</td>
       <td align='center'>$lang{FIO}</td>
       <td align='center'>Сальдо на початок</td>
-      <td align='center'>Нарахування</td>
-      <td align='center'>Оплати</td>
+      <td align='center'>$lang{FEES}</td>
+      <td align='center'>$lang{PAYMENTS}</td>
       <td align='center'>Сальдо на кінець</td>
     </tr>
   <thead>
@@ -223,7 +223,7 @@ sub osbb_calculated_balance {
 
   $html->tpl_show(_include('osbb_balance_reports', 'Osbb'), $params);
 
-  if($FORM{add}){
+  if($FORM{save}){
 
     my $next_month = $FORM{MONTH} + 1;
     my $next_year  = $FORM{YEAR};
