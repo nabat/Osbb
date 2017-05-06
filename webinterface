@@ -432,8 +432,8 @@ sub _osbb_user_select {
     }
   } @$users_list;
   
-  return $html->form_select('UID', {
-    SELECTED    => $FORM{UID} || '',
+  return $html->form_select('usr', {
+    SELECTED    => $FORM{usr} || '',
     SEL_LIST    => \@full_name_users_list,
     NO_ID       => 1,
     SEL_OPTIONS => { '' => '' },

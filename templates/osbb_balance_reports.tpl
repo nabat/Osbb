@@ -24,4 +24,10 @@
 
 </div>
 
+%TABLE%
+<div class='box-footer'>
+  <input type='submit' class='btn btn-primary' value='%BUTTON%' name='%ACTION%'>
+  %CHANGE%
+</div>
+
 </form>
