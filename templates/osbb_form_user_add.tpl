@@ -1,14 +1,12 @@
 <FORM action='$SELF_URL' METHOD=GET ID='add_user' class='form-horizontal'>
 <input type=hidden name='index' value='$index'>
-<input type=hidden name='sub' value='%sub%'>
+<input type=hidden name='adding' value='1'>
+<input type=hidden name='LOCATION_ID' value='%LOCATION_ID%'>
   <div class='box box-theme box-form'>
     <div class='box-header with-border'>
       <div class='col-md-6'>
-        <h3 class='box-title'>_{ADD}_</h3>
+        <h3 class='box-title'>%BUTTON%</h3>
       </div>  
-      <div class='col-md-6'>
-        <div class='form-group' style='margin-bottom: 0px;'>%BUILD_SEL%</div>
-      </div>
     </div>
     
     <div class='box-body'>
@@ -41,7 +39,7 @@
       </div>
       
       <div class='form-group'>
-        <label class='control-label col-md-3' for='PEOPLE_COUNT'>Кількість проживаючих</label>
+        <label class='control-label col-md-3' for='PEOPLE_COUNT'>_{PEOPLE_COUNT}_</label>
         <div class='col-md-9'>
           <input id='PEOPLE_COUNT' name='PEOPLE_COUNT' value='%PEOPLE_COUNT%' class='form-control' type='text'>
         </div>
@@ -63,7 +61,7 @@
     </div>
     
     <div class='box-footer'>
-      <input type=submit name=add value='_{ADD}_' class='btn btn-primary pull-right'>
+      <input type=submit name=add value='%BUTTON%' class='btn btn-primary pull-right'>
     </div>
   </div>
 </FORM>

@@ -11,10 +11,11 @@ $lang{COMMERCIAL}='Коммерческое помещение';
 $lang{OSBB}='ОСББ';
 $lang{RENT}='Квартплата';
 $lang{FILL_DEFAULT_VALUES_THAT_WILL_REPLACE_EMPTY_FILE_FIELDS} = 'Заполните значения общие для всех жильцов';
+$lang{FILL_DEFAULT_VALUES_AND_CHOOSE_FILE_FOR_IMPORT} = 'Заполните значения общие для всех жильцов и выб та виберите файл для импорта';
+$lang{TOTAL_SPACE}      ='Общая площадь';
 $lang{SPENDING}='Расход';
 $lang{SPENDING_TYPES}='Типы расходов';
-$lang{USERS}='Жильцы';
-$lang{HOUSING}          = 'Жильцы';
+$lang{SPACE_TYPES}      ='Виды помещений';
 
 $lang{TARIFS}           = 'Тарифы';
 $lang{TARIF}            = 'Тариф';
@@ -25,6 +26,11 @@ $lang{PAYMENT_NAME}     = 'Наименование услуги';
 $lang{ADD_TARIF}        = 'Добавить тариф';
 $lang{SET_TARIF_TO_ALL} = 'Установить тариф всем';
 $lang{COME_INTO_FORCE}  = 'Вступает в силу с';
+$lang{HOUSING}          = 'Жильцы';
+$lang{MONTHLY_FEES}     = "Ежемесячные начисления";
+$lang{FEES}             = "Начисления";
 
-
+$lang{ACCOUNTING_BALANCE} = "Оборотно-сальдовая ведомость";
+$lang{START_SALDO}      = "Сальдо на начало";
+$lang{END_SALDO}        = "Сальдо на конец";
 1;

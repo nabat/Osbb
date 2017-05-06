@@ -263,9 +263,9 @@ sub user_list {
     [ 'UID',           'INT', 'om.uid',          1 ],
   ];
   
-#  if ( $attr->{SHOW_ALL_COLUMNS} ) {
-#    map { $attr->{ $_->[0] } = '_SHOW' unless (exists $attr->{ $_->[0] }) } @{$search_columns};
-#  }
+ # if ( $attr->{SHOW_ALL_COLUMNS} ) {
+ #   map { $attr->{ $_->[0] } = '_SHOW' unless (exists $attr->{ $_->[0] }) } @{$search_columns};
+ # }
   
   my $WHERE = $self->search_former(
     $attr,

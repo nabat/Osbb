@@ -132,44 +132,113 @@ sub osbb_users_list {
   if($admin->{DOMAIN_ID}) {
     delete $LIST_PARAMS{DOMAIN_ID};
   }
+  
+  if ($FORM{add}){
+    _osbb_user_create(\%FORM);
+  }
 
-  result_former({
-    INPUT_DATA      => $Osbb,
-    FUNCTION        => 'user_list',
-    BASE_FIELDS     => 0,
-    DEFAULT_FIELDS  => 'ADDRESS_FLAT,FIO,LIVING_SPACE,DEPOSIT',
-    FUNCTION_FIELDS => 'change,form_payments',
-    MULTISELECT     => ($permissions{0}{7}) ? 'IDS:uid:internet_users_list' : '',
-    EXT_TITLES      => {
-      living_space   => $lang{LIVING_SPACE},
-      utility_room   => $lang{UTILITY_ROOM},
-      apartment_area => $lang{TOTAL_SPACE},
-      commercial     => $lang{COMMERCIAL}
-    },
-    SELECT_VALUE    => {
-      commercial    => {
-        0 => '',
-        1 => $lang{COMMERCIAL}
-      }
-    },
-    TABLE           => {
-      width      => '100%',
-      caption    => "$lang{OSBB} - $lang{HOUSING}",
-      qs         => $pages_qs,
-      ID         => 'OSBB_USERS_LIST',
-      #header     => $status_bar,
-      SELECT_ALL => ($permissions{0}{7}) ? "internet_users_list:IDS:$lang{SELECT_ALL}" : undef,
-      EXPORT     => 1,
-      IMPORT     => "$SELF_URL?qindex=$index&import=1&header=2",
-      MENU       =>
-      "$lang{ADD}:index=" . get_function_index('osbb_user_add') . ':btn bg-olive margin'
-        . ";$lang{SEARCH}:index=$index&search_form=1:btn bg-purple margin"
-    },
-    MAKE_ROWS    => 1,
-    SEARCH_FORMER=> 1,
-    MODULE       => 'Osbb',
-    TOTAL        => 1,
+my $Address = Address->new($db, $admin, \%conf);
+  my $builds_list = $Address->build_list({ COLS_NAME => 1, PAGE_ROWS => 1 });
+  _error_show($Address);
+
+  $FORM{LOCATION_ID} = $FORM{LOCATION_ID} || $builds_list->[0]->{id};
+
+my $nav = $html->form_main({
+      CONTENT => osbb_simple_build_select({%FORM}),
+      HIDDEN => {index => $index},
+      class  => 'navbar-form navbar-right',
+    });
+  func_menu({ $lang{NAME} => $nav },{}, {} );
+
+  if ($FORM{adding}) {
+    $html->tpl_show(_include('osbb_form_user_add', 'Osbb'), { %FORM, BUTTON => $lang{ADD} });
+  }
+
+  if ($FORM{change}) {
+    my $user_info = $Osbb->user_list({
+      UID           => $FORM{usr},
+      FIO           => '_SHOW',
+      ADDRESS_FLAT  => '_SHOW',
+      PEOPLE_COUNT  => '_SHOW',
+      LIVING_AREA   => '_SHOW',
+      
+      COLS_NAME     => 1,
+      COLS_UPPER    => 1,
+    });
+
+    $html->tpl_show(_include('osbb_form_user_add', 'Osbb'), { %FORM, %{$user_info->[0]}, BUTTON => $lang{CHANGE_} });
+  }
+
+  my $users_list = $Osbb->user_list({
+    LOCATION_ID   => $FORM{LOCATION_ID},
+    FIO           => '_SHOW',
+    ADDRESS_FLAT  => '_SHOW',
+    UID           => '_SHOW',
+    PEOPLE_COUNT  => '_SHOW',
+    LIVING_AREA   => '_SHOW',
+    
+    COLS_NAME     => 1,
+    COLS_UPPER    => 1,
+    PAGE_ROWS     => 10000,
+    SORT          => 'pi.address_flat',
+    DESC          => 1
   });
+  _error_show($Osbb);
+  
+  my $table = $html->table({
+    width      => '100%',
+    caption    => $lang{HOUSING},
+    border     => 1,
+    title      => [ $lang{ADDRESS_FLAT}, $lang{FIO}, $lang{LIVING_AREA}, $lang{PEOPLE_COUNT}],
+    ID         => 'HOUSING',
+    MENU       => "$lang{ADD}:index=$index&LOCATION_ID=$FORM{LOCATION_ID}&adding=1:btn bg-olive margin;"
+                . "$lang{IMPORT}:index=$index&LOCATION_ID=$FORM{LOCATION_ID}&import=1:btn bg-olive margin;"
+                . "$lang{SEARCH}:index=$index&LOCATION_ID=$FORM{LOCATION_ID}&search_form=1:btn bg-purple margin",
+  });
+
+  foreach my $user_line (@$users_list) {
+    my $user_button = $html->button($user_line->{fio}, "index=$index&LOCATION_ID=$FORM{LOCATION_ID}&usr=$user_line->{uid}&change=1", {});
+    $table->addrow($user_line->{address_flat}, $user_button, $user_line->{LIVING_AREA}, $user_line->{PEOPLE_COUNT});
+  }
+
+  print $table->show();
+
+  # result_former({
+  #   INPUT_DATA      => $Osbb,
+  #   FUNCTION        => 'user_list',
+  #   BASE_FIELDS     => 0,
+  #   DEFAULT_FIELDS  => 'ADDRESS_FLAT,FIO,LIVING_SPACE,DEPOSIT',
+  #   FUNCTION_FIELDS => 'change,form_payments',
+  #   MULTISELECT     => ($permissions{0}{7}) ? 'IDS:uid:internet_users_list' : '',
+  #   EXT_TITLES      => {
+  #     living_space   => $lang{LIVING_SPACE},
+  #     utility_room   => $lang{UTILITY_ROOM},
+  #     apartment_area => $lang{TOTAL_SPACE},
+  #     commercial     => $lang{COMMERCIAL}
+  #   },
+  #   SELECT_VALUE    => {
+  #     commercial    => {
+  #       0 => '',
+  #       1 => $lang{COMMERCIAL}
+  #     }
+  #   },
+  #   TABLE           => {
+  #     width      => '100%',
+  #     caption    => "$lang{OSBB} - $lang{HOUSING}",
+  #     qs         => $pages_qs,
+  #     ID         => 'OSBB_USERS_LIST',
+  #     #header     => $status_bar,
+  #     SELECT_ALL => ($permissions{0}{7}) ? "internet_users_list:IDS:$lang{SELECT_ALL}" : undef,
+  #     MENU       =>
+  #         "$lang{ADD}:index=$index&adding=1:btn bg-olive margin;"
+  #       . "$lang{IMPORT}:index=$index&import=1:btn bg-olive margin;"
+  #       . "$lang{SEARCH}:index=$index&search_form=1:btn bg-purple margin"
+  #   },
+  #   MAKE_ROWS    => 1,
+  #   SEARCH_FORMER=> 1,
+  #   MODULE       => 'Osbb',
+  #   TOTAL        => 1,
+  # });
 
   return 1;
 }
@@ -317,56 +386,6 @@ sub osbb_simple_build_select {
       $attr->{AUTO_SUBMIT} ? {EX_PARAMS => "data-auto-submit='form'"} : {'' => ''}
     },
   });
-}
-
-
-#**********************************************************
-=head2 osbb_add_user()
-
-=cut
-#**********************************************************
-sub osbb_user_add{
-  #my ($attr) = @_;
-  
-  if (!defined($FORM{sub}) || $FORM{sub} eq '' ) {
-    $FORM{sub} = 1;
-  }
-  
-  my $active_button->{$FORM{sub}} = { class => 'active' };
-  my %nav_tabs = (
-    1 => "User",
-    2 => "MultyUser",
-    3 => "Import",
-  );
-    
-  my $buttons = '';
-  foreach( sort { $a <=> $b } keys(%nav_tabs) ){
-    $buttons .= $html->li( $html->button( $nav_tabs{$_}, "index=$index&sub=$_" ), $active_button->{$_} )
-  }
-  
-  print $html->element( 'div',
-    $html->element( 'ul', $buttons, { class => 'nav navbar-nav' }) ,
-    { class => 'navbar navbar-default' } );
-  
-  if($FORM{sub} == 3) {
-    #TODO
-    $html->message('info', "Under construction");
-    return 1;
-  }
-  elsif($FORM{sub} == 2) {
-    #TODO
-    $html->message('info', "Under construction");
-    return 1;
-  }
-  else {
-    if ($FORM{add}){
-      _osbb_user_create(\%FORM);
-    }
-  
-    my $build_sel = osbb_simple_build_select();
-    $html->tpl_show(_include('osbb_form_user_add', 'Osbb'), { BUILD_SEL => $build_sel });
-  }
-  return 1;
 }
 
 #**********************************************************

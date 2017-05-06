@@ -96,9 +96,9 @@ sub osbb_calculated_balance {
   my $table = $html->table(
     {
       width      => '100%',
-      caption    => "Оборотно-сальдова відомість за : " . ($MONTHES[ int($month - 1) ] . " $year"),
+      caption    => "$lang{ACCOUNTING_BALANCE} : " . ($MONTHES[ int($month - 1) ] . " $year"),
       border     => 1,
-      title      => [ $lang{ADDRESS_FLAT}, $lang{FIO}, "Сальдо на початок", "Нарахування", "Оплати", "Сальдо на кінець" ],
+      title      => [ $lang{ADDRESS_FLAT}, $lang{FIO}, $lang{START_SALDO} , $lang{FEES}, $lang{PAYMENTS}, $lang{END_SALDO}  ],
       ID         => 'OSBB_CALCULATED_BALANCE',
       EXPORT     => 1,
       MENU       => "$lang{PRINT}:qindex=$index&header=2&print_form=1$qs:print"
@@ -191,10 +191,10 @@ sub osbb_calculated_balance {
     <tr>
       <td align='center'>$lang{ADDRESS_FLAT}</td>
       <td align='center'>$lang{FIO}</td>
-      <td align='center'>Сальдо на початок</td>
-      <td align='center'>Нарахування</td>
-      <td align='center'>Оплати</td>
-      <td align='center'>Сальдо на кінець</td>
+      <td align='center'>$lang{START_SALDO}</td>
+      <td align='center'>$lang{FEES}</td>
+      <td align='center'>$lang{PAYMENTS}</td>
+      <td align='center'>$lang{END_SALDO}</td>
     </tr>
   <thead>
   <tbody>
@@ -294,7 +294,7 @@ sub osbb_month_fees {
       width      => '100%',
       caption    => "Нарахування :  " . ($MONTHES[ int($month - 1) ] . " $year"),
       border     => 1,
-      title      => [ "$lang{ADDRESS_FLAT}", "$lang{FIO}", "<div class='text-center'>Нарахування (грн.)</div>"],
+      title      => [ "$lang{ADDRESS_FLAT}", "$lang{FIO}", "<div class='text-center'>$lang{FEES} (грн.)</div>"],
       ID         => 'MONTHLY_FEES',
       MENU       => "$lang{PRINT}:qindex=$index&header=2&print_form=1&$qs:print",
     }
@@ -359,6 +359,10 @@ sub osbb_month_fees {
           $fee = $service_info->{PRICE} * $user_line->{people_count};
           $tooltip .= "$service_info->{NAME} : $user_line->{people_count} * $service_info->{PRICE} = $fee<br>";
         }
+        if ($service_info->{UNIT}==3) {
+          $fee = $service_info->{PRICE};
+          $tooltip .= "$service_info->{NAME} : $fee<br>";
+        }
         $total_fee += $fee;
       }
 
@@ -385,7 +389,7 @@ sub osbb_month_fees {
         <tr>
           <td>$lang{ADDRESS_FLAT}</td>
           <td>$lang{FIO}</td>
-          <td>Нарахування</td>
+          <td>$lang{FEES}</td>
         </tr>
       <thead>
   <tbody>
@@ -432,73 +436,41 @@ sub osbb_month_fees {
 =cut
 #**********************************************************
 sub osbb_payments_add{
-  if (!defined($FORM{sub}) || $FORM{sub} eq '' ) {
-    $FORM{sub} = 1;
-  }
-  
-  my $active_button->{$FORM{sub}} = { class => 'active' };
-  my %nav_tabs = (
-    1 => "Pay",
-    2 => "Payments",
-    3 => "Import",
-  );
-    
-  my $buttons = '';
-  foreach( sort { $a <=> $b } keys(%nav_tabs) ){
-    $buttons .= $html->li( $html->button( $nav_tabs{$_}, "index=$index&sub=$_" ), $active_button->{$_} )
-  }
-  
-  print $html->element( 'div',
-    $html->element( 'ul', $buttons, { class => 'nav navbar-nav' }) ,
-    { class => 'navbar navbar-default' } );
-  
-  if($FORM{sub} == 3) {
-    #TODO
-    $html->message('info', "Under construction");
-    return 1;
-  }
-  elsif($FORM{sub} == 2) {
-    #TODO
-    $html->message('info', "Under construction");
-    return 1;
-  }
-  else {
-    if ($FORM{add} && $FORM{SUM}){
-      $FORM{SUM} =~ s/,/\./g;
-      if ($FORM{SUM} !~ /[0-9\.]+/) {
-        $html->message( 'err', $lang{ERROR}, "$lang{ERR_WRONG_SUM} SUM: $FORM{SUM}");
-        return 0;
-      }
+  if ($FORM{add} && $FORM{SUM}){
+    $FORM{SUM} =~ s/,/\./g;
+    if ($FORM{SUM} !~ /[0-9\.]+/) {
+      $html->message( 'err', $lang{ERROR}, "$lang{ERR_WRONG_SUM} SUM: $FORM{SUM}");
+      return 0;
+    }
       
-      my $user_info = $User->info($FORM{UID});
+    my $user_info = $User->info($FORM{UID});
+    $Osbb->payments_add({ %FORM, BILL_ID => $user_info->{BILL_ID} });
+    _error_show($Osbb);
+    if (!$Osbb->{errno}) {
+      $html->message('info', "$lang{ADDED}");
+      delete $FORM{SUM};
+    }
+  }
 
-      $Osbb->payments_add({ %FORM, BILL_ID => $user_info->{BILL_ID} });
-      _error_show($Osbb);
-      if (!$Osbb->{errno}) {
-        $html->message('info', "$lang{ADDED}");
-        delete $FORM{SUM};
-      }
-    }
-    my $Address = Address->new($db, $admin, \%conf);
-    my $builds_list = $Address->build_list({ COLS_NAME => 1, PAGE_ROWS => 1 });
-    _error_show($Address);
-    
-    $FORM{LOCATION_ID} = $FORM{LOCATION_ID} || $builds_list->[0]->{id};
-    my $build_sel = osbb_simple_build_select({ AUTO_SUBMIT => 1 , %FORM});
-    my $users_sel = _osbb_user_select();
-    my $ptype_sel = _osbb_payments_type_select();
+  my $Address = Address->new($db, $admin, \%conf);
+  my $builds_list = $Address->build_list({ COLS_NAME => 1, PAGE_ROWS => 1 });
+  _error_show($Address);
+
+  $FORM{LOCATION_ID} = $FORM{LOCATION_ID} || $builds_list->[0]->{id};
+  my $build_sel = osbb_simple_build_select({ AUTO_SUBMIT => 1 , %FORM});
+  my $users_sel = _osbb_user_select();
+  my $ptype_sel = _osbb_payments_type_select();
       
-    if (!$FORM{DATE}) {
-      $FORM{DATE} = $DATE;
-    }
-      
-    $html->tpl_show(_include('osbb_form_payments_add', 'Osbb'), {
-            PTYPE_SEL => $ptype_sel,
-            BUILD_SEL => $build_sel,
-            USERS_SEL => $users_sel,
-            %FORM
-            });
+  if (!$FORM{DATE}) {
+    $FORM{DATE} = $DATE;
   }
+      
+  $html->tpl_show(_include('osbb_form_payments_add', 'Osbb'), {
+          PTYPE_SEL => $ptype_sel,
+          BUILD_SEL => $build_sel,
+          USERS_SEL => $users_sel,
+          %FORM
+          });
   return 1;
 }
 
