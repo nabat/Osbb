@@ -371,6 +371,7 @@ sub osbb_month_fees {
     
     my $total_fee = 0;
     my $tooltip = '';
+    my $dsc = '';
 
     my $servises_list = $Osbb->users_services_list({
       UID           => $user_line->{uid},
@@ -387,20 +388,23 @@ sub osbb_month_fees {
         if ($service_info->{UNIT}==1) {
           $fee = $service_info->{PRICE} * $user_line->{living_area};
           $tooltip .= "$service_info->{NAME} : $user_line->{living_area} * $service_info->{PRICE} = $fee<br>";
+          $dsc .= "$service_info->{NAME} : $user_line->{living_area} * $service_info->{PRICE} = $fee; ";
         }
         if ($service_info->{UNIT}==2) {
           $fee = $service_info->{PRICE} * $user_line->{people_count};
           $tooltip .= "$service_info->{NAME} : $user_line->{people_count} * $service_info->{PRICE} = $fee<br>";
+          $dsc .= "$service_info->{NAME} : $user_line->{people_count} * $service_info->{PRICE} = $fee; ";
         }
         if ($service_info->{UNIT}==3) {
           $fee = $service_info->{PRICE};
           $tooltip .= "$service_info->{NAME} : $fee<br>";
+          $dsc .= "$service_info->{NAME} : $fee; ";
         }
         $total_fee += $fee;
       }
 
       $table->addrow($user_line->{address_flat}, $user_line->{fio}, "<div class='text-center' data-tooltip='$tooltip' data-tooltip-position='top'>$total_fee</div>");
-      push (@fees_array, [$user_line->{uid}, $user_line->{bill_id}, $total_fee]);
+      push (@fees_array, [$user_line->{uid}, $user_line->{bill_id}, $total_fee, $dsc]);
 
     $users_print_table .=
         "<tr><td>" . $user_line->{address_flat}
@@ -456,7 +460,7 @@ sub osbb_month_fees {
       }
     }  
     foreach ( @fees_array ) {
-      $Osbb->fees_add( {UID => $_->[0], BILL_ID => $_->[1], SUM => $_->[2], DATE => $period . "-01"} );
+      $Osbb->fees_add( {UID => $_->[0], BILL_ID => $_->[1], SUM => $_->[2], DATE => $period . "-01", DSC => $_->[3]} );
     }
   }
   
