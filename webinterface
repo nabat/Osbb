@@ -62,6 +62,7 @@ if($permissions{4}) {
   require Osbb::Import;
   require Osbb::Tarifs;
   require Osbb::Accounting;
+  require Osbb::Receipts;
 }
 
 if(%ADMIN_REPORT) {
@@ -208,15 +209,20 @@ sub osbb_registration {
         $html->message('err', $lang{ERROR}, "$FORM{PHONE} already registred");
       }
       else {
-        my $password = mk_unique_value($conf{PASSWD_LENGTH} || 8);
         $admin->add({ %FORM,
           ID          => $FORM{PHONE},
-          PASSWORD    => $password,
           NAME        => $FORM{FIO},
           A_LOGIN     => $FORM{PHONE},
           DOMAIN_ID   => $Multidoms->{INSERT_ID},
         });
-
+        
+        return 0 if _error_show($admin);
+        
+        my $password = mk_unique_value($conf{PASSWD_LENGTH} || 8, { EXTRA_RULES => '2:0' });
+        $admin->password($password, \%conf);
+  
+        return 0 if _error_show($admin);
+        
         if ($admin->{errno}) {
           $html->message('err', $lang{ERROR}, "[$admin->{errno}] $err_strs{$admin->{errno}}");
         }
@@ -236,7 +242,8 @@ sub osbb_registration {
             7 => { 0 => 1 },
             8 => { 0 => 1 },
           }, {});
-
+          
+          
           my $Address = Address->new( $db, $admin, \%conf );
           $Address->district_add({
             DOMAIN_ID => $Multidoms->{INSERT_ID},
@@ -264,8 +271,11 @@ sub osbb_registration {
           }
           else {
             my $message = $html->tpl_show(_include('osbb_reg_complete_mail', 'Osbb'), { %$Osbb, %FORM, PASSWORD => "$password" }, { OUTPUT2RETURN => 1 });
+            
+            # TODO: check mail was sent
             sendmail("$conf{ADMIN_MAIL}", "$FORM{EMAIL}", "$lang{REGISTRATION}", "$message", "$conf{MAIL_CHARSET}", '');
-            $html->message('info', "Реєстрація успішна.", "На пошту вам надіслано листа з інформацію про наступні дії.");
+            # TODO: localize
+            $html->message('info', "Реєстрація успішна", "На пошту ($FORM{EMAIL}) вам надіслано листа з інформацією про наступні дії.");
             return 1;
           }
         }
