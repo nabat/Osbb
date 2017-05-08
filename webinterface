@@ -62,6 +62,7 @@ if($permissions{4}) {
   require Osbb::Import;
   require Osbb::Tarifs;
   require Osbb::Accounting;
+  require Osbb::Receipts;
 }
 
 if(%ADMIN_REPORT) {
