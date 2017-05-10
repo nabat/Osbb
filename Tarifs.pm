@@ -21,20 +21,15 @@ my @units = ('', 'По площади', 'По количетву физ. лиц'
 
 #**********************************************************
 sub osbb_tarifs {
-
+  my $tarif_info = ();
   if ($FORM{add_form} || $FORM{chg}) {
-    $Osbb->osbb_tarifs_info($FORM{chg}) if ($FORM{chg});
+    $tarif_info = $Osbb->osbb_tarifs_info($FORM{chg}, { COLS_UPPER => 1, COLS_NAME => 1 }) if ($FORM{chg});
 
-    $Osbb->{UNITS_SEL} = $html->form_select(
-      'UNIT',
-      {
-        SELECTED => $FORM{UNIT} || $Osbb->{UNIT} || '',
-        SEL_ARRAY    => \@units,
-        ARRAY_NUM_ID => 1
-      }
-    );
-
-    $Osbb->{SET_ALL_CHEK} = 'checked' if ($Osbb->{SET_ALL});
+    $Osbb->{UNITS_SEL} = $html->form_select('UNIT', {
+      SELECTED     => $FORM{UNIT} || $tarif_info->{UNIT} || '',
+      SEL_ARRAY    => \@units,
+      ARRAY_NUM_ID => 1
+    });
   }
 
   if ($FORM{add_form}) {
@@ -43,7 +38,7 @@ sub osbb_tarifs {
 
     $html->message('info', $lang{INFO}, "$lang{ADD}");
 
-    $html->tpl_show(_include('osbb_tarifs', 'Osbb'), {%$Osbb});
+    $html->tpl_show(_include('osbb_tarifs', 'Osbb'), {%$Osbb, %$tarif_info});
   }
   elsif ($FORM{added}) {
     $Osbb->tarifs_add({%FORM});
@@ -51,31 +46,41 @@ sub osbb_tarifs {
     if (!$Osbb->{errno}) {
       $html->message('info', $lang{INFO}, "$lang{ADDED}");
     }
+    if ($FORM{SET_ALL}) {
+      my $new_tp = $Osbb->{INSERT_ID};
+      my $user_list = $Osbb->user_list();
+      foreach (@$user_list) {
+        $Osbb->users_services_add({ UID => $_->{uid}, TP_ID => $new_tp })
+      }
+    }
   }
   elsif ($FORM{del}) {
-    $Osbb->osbb_tarifs_del({ ID => $FORM{del} });
+    $Osbb->tarifs_del({ ID => $FORM{del} });
 
     if (!$Osbb->{errno}) {
       $html->message('info', $lang{INFO}, "$lang{DELETED}");
     }
   }
   elsif ($FORM{chg}) {
-
     if (!$Osbb->{errno}) {
       $Osbb->{ACTION}     = 'change';
       $Osbb->{ACTION_LNG} = $lang{CHANGE};
 
       $html->message('info', $lang{INFO}, "$lang{CHANGE}");
-
-      $html->tpl_show(_include('osbb_tarifs', 'Osbb'), {%$Osbb});
+      $html->tpl_show(_include('osbb_tarifs', 'Osbb'), { %$Osbb, %$tarif_info });
     }
   }
   elsif ($FORM{change}) {
-    $FORM{SET_ALL} = $FORM{SET_ALL} ? $FORM{SET_ALL} : 0;
-    $Osbb->osbb_tarifs_change({%FORM});
+    $Osbb->tarifs_change({%FORM});
 
     if (!$Osbb->{errno}) {
       $html->message('info', $lang{INFO}, "$lang{CHANGED}") if (!$Osbb->{errno});
+    }
+    if ($FORM{SET_ALL}) {
+      my $user_list = $Osbb->user_list();
+      foreach (@$user_list) {
+        $Osbb->users_services_add({ UID => $_->{uid}, TP_ID => $FORM{ID} })
+      }
     }
   }
 

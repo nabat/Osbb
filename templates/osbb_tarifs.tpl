@@ -39,7 +39,7 @@
  <div class='form-group'>
     <label class='col-lg-3 col-md-3 control-label'>_{PRICE}_</label>
     <div class='col-lg-2 col-md-2'>
-      <input type='text' class='form-control' name='PRICE' value='%PRICE%'>
+      <input type='number' class='form-control' name='PRICE' value='%PRICE%' step='0.01'>
     </div>
   </div>
 

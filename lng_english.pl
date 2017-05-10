@@ -25,5 +25,11 @@ $lang{ADD_TARIF}        = 'Add tarif';
 $lang{SET_TARIF_TO_ALL} = 'Set the tariff to everyone';
 $lang{COME_INTO_FORCE}  = 'Comes into force';
 $lang{HOUSING}          = 'Housing';
+$lang{MONTHLY_FEES}     = "MONTHLY_FEES";
+$lang{FEES}             = "FEES";
+
+$lang{ACCOUNTING_BALANCE} = "ACCOUNTING_BALANCE";
+$lang{START_SALDO}      = "START_SALDO";
+$lang{END_SALDO}        = "END_SALDO";
 
 1;

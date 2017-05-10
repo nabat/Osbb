@@ -22,7 +22,7 @@
 
 
 <div class='box box-theme box-big-form'>
-  <div class='box-header with-border'><h3 class='box-title'>_{REGISTRATION}_</h3></div>
+  <div class='box-header with-border'><h3 class='box-title'>_{REGISTRATION}_ _{OSBB}_</h3></div>
     <div class='box-body'>
     
     <!--div class='form-group'>
@@ -90,10 +90,7 @@
       <label class='control-element col-md-12 '>_{RULES}_</label>
       <div class='col-md-12'>
         <textarea cols=60 rows=14 class='form-control' readonly style='resize: none; overflow: auto;'>
-Twas brillig, and the slithy toves
-Did gyre and gimble in the wabe;
-All mimsy were the borogoves,
-And the mome raths outgrabe.
+
         </textarea>
       </div>
     </div>
