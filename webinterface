@@ -501,16 +501,6 @@ sub _osbb_user_create {
 }
 
 #**********************************************************
-=head2 _osbb_address_create()
-
-=cut
-#**********************************************************
-sub _osbb_address_create {
-  $html->message('info', "$lang{SUCCESS}", "$lang{ADDED}");
-  return 1;
-}
-
-#**********************************************************
 =head2 osbb_form_address()
 
 =cut
@@ -519,16 +509,29 @@ sub osbb_form_address {
   my $params = ();
   my $Address = Address->new($db, $admin, \%conf);
   
+  my $builds_list = $Address->build_list({
+    STREET_NAME    => '_SHOW',
+    DISTRICT_NAME  => '_SHOW',
+    DISTRICT_ID    => '_SHOW',
+  
+    COLS_NAME      => 1,
+    COLS_UPPER     => 1,
+  });
+  _error_show($Address);
+
   if ($FORM{adding}) {
     $params->{BUTTON} = $lang{ADD};
     $params->{ACTION} = 'add';
+    $params->{DISABLED} = 'readonly';
+    $params->{DISTRICT_NAME} = $builds_list->[0]->{DISTRICT_NAME};
     $html->tpl_show(_include('osbb_form_address', 'Osbb'), { %$params });
   }
   elsif ($FORM{change}) {
     $params->{BUTTON} = $lang{CHANGE_};
     $params->{ACTION} = 'chg';
+    $params->{build_id} = $FORM{change};
     my $build = $Address->build_list({
-      ID             => $FORM{change},
+      LOCATION_ID    => $FORM{change},
       STREET_NAME    => '_SHOW',
       DISTRICT_NAME  => '_SHOW',
   
@@ -539,31 +542,51 @@ sub osbb_form_address {
 
     $html->tpl_show(_include('osbb_form_address', 'Osbb'), { %$params, %{$build->[0]} });
   }
-  elsif ($FORM{add} || $FORM{chg}) {
-    _osbb_address_create(\%FORM); 
+  elsif ($FORM{add}) {
+    $Address->{debug}=1;
+    $Address->street_list({ STREET_NAME => '_SHOW', LIST2HASH => 'street_name,street_id' });
+    my $street_hash = $Address->{list_hash};
+    $Address->street_add({ NAME => $FORM{STREET_NAME}, DISTRICT_ID => $builds_list->[0]->{DISTRICT_ID} }) if (!defined($street_hash->{$FORM{STREET_NAME}}));
+    $Address->build_add({ ADD_ADDRESS_BUILD => $FORM{NUMBER}, STREET_ID => $street_hash->{$FORM{STREET_NAME}} || $Address->{INSERT_ID} });
+  }
+  elsif ($FORM{chg}) {
+    my $changed_build_info = $Address->build_list({ 
+      LOCATION_ID    => $FORM{build_id},
+      NUMBER         => '_SHOW',
+      STREET_ID      => '_SHOW',
+      STREET_NAME    => '_SHOW',
+      DISTRICT_ID    => '_SHOW',
+      DISTRICT_NAME  => '_SHOW',
+
+      COLS_NAME      => 1,
+    });
+    $Address->street_change({ ID => $changed_build_info->[0]->{street_id}, NAME => $FORM{STREET_NAME} }) if ($changed_build_info->[0]->{street_name} ne $FORM{STREET_NAME});
+    $Address->build_change({ ID => $changed_build_info->[0]->{location_id}, NUMBER => $FORM{NUMBER} }) if ($changed_build_info->[0]->{number} ne $FORM{NUMBER});
+    $Address->district_change({ ID => $changed_build_info->[0]->{district_id}, NAME => $FORM{DISTRICT_NAME}}) if ($changed_build_info->[0]->{district_name} ne $FORM{DISTRICT_NAME});
+    _error_show($Address);
   }
   
-  my $builds_list = $Address->build_list({
+  $builds_list = $Address->build_list({
     STREET_NAME    => '_SHOW',
     DISTRICT_NAME  => '_SHOW',
+    DISTRICT_ID    => '_SHOW',
   
     COLS_NAME      => 1,
     COLS_UPPER     => 1,
   });
-  _error_show($Address);
-  
+
   my $table = $html->table({
     width               => '100%',
     caption             => $lang{ADDRESS},
     border              => 1,
-    title               => [ $lang{CITY}, $lang{ADDRESS_STREET}, $lang{ADDRESS_BUILD}, ''],
+    title               => [ $lang{CITY}, $lang{ADDRESS_STREET}, $lang{ADDRESS_BUILD}],
     ID                  => 'ADDRESS',
     MENU                => "$lang{ADD}:index=$index&adding=1:btn bg-olive margin;",
     HAS_FUNCTION_FIELDS => 1,
   });
 
   foreach my $build_line (@$builds_list) {
-    my $change_button = $html->button($lang{CHANGE}, "index=$index&change=$build_line->{id}", {});
+    my $change_button = $html->button($lang{CHANGE_}, "index=$index&change=$build_line->{id}", {});
     $table->addrow($build_line->{DISTRICT_NAME}, $build_line->{STREET_NAME}, $build_line->{NUMBER}, $change_button);
   }
 

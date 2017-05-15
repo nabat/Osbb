@@ -1,6 +1,6 @@
 <form class='form-horizontal' action='$SELF_URL' method='post'>
-
   <input type=hidden name='index' value='$index'>
+  <input type=hidden name='build_id' value='%build_id%'>
   <div class='box box-theme box-form'>
     <div class='box-header with-border'>
       <h4 class='box-title'>_{ADDRESS}_</h4>
@@ -14,7 +14,7 @@
       <div class='form-group'>
         <label class='control-label col-md-2 col-lg-2 col-lg-offset-3' for='DISTRICT_NAME'>_{CITY}_</label>
         <div class='col-md-10 col-lg-4'>
-          <input name='DISTRICT_NAME' value='%DISTRICT_NAME%' class='form-control' type='text'>
+          <input name='DISTRICT_NAME' value='%DISTRICT_NAME%' class='form-control' type='text' %DISABLED%>
         </div>
       </div>
       <div class='form-group'>
