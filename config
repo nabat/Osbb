@@ -10,6 +10,7 @@ our %FUNCTIONS_LIST = (
   "17:10:$lang{TARIFS}:osbb_tarifs"                        => 5,
   "18:10:$lang{FEES}:osbb_month_fees"                      => 5,
   "19:10:Оборотно-сальдова відомість:osbb_calculated_balance" => 5,
+  "20:10:$lang{ADDRESS}:osbb_form_address"                 => 5,
 
 );
 
