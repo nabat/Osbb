@@ -228,7 +228,7 @@ sub osbb_parse_import_preview_form {
   my @rows = ();
   
   if ( !$rows_count ) {
-    $html->message('err', $lang{ERR_NO_DATA});
+    $html->message('err', $lang{NO_DATA});
     return 0;
   }
   
