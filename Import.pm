@@ -30,7 +30,7 @@ sub _osbb_users_import {
     fio          => $lang{FIO},
     phone        => $lang{PHONE},
     email        => $lang{EMAIL},
-    address_flat => $lang{FLAT},
+    address_flat => $lang{ADDRESS_FLAT},
     type         => $lang{TYPE},
     total_area   => $lang{TOTAL_AREA},
     living_area  => $lang{LIVING_AREA},
