@@ -142,7 +142,7 @@ my $Address = Address->new($db, $admin, \%conf);
   my $builds_list = $Address->build_list({ COLS_NAME => 1, PAGE_ROWS => 1 });
   _error_show($Address);
 
-  $FORM{LOCATION_ID} = $FORM{LOCATION_ID} || $builds_list->[0]->{id};
+  my $location_id = $FORM{LOCATION_ID} || $builds_list->[0]->{id};
 
 my $nav = $html->form_main({
       CONTENT => osbb_simple_build_select({%FORM}),
@@ -151,6 +151,11 @@ my $nav = $html->form_main({
     });
   func_menu({ $lang{NAME} => $nav },{}, {} );
 
+  if (!$location_id){
+    $html->message('err', "$lang{NO} $lang{BUILDS}", $html->button("$lang{ADD} $lang{ADDRESS}", 'index=91'));
+    return 0;
+  }
+  
   if ($FORM{adding}) {
     $html->tpl_show(_include('osbb_form_user_add', 'Osbb'), { %FORM, BUTTON => $lang{ADD} });
   }
@@ -171,7 +176,7 @@ my $nav = $html->form_main({
   }
 
   my $users_list = $Osbb->user_list({
-    LOCATION_ID   => $FORM{LOCATION_ID},
+    LOCATION_ID   => $location_id,
     FIO           => '_SHOW',
     ADDRESS_FLAT  => '_SHOW',
     UID           => '_SHOW',
@@ -192,13 +197,13 @@ my $nav = $html->form_main({
     border     => 1,
     title      => [ $lang{ADDRESS_FLAT}, $lang{FIO}, $lang{LIVING_AREA}, $lang{PEOPLE_COUNT}],
     ID         => 'HOUSING',
-    MENU       => "$lang{ADD}:index=$index&LOCATION_ID=$FORM{LOCATION_ID}&adding=1:btn bg-olive margin;"
-                . "$lang{IMPORT}:index=$index&LOCATION_ID=$FORM{LOCATION_ID}&import=1:btn bg-olive margin;"
-                . "$lang{SEARCH}:index=$index&LOCATION_ID=$FORM{LOCATION_ID}&search_form=1:btn bg-purple margin",
+    MENU       => "$lang{ADD}:index=$index&LOCATION_ID=$location_id&adding=1:btn bg-olive margin;"
+                . "$lang{IMPORT}:index=$index&LOCATION_ID=$location_id&import=1:btn bg-olive margin;"
+                . "$lang{SEARCH}:index=$index&LOCATION_ID=$location_id&search_form=1:btn bg-purple margin",
   });
 
   foreach my $user_line (@$users_list) {
-    my $user_button = $html->button($user_line->{fio}, "index=$index&LOCATION_ID=$FORM{LOCATION_ID}&usr=$user_line->{uid}&change=1", {});
+    my $user_button = $html->button($user_line->{fio}, "index=$index&LOCATION_ID=$location_id&usr=$user_line->{uid}&change=1", {});
     $table->addrow($user_line->{address_flat}, $user_button, $user_line->{LIVING_AREA}, $user_line->{PEOPLE_COUNT});
   }
 
