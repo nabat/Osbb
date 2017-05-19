@@ -24,91 +24,34 @@
       <p><b>Квитанція №17</b> від 07.04.2017 </p>
       <p><b>Платник:</b>Випадковий Чоловік</p>
 
+      <table class="table table-bordered">
+        <thead>
+        <tr>
+          <th colspan="1">#</th>
+          <th colspan="6">Нараховано за</th>
+          <th colspan="1">Сума</th>
+        </tr>
+        </thead>
 
-      <p class="c14"><span class="c9"></span></p><a id="t.e56bf15c8159c494de428f6770cc859f4d371b2b"></a><a id="t.0"></a>
-      <table class="c21">
-        <tbody>
+      <tbody>
         <tr>
-          <td colspan="1" rowspan="1"><p><span>Кз</span></p>
-          </td>
-          <td colspan="1" rowspan="1"><p><span>Тариф</span>
-          </p></td>
-          <td colspan="1" rowspan="1"><p><span>кВт*Год</span>
-          </p></td>
-          <td colspan="3" rowspan="1"><p><span>Сума</span>
-            </p></td>
-          <td colspan="1" rowspan="1"><p><span>&#1088;&#1085;</span></p></td>
-          <td colspan="1" rowspan="1"><p><span></span></p></td>
+          <td colspan="1">1</td>
+          <td colspan="6">Послуга 1</td>
+          <td colspan="1">10 грн</td>
         </tr>
         <tr>
-          <td colspan="1" rowspan="1"><p><span>1</span></p></td>
-          <td colspan="1" rowspan="1"><p><span>0,9</span></p></td>
-          <td colspan="1" rowspan="1"><p><span>100</span></p></td>
-          <td colspan="1" rowspan="1"><p><span>90</span></p></td>
-          <td colspan="1" rowspan="1"><p><span>&#1085;&#1072;&#1088;&#1072;&#1093;&#1086;&#1074;&#1072;&#1085;&#1086; &#1085;&#1072; &#1087;&#1086;&#1082;&#1072;&#1079;</span>
-          </p></td>
-          <td colspan="1" rowspan="1"><p><span>8677</span></p></td>
-          <td colspan="1" rowspan="1"><p><span>132,57</span></p></td>
-          <td colspan="1" rowspan="1"><p><span></span></p></td>
+          <td colspan="1">2</td>
+          <td colspan="6">Послуга 2</td>
+          <td colspan="1">20 грн</td>
         </tr>
         <tr>
-          <td colspan="1" rowspan="1"><p><span>1</span></p></td>
-          <td colspan="1" rowspan="1"><p><span>1,29</span></p></td>
-          <td colspan="1" rowspan="1"><p><span>-9</span></p></td>
-          <td colspan="1" rowspan="1"><p><span>-11,61</span></p></td>
-          <td colspan="1" rowspan="2"><p><span>&#1057;&#1087;&#1086;&#1078;&#1080;&#1090;&#1086;</span>
-          </p></td>
-          <td colspan="1" rowspan="2"><p><span>142</span></p></td>
-          <td colspan="1" rowspan="2"><p><span>164,07</span></p></td>
-          <td colspan="1" rowspan="1"><p><span></span></p></td>
+          <td colspan="1">&nbsp;</td>
+          <td colspan="5">&nbsp;</td>
+          <td colspan="1">Всього</td>
+          <td colspan="1"><b>30 грн</b></td>
         </tr>
-        <tr>
-          <td colspan="1" rowspan="2"><p><span>1</span></p></td>
-          <td colspan="1" rowspan="2"><p><span>1,68</span></p></td>
-          <td colspan="1" rowspan="2"><p><span>51</span></p></td>
-          <td colspan="1" rowspan="2"><p><span>35,68</span></p></td>
-          <td colspan="1" rowspan="1"><p><span></span></p></td>
-        </tr>
-        <tr>
-          <td colspan="2" rowspan="1"><p><span>&#1054;&#1087;&#1083;&#1072;&#1095;&#1077;&#1085;&#1086;</span>
-          </p></td>
-          <td colspan="1" rowspan="1"><p><span>139,00</span></p></td>
-          <td colspan="1" rowspan="1"><p><span></span></p></td>
-        </tr>
-        <tr>
-          <td colspan="1" rowspan="1"><p><span>&nbsp;</span></p></td>
-          <td colspan="1" rowspan="1"><p><span>&nbsp;</span></p></td>
-          <td colspan="1" rowspan="1"><p><span>&nbsp;</span></p></td>
-          <td colspan="1" rowspan="1"><p><span>&nbsp;</span></p></td>
-          <td colspan="2" rowspan="1"><p><span>&#1057;&#1091;&#1073;&#1089;&#1080;&#1076;&#1110;&#1103;</span>
-          </p></td>
-          <td colspan="1" rowspan="1"><p><span>&nbsp;</span></p></td>
-          <td colspan="1" rowspan="1"><p><span></span></p></td>
-        </tr>
-        <tr>
-          <td colspan="1" rowspan="1"><p><span>&nbsp;</span></p></td>
-          <td colspan="1" rowspan="1"><p><span>&nbsp;</span></p></td>
-          <td colspan="1" rowspan="1"><p><span>&nbsp;</span></p></td>
-          <td colspan="1" rowspan="1"><p><span>&nbsp;</span></p></td>
-          <td colspan="2" rowspan="1"><p><span>&#1053;&#1072;&#1088;&#1072;&#1093;&#1086;&#1074;&#1072;&#1085;&#1086; &#1085;&#1072; </span><span
-          >&#1087;&#1086;&#1082;&#1072;&#1079;</span><span>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#1072;&#1072;</span><span
-          >~</span><span>9</span></p></td>
-          <td colspan="1" rowspan="1"><p><span>157,V4</span></p></td>
-          <td colspan="1" rowspan="1"><p><span></span></p></td>
-        </tr>
-        <tr>
-          <td colspan="1" rowspan="1"><p><span>&nbsp;</span></p></td>
-          <td colspan="1" rowspan="1"><p><span>&nbsp;</span></p></td>
-          <td colspan="1" rowspan="1"><p><span>&nbsp;</span></p></td>
-          <td colspan="1" rowspan="1"><p><span>&nbsp;</span></p></td>
-          <td colspan="2" rowspan="1"><p><span>&#1055;&#1086;&#1090;&#1086;&#1095;&#1085;&#1072; &#1086;&#1087;&#1083;&#1072;&#1090;&#1072;</span>
-          </p></td>
-          <td colspan="1" rowspan="1"><p><span>&nbsp;</span></p></td>
-          <td colspan="1" rowspan="1"><p><span></span></p></td>
-        </tr>
-        </tbody>
+      </tbody>
       </table>
-      <p class="c14"><span class="c9"></span></p>
     </div>
   </div>
 </div>
