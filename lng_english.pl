@@ -31,5 +31,6 @@ $lang{FEES}             = "FEES";
 $lang{ACCOUNTING_BALANCE} = "ACCOUNTING_BALANCE";
 $lang{START_SALDO}      = "START_SALDO";
 $lang{END_SALDO}        = "END_SALDO";
+$lang{UNDER_CONSTRUCTION} = "Under construction";
 
 1;

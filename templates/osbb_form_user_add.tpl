@@ -61,7 +61,7 @@
     </div>
     
     <div class='box-footer'>
-      <input type=submit name=add value='%BUTTON%' class='btn btn-primary pull-right'>
+      <input type=submit name=add value='%BUTTON%' class='btn btn-primary'>
     </div>
   </div>
 </FORM>

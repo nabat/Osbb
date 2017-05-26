@@ -90,7 +90,7 @@
       <label class='control-element col-md-12 '>_{RULES}_</label>
       <div class='col-md-12'>
         <textarea cols=60 rows=14 class='form-control' readonly style='resize: none; overflow: auto;'>
-
+%OSBB_RULES%
         </textarea>
       </div>
     </div>
