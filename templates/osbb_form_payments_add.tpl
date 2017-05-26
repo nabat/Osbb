@@ -13,7 +13,7 @@
     
     <div class='box-body'>
       <div class='form-group'>
-        <label class='control-label col-md-3'>Источник платежа</label>
+        <label class='control-label col-md-3'>_{PAYMENT_TYPE}_</label>
         <div class='col-md-9'>
           <div class='form-group no-margin'>%PTYPE_SEL%</div>
         </div>
@@ -45,7 +45,7 @@
     
     
     <div class='box-footer'>
-      <input type=submit name=add value='_{ADD}_' class='btn btn-primary pull-right'>
+      <input type=submit name=add value='_{ADD}_' class='btn btn-primary'>
     </div>
   </div>
 </FORM>

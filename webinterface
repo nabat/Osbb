@@ -10,7 +10,7 @@ use strict;
 use warnings FATAL => 'all';
 
 use Osbb::db::Osbb;
-use Abills::Base qw(convert _bp mk_unique_value sendmail);
+use Abills::Base qw(cmd convert _bp mk_unique_value sendmail);
 use Abills::Filters qw(human_exp);
 use JSON;
 use Users;
@@ -345,6 +345,7 @@ sub osbb_registration {
             sendmail("$conf{ADMIN_MAIL}", "$FORM{EMAIL}", "$lang{REGISTRATION}", "$message", "$conf{MAIL_CHARSET}", '');
             # TODO: localize
             $html->message('info', "Реєстрація успішна", "На пошту ($FORM{EMAIL}) вам надіслано листа з інформацією про наступні дії.");
+            _copy_template($Multidoms->{INSERT_ID});
             return 1;
           }
         }
@@ -352,6 +353,16 @@ sub osbb_registration {
       _error_show($admin);
       _error_show($Multidoms);
     }
+  }
+  
+  $attr->{OSBB_RULES} = '';
+  my $content = file_op({
+    FILENAME  => 'rules.txt',
+    PATH      => $conf{base_dir} . "/Abills/modules/Osbb",
+    ROWS      => 1
+  });
+  foreach (@$content){
+    $attr->{OSBB_RULES} .= $_ . "\n";
   }
 
   $html->tpl_show(_include('osbb_registration', 'Osbb'), { %$Osbb, %$attr, %FORM }, { ID => 'OSBB_REGISTRATION' });
@@ -404,17 +415,12 @@ sub osbb_simple_build_select {
 =cut
 #**********************************************************
 sub _osbb_payments_type_select {
-  my $Payments = Payments->new($db, $admin, \%conf);
-  my $ptype_list = $Payments->payment_type_list({
-    COLS_NAME => 1,
-    SORT      => 'id',
-  });
-  _error_show($Payments);
-  
+    
   return $html->form_select('METHOD', {
-      SELECTED    => $FORM{METHOD} || '',
-      SEL_LIST    => $ptype_list,
-      NO_ID       => 1,
+      SELECTED     => $FORM{METHOD} || '',
+      SEL_ARRAY    => [$lang{CASH}, $lang{BANK}, $lang{COMPENSATION}, $lang{CORRECTION}],
+      ARRAY_NUM_ID => 1,
+      NO_ID        => 1,
   });
 
 }
@@ -591,6 +597,20 @@ sub osbb_form_address {
   }
 
   print $table->show();
+  
+  return 1;
+}
+
+#**********************************************************
+=head2 _copy_template(DOMAIN_ID)
+
+=cut
+#**********************************************************
+sub _copy_template {
+  my ($domain) = @_;
+  
+  print cmd("mkdir /usr/abills/Abills/templates/$domain/");
+  print cmd("cp /usr/abills/Abills/templates/0/_admin_menu.tpl /usr/abills/Abills/templates/$domain/_admin_menu.tpl");
   
   return 1;
 }
