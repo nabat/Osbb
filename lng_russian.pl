@@ -33,4 +33,6 @@ $lang{FEES}             = "Начисления";
 $lang{ACCOUNTING_BALANCE} = "Оборотно-сальдовая ведомость";
 $lang{START_SALDO}      = "Сальдо на начало";
 $lang{END_SALDO}        = "Сальдо на конец";
+$lang{UNDER_CONSTRUCTION} = "В разработке";
+
 1;

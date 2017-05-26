@@ -620,4 +620,12 @@ sub _copy_template {
   return 1;
 }
 
+#**********************************************************
+=head2 _under_construction ()
+
+=cut
+#**********************************************************
+sub _under_construction {
+  $html->message('info', "$lang{UNDER_CONSTRUCTION}");
+}
 1;
