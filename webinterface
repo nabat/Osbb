@@ -522,7 +522,7 @@ sub osbb_form_address {
   
   my $builds_list = $Address->build_list({
     STREET_NAME    => '_SHOW',
-    DISTRICT_NAME  => '_SHOW',
+    CITY           => '_SHOW',
     DISTRICT_ID    => '_SHOW',
   
     COLS_NAME      => 1,
@@ -534,7 +534,7 @@ sub osbb_form_address {
     $params->{BUTTON} = $lang{ADD};
     $params->{ACTION} = 'add';
     $params->{DISABLED} = 'readonly';
-    $params->{DISTRICT_NAME} = $builds_list->[0]->{DISTRICT_NAME};
+    $params->{CITY} = $builds_list->[0]->{CITY};
     $html->tpl_show(_include('osbb_form_address', 'Osbb'), { %$params });
   }
   elsif ($FORM{change}) {
@@ -544,7 +544,8 @@ sub osbb_form_address {
     my $build = $Address->build_list({
       LOCATION_ID    => $FORM{change},
       STREET_NAME    => '_SHOW',
-      DISTRICT_NAME  => '_SHOW',
+      DISTRICT_ID    => '_SHOW',
+      CITY           => '_SHOW',
   
       COLS_NAME      => 1,
       COLS_UPPER     => 1,
@@ -567,19 +568,19 @@ sub osbb_form_address {
       STREET_ID      => '_SHOW',
       STREET_NAME    => '_SHOW',
       DISTRICT_ID    => '_SHOW',
-      DISTRICT_NAME  => '_SHOW',
+      CITY           => '_SHOW',
 
       COLS_NAME      => 1,
     });
     $Address->street_change({ ID => $changed_build_info->[0]->{street_id}, NAME => $FORM{STREET_NAME} }) if ($changed_build_info->[0]->{street_name} ne $FORM{STREET_NAME});
     $Address->build_change({ ID => $changed_build_info->[0]->{location_id}, NUMBER => $FORM{NUMBER} }) if ($changed_build_info->[0]->{number} ne $FORM{NUMBER});
-    $Address->district_change({ ID => $changed_build_info->[0]->{district_id}, NAME => $FORM{DISTRICT_NAME}}) if ($changed_build_info->[0]->{district_name} ne $FORM{DISTRICT_NAME});
+    $Address->district_change({ ID => $changed_build_info->[0]->{district_id}, CITY => $FORM{CITY}}) if ($changed_build_info->[0]->{city} ne $FORM{CITY});
     _error_show($Address);
   }
   
   $builds_list = $Address->build_list({
     STREET_NAME    => '_SHOW',
-    DISTRICT_NAME  => '_SHOW',
+    CITY           => '_SHOW',
     DISTRICT_ID    => '_SHOW',
   
     COLS_NAME      => 1,
@@ -598,7 +599,7 @@ sub osbb_form_address {
 
   foreach my $build_line (@$builds_list) {
     my $change_button = $html->button($lang{CHANGE_}, "index=$index&change=$build_line->{id}", {});
-    $table->addrow($build_line->{DISTRICT_NAME}, $build_line->{STREET_NAME}, $build_line->{NUMBER}, $change_button);
+    $table->addrow($build_line->{CITY}, $build_line->{STREET_NAME}, $build_line->{NUMBER}, $change_button);
   }
 
   print $table->show();
