@@ -106,7 +106,7 @@ sub osbb_calculated_balance {
       ID         => 'OSBB_CALCULATED_BALANCE',
       EXPORT     => 1,
       MENU       => "$lang{PRINT} $lang{ACCOUNTING_BALANCE}:qindex=$index&header=2&print_form=1$qs:btn bg-olive margin;"
-                  . "$lang{PRINT} $lang{RECEIPTS}:qindex=$index&header=1&print_receipts=1:btn bg-purple margin;"
+                  . "$lang{PRINT} $lang{RECEIPTS}:index=$index&header=1&print_receipts=1:btn bg-purple margin;"
     }
   );
 
@@ -226,6 +226,9 @@ sub osbb_calculated_balance {
   }
 
   if ($FORM{print_receipts}){
+
+    _under_construction();
+    return 1;
     my $print_info;
     foreach my $user_receipt (@data_for_receipts){
       $print_info .= $html->tpl_show(_include('osbb_receipt', 'Osbb'),
@@ -237,7 +240,6 @@ sub osbb_calculated_balance {
     }
 
     print $print_info;
-    return 1;
   }
 
   $params->{TABLE} =  $table->show();
@@ -346,7 +348,7 @@ sub osbb_month_fees {
   my $table = $html->table(
     {
       width      => '100%',
-      caption    => "$lang{FEES} :  " . ($MONTHES[ int($month - 1) ] . " $year"),
+      caption    => "Нарахування :  " . ($MONTHES[ int($month - 1) ] . " $year"),
       border     => 1,
       title      => [ "$lang{ADDRESS_FLAT}", "$lang{FIO}", "<div class='text-center'>$lang{FEES} (грн.)</div>"],
       ID         => 'MONTHLY_FEES',
