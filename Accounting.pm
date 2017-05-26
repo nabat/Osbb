@@ -60,7 +60,7 @@ sub osbb_calculated_balance {
 
   my ($year, $month, undef) = split('-', $DATE);
 
-  $params->{BUTTON} = $lang{SAVE};
+  $params->{BUTTON} = $lang{ADD};
   $params->{ACTION} = 'save';
 
   if ($FORM{MONTH}) {
@@ -105,7 +105,8 @@ sub osbb_calculated_balance {
       title      => [ $lang{ADDRESS_FLAT}, $lang{FIO}, $lang{START_SALDO} , $lang{FEES}, $lang{PAYMENTS}, $lang{END_SALDO}  ],
       ID         => 'OSBB_CALCULATED_BALANCE',
       EXPORT     => 1,
-      MENU       => "$lang{PRINT}:qindex=$index&header=2&print_form=1$qs:print"
+      MENU       => "$lang{PRINT} $lang{ACCOUNTING_BALANCE}:qindex=$index&header=2&print_form=1$qs:btn bg-olive margin;"
+                  . "$lang{PRINT} $lang{RECEIPTS}:index=$index&header=1&print_receipts=1:btn bg-purple margin;"
     }
   );
 
@@ -132,6 +133,9 @@ sub osbb_calculated_balance {
 
   my $users_print_table = '';
 
+  my @data_for_receipts = ();
+
+  # store data in table for each user
   foreach my $user_line (@$users_list) {
     my $balance_report_info = $Extfin->extfin_report_balance_info({ PERIOD => $period, BILL_ID => $user_line->{bill_id}, COLS_NAME => 1 });
 
@@ -149,7 +153,7 @@ sub osbb_calculated_balance {
 
     my $saldo = (($balance_report_info->{SUM} || 0.00) * (-1)) + $Fees->{SUM} - $Payments->{SUM};
 
-    my $user_button = $html->button($user_line->{fio} || "Немає ФІО", "index=15&UID=$user_line->{uid}", {});
+    my $user_button = $html->button($user_line->{fio} || "Немає ФІО", "index=" . get_function_index('osbb_users_list'). "&usr=$user_line->{uid}&change=1", {});
 
     $table->addrow($user_line->{address_flat}, $user_button, sprintf('%.2f', (($balance_report_info->{SUM} || 0.00) * (-1))), sprintf('%.2f', $Fees->{SUM}), sprintf('%.2f', $Payments->{SUM}), sprintf('%.2f', $saldo));
 
@@ -174,6 +178,8 @@ sub osbb_calculated_balance {
     $total_payments  += $Payments->{SUM};
     $total_new_saldo += $saldo;
     $balance_next_period{$user_line->{bill_id}} = $saldo;
+
+    push(@data_for_receipts, {FIO => $user_line->{fio} || '', SALDO => $saldo, });
   }
 
   $table->addrow('-', '-', '-', '-', '-', '-');
@@ -217,6 +223,23 @@ sub osbb_calculated_balance {
     );
 
     return 1;
+  }
+
+  if ($FORM{print_receipts}){
+
+    _under_construction();
+    return 1;
+    my $print_info;
+    foreach my $user_receipt (@data_for_receipts){
+      $print_info .= $html->tpl_show(_include('osbb_receipt', 'Osbb'),
+      {
+       %$user_receipt
+      },
+      {OUTPUT2RETURN => 1}
+      );
+    }
+
+    print $print_info;
   }
 
   $params->{TABLE} =  $table->show();
@@ -325,7 +348,7 @@ sub osbb_month_fees {
   my $table = $html->table(
     {
       width      => '100%',
-      caption    => "$lang{FEES} :  " . ($MONTHES[ int($month - 1) ] . " $year"),
+      caption    => "Нарахування :  " . ($MONTHES[ int($month - 1) ] . " $year"),
       border     => 1,
       title      => [ "$lang{ADDRESS_FLAT}", "$lang{FIO}", "<div class='text-center'>$lang{FEES} (грн.)</div>"],
       ID         => 'MONTHLY_FEES',
@@ -510,7 +533,6 @@ sub osbb_payments_add{
           });
   return 1;
 }
-
 
 1
 
