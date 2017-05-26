@@ -60,7 +60,7 @@ sub osbb_calculated_balance {
 
   my ($year, $month, undef) = split('-', $DATE);
 
-  $params->{BUTTON} = $lang{SAVE};
+  $params->{BUTTON} = $lang{ADD};
   $params->{ACTION} = 'save';
 
   if ($FORM{MONTH}) {
@@ -153,7 +153,7 @@ sub osbb_calculated_balance {
 
     my $saldo = (($balance_report_info->{SUM} || 0.00) * (-1)) + $Fees->{SUM} - $Payments->{SUM};
 
-    my $user_button = $html->button($user_line->{fio} || "Немає ФІО", "index=15&UID=$user_line->{uid}", {});
+    my $user_button = $html->button($user_line->{fio} || "Немає ФІО", "index=" . get_function_index('osbb_users_list'). "&usr=$user_line->{uid}&change=1", {});
 
     $table->addrow($user_line->{address_flat}, $user_button, sprintf('%.2f', (($balance_report_info->{SUM} || 0.00) * (-1))), sprintf('%.2f', $Fees->{SUM}), sprintf('%.2f', $Payments->{SUM}), sprintf('%.2f', $saldo));
 
