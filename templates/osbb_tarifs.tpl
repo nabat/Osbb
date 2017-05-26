@@ -29,7 +29,7 @@
     </div>
   </div>
 
- <div class='form-group'>
+ <div class='form-group' hidden>
     <label class='col-lg-3 col-md-3 control-label'>_{COME_INTO_FORCE}_</label>
     <div class='col-lg-3 col-md-3'>
       <input id="START_DATE" name="START_DATE" value="%START_DATE%" placeholder="0000-00-00" class="form-control datepicker" rel="tcal" type="text">
