@@ -325,7 +325,7 @@ sub osbb_month_fees {
   my $table = $html->table(
     {
       width      => '100%',
-      caption    => "Нарахування :  " . ($MONTHES[ int($month - 1) ] . " $year"),
+      caption    => "$lang{FEES} :  " . ($MONTHES[ int($month - 1) ] . " $year"),
       border     => 1,
       title      => [ "$lang{ADDRESS_FLAT}", "$lang{FIO}", "<div class='text-center'>$lang{FEES} (грн.)</div>"],
       ID         => 'MONTHLY_FEES',
