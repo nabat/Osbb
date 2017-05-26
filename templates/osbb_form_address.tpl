@@ -12,9 +12,9 @@
     </div>
     <div class='box-body'>
       <div class='form-group'>
-        <label class='control-label col-md-2 col-lg-2 col-lg-offset-3' for='DISTRICT_NAME'>_{CITY}_</label>
+        <label class='control-label col-md-2 col-lg-2 col-lg-offset-3' for='CITY'>_{CITY}_</label>
         <div class='col-md-10 col-lg-4'>
-          <input name='DISTRICT_NAME' value='%DISTRICT_NAME%' class='form-control' type='text' %DISABLED%>
+          <input name='CITY' value='%CITY%' class='form-control' type='text' %DISABLED%>
         </div>
       </div>
       <div class='form-group'>
