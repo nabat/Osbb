@@ -12,7 +12,7 @@
 
   <div class="col-md-8">
     <p><b>Квитанція №17</b> від 07.04.2017 </p>
-    <p><b>Платник:</b>Випадковий Чоловік</p>
+    <p><b>Платник:</b>%FIO%</p>
 
     <table class="table table-bordered">
       <thead>
@@ -36,7 +36,7 @@
       </tr>
       <tr>
         <td colspan="7" align="right"><span class="text-right"><b>До оплати:</b></span></td>
-        <td colspan="1"><b>30 грн</b></td>
+        <td colspan="1"><b>%SALDO%</b></td>
       </tr>
       </tbody>
     </table>
