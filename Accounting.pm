@@ -247,7 +247,7 @@ sub osbb_calculated_balance {
       $print_info .= $html->tpl_show(_include('osbb_receipt', 'Osbb'),
       {
        %$user_receipt,
-       BREAK_PAGE => ($count++ % 9 == 0) ? 'style="page-break-after: always"' : '',
+       BREAK_PAGE => ($count++ % 9 == 0) ? 'style="page-break-after: always;" clear="all"' : '',
       },
       {OUTPUT2RETURN => 1}
       );

@@ -14,4 +14,4 @@
 </table>
 
 
-<p><br %BREAK_PAGE%></p>
+<p><br %BREAK_PAGE% /></p>
