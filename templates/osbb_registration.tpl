@@ -22,16 +22,21 @@
 
 
 <div class='box box-theme box-big-form'>
-  <div class='box-header with-border'><h3 class='box-title'>_{REGISTRATION}_ _{OSBB}_</h3></div>
-    <div class='box-body'>
-    
-    <!--div class='form-group'>
-      <label class='control-label col-md-3' for='LANGUAGE'>_{LANGUAGE}_</label>
-      <div class='col-md-9'>
-        %SEL_LANGUAGE%
+  <div class='box-header with-border'>
+    <div class='row'>
+      <div class='col-md-8'>
+        <h3 class='box-title'>_{REGISTRATION}_ _{OSBB}_</h3>
       </div>
-    </div-->
-      
+      <label class='control-label col-md-2' for='LANGUAGE'>_{LANGUAGE}_</label>
+      <div class='col-md-2'>
+        <div class='form-group no-margin pull-right'>
+          %SEL_LANGUAGE%
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class='box-body'>
+   
     <!--div class='form-group'>
       <label class='control-label required col-md-3' for='LOGIN'>_{LOGIN}_</label>
       <div class='col-md-9'>
@@ -89,12 +94,12 @@
     <div class='form-group text-center'>
       <label class='control-element col-md-12 '>_{RULES}_</label>
       <div class='col-md-12'>
-        <textarea cols=60 rows=14 class='form-control' readonly style='resize: none; overflow: auto;'>
+        <textarea cols=60 rows=10 class='form-control' readonly style='resize: none; overflow: auto;'>
 %OSBB_RULES%
         </textarea>
       </div>
     </div>
-    <div class='checkbox pull-right'>
+    <div class='checkbox'>
       <label>
         <input type='checkbox' name='ACCEPT_RULES'>
         <strong>_{ACCEPT}_</strong>
@@ -106,7 +111,7 @@
   </div>
 
 <div class='box-footer'>
-    <input type=submit name=reg value='_{REGISTRATION}_' class='btn btn-primary pull-right'>
+    <input type=submit name=reg value='_{REGISTRATION}_' class='btn btn-primary'>
 </div>
 
 

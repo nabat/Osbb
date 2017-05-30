@@ -1,6 +1,6 @@
 <FORM action='$SELF_URL' METHOD=GET ID='add_user' class='form-horizontal'>
 <input type=hidden name='index' value='$index'>
-<input type=hidden name='adding' value='1'>
+<input type=hidden name='usr' value=%usr%>
 <input type=hidden name='LOCATION_ID' value='%LOCATION_ID%'>
   <div class='box box-theme box-form'>
     <div class='box-header with-border'>
@@ -61,7 +61,7 @@
     </div>
     
     <div class='box-footer'>
-      <input type=submit name=add value='%BUTTON%' class='btn btn-primary'>
+      <input type=submit name='%ACTION%' value='%BUTTON%' class='btn btn-primary'>
     </div>
   </div>
 </FORM>

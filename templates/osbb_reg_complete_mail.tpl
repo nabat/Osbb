@@ -8,4 +8,4 @@ PASSWORD: %PASSWORD%
 FIO:      %FIO%
 EMAIL:    %EMAIL%
 
-Site: http://
+Site: https://portal.myosbb.net/admin
