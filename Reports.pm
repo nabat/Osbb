@@ -26,7 +26,7 @@ sub osbb_start_page {
   my %START_PAGE_F = (
       'osbb_quick_menu'     => "$lang{OSBB} $lang{MENU}",
       'osbb_finance_report' => "$lang{OSBB} $lang{BALANCE}",
-      'osbb_users_summary'  => "$lang{HOUSING}",
+      'osbb_tarifs_info'    => "$lang{OSBB} $lang{TARIFS}",
   );
 
   return \%START_PAGE_F;
@@ -107,26 +107,26 @@ sub osbb_finance_report {
 }
 
 #**********************************************************
-=head2 osbb_users_summary($attr)
+=head2 osbb_tarifs_info($attr)
 
 =cut
 #**********************************************************
-sub osbb_users_summary{
-  #my ($attr) = @_;
+sub osbb_tarifs_info{
 
-  my $Extfin = Extfin->new($db, $admin, \%conf);
   my $Osbb = Osbb->new($db, $admin, \%conf);
-  my $User = Users->new($db, $admin, \%conf);
 
   my $table = $html->table(
     {
       width       => '100%',
-      caption     => "$lang{HOUSING}",
-      ID          => 'USERS_SUMMARY',
-      title_plain => [ $lang{ADDRESS_BUILD}, $lang{HOUSING}],
-      
+      caption     => "$lang{TARIFS}",
+      ID          => 'TARIFS',
     }
-  );
+  ); 
+  my @unit_list = ('', 'за м.кв.', 'за человека', '');
+  my $tarifs_list = $Osbb->osbb_tarifs_list({ UNIT => '_SHOW', NAME => '_SHOW', PRICE => '_SHOW', COLS_NAME => 1, COLS_UPPER => 1 });
+  foreach my $tarif_line (@$tarifs_list) {
+    $table->addrow($tarif_line->{NAME}, $tarif_line->{PRICE}, $unit_list[$tarif_line->{UNIT}] || '');
+  }
 
   return $table->show();
 }
