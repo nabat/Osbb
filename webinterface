@@ -35,6 +35,7 @@ our (
 
 my $Osbb = Osbb->new($db, $admin, \%conf);
 my $User = Users->new($db, $admin, \%conf);
+my $Address = Address->new($db, $admin, \%conf);
 
 if ( form_purchase_module({
   HEADER          => $users->{UID},
@@ -141,14 +142,13 @@ sub osbb_users_list {
     $Osbb->user_change({ UID => $FORM{usr}, %FORM });
   }
   
-  my $Address = Address->new($db, $admin, \%conf);
   my $builds_list = $Address->build_list({ COLS_NAME => 1, PAGE_ROWS => 1 });
   _error_show($Address);
   
   my $location_id = $FORM{LOCATION_ID} || $builds_list->[0]->{id};
   
   my $nav = $html->form_main({
-    CONTENT => osbb_simple_build_select({ %FORM }),
+    CONTENT => osbb_form_address_select(\%FORM), #osbb_simple_build_select({ %FORM }),
     HIDDEN  => { index => $index },
     class   => 'navbar-form navbar-right',
   });
@@ -542,7 +542,6 @@ sub _osbb_user_create {
 #**********************************************************
 sub osbb_form_address {
   my $params = ();
-  my $Address = Address->new($db, $admin, \%conf);
   
   my $builds_list = $Address->build_list({
     STREET_NAME => '_SHOW',
@@ -637,6 +636,76 @@ sub osbb_form_address {
 }
 
 #**********************************************************
+=head2 osbb_form_address_select() - forms selection for current address
+
+=cut
+#**********************************************************
+sub osbb_form_address_select {
+  my ($attr) = @_;
+  
+  my $builds_list = $Address->build_list({
+    COLS_NAME   => 1,
+    STREET_NAME => '_SHOW',
+    PAGE_ROWS   => 10000
+  });
+  
+  if ( _error_show($Address) ) {
+    $html->message('err', $lang{ERROR}, 'Error retrieving builds');
+    return '';
+  }
+  
+  my $result = '';
+  my $show_add_build_btn = 0;
+  my $no_padding = 0;
+  
+  if ( $builds_list && ref $builds_list eq 'ARRAY' && scalar(@{$builds_list}) > 1 ) {
+    $result = osbb_simple_build_select($attr);
+    $no_padding = 1;
+  }
+  
+  my %add_build_button_params = ();
+  
+  if ( !$builds_list || ref $builds_list ne 'ARRAY' || !scalar( @{$builds_list} ) ) {
+    %add_build_button_params =
+      (
+        class    => 'btn btn-primary',
+        ADD_ICON => 'glyphicon glyphicon-plus'
+      );
+    
+    $result = '';
+    $show_add_build_btn = 1;
+    $no_padding = 1;
+  
+  }
+  elsif ( scalar( @{$builds_list} ) == 1 ) {
+    %add_build_button_params =
+      (
+        class => 'btn btn-xs btn-primary',
+        ICON  => 'glyphicon glyphicon-plus'
+      );
+  
+    my $build = $builds_list->[0];
+    $result = " $build->{street_name}, $build->{number} ";
+    $show_add_build_btn = 1;
+  }
+  
+  my $add_build_button = $html->button("$lang{ADD} $lang{BUILD}",
+    'get_index=form_districts&full=1',
+    \%add_build_button_params
+  );
+  
+  return $html->tpl_show(templates('form_row_dynamic_size'), {
+      COLS_LEFT  => 'col-md-3',
+      COLS_RIGHT => 'col-md-9',
+      NAME       => $html->element('p', "$lang{ADDRESS}:", { class => 'form-control-static' }),
+      VALUE      => $html->element('p', $result . ( $show_add_build_btn ? $add_build_button : '' ),     {
+                      class => 'form-control-static text-muted text-bold',
+                      style => 'white-space : nowrap; ' . ( $no_padding ? 'padding : 0 5px;' : '' )
+                    })
+    }, { OUTPUT2RETURN => 1 } );
+}
+
+#**********************************************************
 =head2 _copy_template(DOMAIN_ID)
 
 =cut
@@ -658,4 +727,5 @@ sub _copy_template {
 sub _under_construction {
   $html->message('info', "$lang{UNDER_CONSTRUCTION}");
 }
+
 1;
