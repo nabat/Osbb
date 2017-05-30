@@ -9,7 +9,7 @@
     <td><b>Адрес</b></td><td>&nbsp %ADDRESS%</td>
   </tr>
   <tr>
-    <td><b>До оплати</b></td><td>&nbsp %SALDO%</td>
+    <td><b>%SALDO_TEXT%</b></td><td>&nbsp %SALDO%</td>
   </tr>
 </table>
 

@@ -187,7 +187,8 @@ sub osbb_calculated_balance {
     $balance_next_period{$user_line->{bill_id}} = $saldo;
   
     push(@data_for_receipts, { FIO        => $user_line->{fio} || '', 
-                               SALDO      => $saldo, 
+                               SALDO      => $saldo <= 0 ? sprintf('%.2f грн.', $saldo * (-1)) : sprintf('%.2f грн.',$saldo),
+                               SALDO_TEXT =>  $saldo <= 0 ? "До оплати" : "Переплата",
                                ADDRESS => "$user_line->{address_street} $user_line->{address_build}, $user_line->{address_flat}", 
                                PERIOD     => ($MONTHES[ int($month - 1) ] . " $year"),
                               });
