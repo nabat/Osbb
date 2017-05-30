@@ -26,7 +26,7 @@ sub osbb_start_page {
   my %START_PAGE_F = (
       'osbb_quick_menu'     => "$lang{OSBB} $lang{MENU}",
       'osbb_finance_report' => "$lang{OSBB} $lang{BALANCE}",
-      'osbb_tarifs_info'    => "$lang{OSBB} $lang{TARIFS}",
+      'osbb_tarifs_report'    => "$lang{OSBB} $lang{TARIFS}",
   );
 
   return \%START_PAGE_F;
@@ -111,7 +111,7 @@ sub osbb_finance_report {
 
 =cut
 #**********************************************************
-sub osbb_tarifs_info{
+sub osbb_tarifs_report{
 
   my $Osbb = Osbb->new($db, $admin, \%conf);
 
