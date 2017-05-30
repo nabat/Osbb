@@ -136,7 +136,14 @@ sub osbb_calculated_balance {
   my @data_for_receipts = ();
 
   # store data in table for each user
-  foreach my $user_line (@$users_list) {
+  foreach my $user_line (sort { 
+                            my ($anum, $bnum); 
+                            $a->{address_flat} =~ /^(\d+)*/;
+                            $anum = $1 || 0;
+                            $b->{address_flat} =~ /^(\d+)*/;
+                            $bnum = $1 || 0;
+                            $anum <=> $bnum; 
+                        } @$users_list) {
     my $balance_report_info = $Extfin->extfin_report_balance_info({ PERIOD => $period, BILL_ID => $user_line->{bill_id}, COLS_NAME => 1 });
 
     my $month_payments = $Payments->list({
@@ -151,11 +158,11 @@ sub osbb_calculated_balance {
       COLS_NAME => 1,
     });
 
-    my $saldo = (($balance_report_info->{SUM} || 0.00) * (-1)) + $Fees->{SUM} - $Payments->{SUM};
+    my $saldo = ($balance_report_info->{SUM} || 0) - $Fees->{SUM} + $Payments->{SUM};
 
     my $user_button = $html->button($user_line->{fio} || "Немає ФІО", "index=" . get_function_index('osbb_users_list'). "&usr=$user_line->{uid}&change=1", {});
 
-    $table->addrow($user_line->{address_flat}, $user_button, sprintf('%.2f', (($balance_report_info->{SUM} || 0.00) * (-1))), sprintf('%.2f', $Fees->{SUM}), sprintf('%.2f', $Payments->{SUM}), sprintf('%.2f', $saldo));
+    $table->addrow($user_line->{address_flat}, $user_button, sprintf('%.2f', ($balance_report_info->{SUM} || 0)), sprintf('%.2f', $Fees->{SUM}), sprintf('%.2f', $Payments->{SUM}), sprintf('%.2f', $saldo));
 
     $users_print_table .=
       "<tr><td>"
@@ -163,7 +170,7 @@ sub osbb_calculated_balance {
     . "</td><td align='right'>"
     . ($user_line->{fio} || '---------')
     . "</td><td align='right'>"
-    . sprintf('%.2f', ($balance_report_info->{SUM} || 0.00) * (-1))
+    . sprintf('%.2f', $balance_report_info->{SUM} || 0)
     . "</td><td align='right'>"
     . sprintf('%.2f', $Fees->{SUM})
     . "</td><td align='right'>"
@@ -173,7 +180,7 @@ sub osbb_calculated_balance {
     . "</td></tr>";
 
     # total count
-    $total_old_saldo -= $balance_report_info->{SUM} || 0.00;
+    $total_old_saldo += $balance_report_info->{SUM} || 0.00;
     $total_fees      += $Fees->{SUM};
     $total_payments  += $Payments->{SUM};
     $total_new_saldo += $saldo;
@@ -302,8 +309,7 @@ sub osbb_month_fees {
   my $params = ();
   my @fees_array = ();
   
-  $params->{BUTTON} = $lang{ADD};
-  $params->{ACTION} = 'add';
+  $params->{BUTTON} = $html->form_input('add', $lang{ADD}, { TYPE => 'submit' });
 
   my @YEARS = ('2017', '2018', '2019', '2020', '2021', '2022', '2023');
 
@@ -348,7 +354,7 @@ sub osbb_month_fees {
   my $table = $html->table(
     {
       width      => '100%',
-      caption    => "Нарахування :  " . ($MONTHES[ int($month - 1) ] . " $year"),
+      caption    => "$lang{FEES} :  " . ($MONTHES[ int($month - 1) ] . " $year"),
       border     => 1,
       title      => [ "$lang{ADDRESS_FLAT}", "$lang{FIO}", "<div class='text-center'>$lang{FEES} (грн.)</div>"],
       ID         => 'MONTHLY_FEES',
@@ -383,14 +389,21 @@ sub osbb_month_fees {
   _error_show($Fees);
   
   if ($Fees->{SUM} > 0 && !$FORM{print_form}) {
-    $html->message('info', "За цей період вже нараховано: " . sprintf('%.2f',$Fees->{SUM}));
-    $params->{CHANGE} = $html->form_input('change', $lang{CHANGE_}, { TYPE => 'submit' });
+    $html->message('info', "$lang{FEES_ALREADY_EXISTS}: " . sprintf('%.2f',$Fees->{SUM}));
+    $params->{BUTTON} = $html->form_input('change', $lang{CHANGE_}, { TYPE => 'submit' });
   }
   
   my $total_fees = 0;
   my $users_print_table = '';
   
-  foreach my $user_line (@$users_list) {
+  foreach my $user_line (sort { 
+                            my ($anum, $bnum); 
+                            $a->{address_flat} =~ /^(\d+)*/;
+                            $anum = $1 || 0;
+                            $b->{address_flat} =~ /^(\d+)*/;
+                            $bnum = $1 || 0;
+                            $anum <=> $bnum; 
+                        } @$users_list) {
     
     my $total_fee = 0;
     my $tooltip = '';
@@ -439,9 +452,9 @@ sub osbb_month_fees {
   }
 
   $table->addrow('-','-',"<div class='text-center'>-</div>");
-  $table->addrow("Разом :", scalar( @fees_array), "<div class='text-center'>$total_fees</div>");
+  $table->addrow("$lang{TOTAL} :", scalar( @fees_array), "<div class='text-center'>$total_fees</div>");
   
-  $users_print_table .= "<tr><td>Разом</td><td></td><td>" . sprintf('%.2f', $total_fees) . "</td></tr>";
+  $users_print_table .= "<tr><td>-</td><td>-</td><td>-</td></tr><tr><td>$lang{TOTAL}</td><td></td><td>" . sprintf('%.2f', $total_fees) . "</td></tr>";
     
   my $print_table = qq{
     <table width="100%" cellspacing="0" border="1">

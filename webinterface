@@ -137,6 +137,11 @@ sub osbb_users_list {
   if ($FORM{add}){
     _osbb_user_create(\%FORM);
   }
+  
+  if ($FORM{chg}){
+    $User->pi_change({ UID => $FORM{usr}, %FORM });
+    $Osbb->user_change({ UID => $FORM{usr}, %FORM });
+  }
 
 my $Address = Address->new($db, $admin, \%conf);
   my $builds_list = $Address->build_list({ COLS_NAME => 1, PAGE_ROWS => 1 });
@@ -157,7 +162,7 @@ my $nav = $html->form_main({
   }
   
   if ($FORM{adding}) {
-    $html->tpl_show(_include('osbb_form_user_add', 'Osbb'), { %FORM, BUTTON => $lang{ADD} });
+    $html->tpl_show(_include('osbb_form_user_add', 'Osbb'), { %FORM, BUTTON => $lang{ADD}, ACTION => 'add' });
   }
 
   if ($FORM{change}) {
@@ -172,7 +177,7 @@ my $nav = $html->form_main({
       COLS_UPPER    => 1,
     });
 
-    $html->tpl_show(_include('osbb_form_user_add', 'Osbb'), { %FORM, %{$user_info->[0]}, BUTTON => $lang{CHANGE_} });
+    $html->tpl_show(_include('osbb_form_user_add', 'Osbb'), { %FORM, %{$user_info->[0]}, BUTTON => $lang{CHANGE_}, ACTION => 'chg' });
   }
 
   my $users_list = $Osbb->user_list({
@@ -186,7 +191,7 @@ my $nav = $html->form_main({
     COLS_NAME     => 1,
     COLS_UPPER    => 1,
     PAGE_ROWS     => 10000,
-    SORT          => 'pi.address_flat',
+    SORT          => 1,
     DESC          => 1
   });
   _error_show($Osbb);
@@ -202,7 +207,14 @@ my $nav = $html->form_main({
                 . "$lang{SEARCH}:index=$index&LOCATION_ID=$location_id&search_form=1:btn bg-purple margin",
   });
 
-  foreach my $user_line (@$users_list) {
+  foreach my $user_line (sort { 
+                            my ($anum, $bnum); 
+                            $a->{address_flat} =~ /^(\d+)*/;
+                            $anum = $1 || 0;
+                            $b->{address_flat} =~ /^(\d+)*/;
+                            $bnum = $1 || 0;
+                            $anum <=> $bnum; 
+                        } @$users_list) {
     my $user_button = $html->button($user_line->{fio}, "index=$index&LOCATION_ID=$location_id&usr=$user_line->{uid}&change=1", {});
     $table->addrow($user_line->{address_flat}, $user_button, $user_line->{LIVING_AREA}, $user_line->{PEOPLE_COUNT});
   }
@@ -446,6 +458,16 @@ sub _osbb_user_select {
     PAGE_ROWS     => 10000
   });
   _error_show($User);
+  
+  @$users_list = sort { 
+                            my ($anum, $bnum); 
+                            $a->{address_flat} =~ /^(\d+)*/;
+                            $anum = $1 || 0;
+                            $b->{address_flat} =~ /^(\d+)*/;
+                            $bnum = $1 || 0;
+                            $anum <=> $bnum; 
+                        } @$users_list;
+  
   my @full_name_users_list = map {
     {
       id        => $_->{uid},
