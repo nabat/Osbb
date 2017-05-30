@@ -20,8 +20,7 @@ use Payments;
 
 use Abills::Experimental;
 
-
-our(
+our (
   %lang,
   $html,
   $admin,
@@ -37,11 +36,11 @@ our(
 my $Osbb = Osbb->new($db, $admin, \%conf);
 my $User = Users->new($db, $admin, \%conf);
 
-if (form_purchase_module({
+if ( form_purchase_module({
   HEADER          => $users->{UID},
   MODULE          => 'Multidoms',
   REQUIRE_VERSION => 1.06
-})) {
+}) ) {
   exit;
 }
 
@@ -53,11 +52,11 @@ if (form_purchase_module({
 require Osbb::User_portal;
 #require Osbb::Quick_reports;
 
-if($permissions{3}) {
+if ( $permissions{3} ) {
   require Osbb::Reports;
 }
 
-if($permissions{4}) {
+if ( $permissions{4} ) {
   require Osbb::Configure;
   require Osbb::Import;
   require Osbb::Tarifs;
@@ -65,7 +64,7 @@ if($permissions{4}) {
   require Osbb::Receipts;
 }
 
-if(%ADMIN_REPORT) {
+if ( %ADMIN_REPORT ) {
   require Osbb::Periodic;
 }
 
@@ -76,13 +75,13 @@ if(%ADMIN_REPORT) {
 =cut
 #**********************************************************
 sub osbb_user {
-  return 0 unless $FORM{UID};
-
+  return 0 unless ($FORM{UID});
+  
   my $tp_info = $Osbb->user_info($FORM{UID});
   _error_show($Osbb);
-
+  
   my %TEMPLATE_ARGS = %{$tp_info};
-
+  
   if ( $FORM{add} ) {
     $Osbb->user_add({ %FORM });
     show_result($Osbb, $lang{ADDED});
@@ -107,12 +106,11 @@ sub osbb_user {
       OWNERSHIP_TYPE_SELECT => $ownership_type_select_fn->(),
       %TEMPLATE_ARGS,
       %FORM,
-      SUBMIT_BTN_ACTION => ($FORM{chg}) ? 'change' : 'add',
-      SUBMIT_BTN_NAME   => ($FORM{chg}) ? $lang{CHANGE} : $lang{ADD},
+      SUBMIT_BTN_ACTION     => ($FORM{chg}) ? 'change' : 'add',
+      SUBMIT_BTN_NAME       => ($FORM{chg}) ? $lang{CHANGE} : $lang{ADD},
     }
   );
-
-
+  
   return 1;
 }
 
@@ -122,105 +120,107 @@ sub osbb_user {
 =cut
 #**********************************************************
 sub osbb_users_list {
-
-  if ($FORM{search}){
+  
+  if ( $FORM{search} ) {
     $html->message('warn', $lang{ERROR}, $lang{NOT_IMPLEMENTED});
   }
-  elsif ($FORM{import}){
+  elsif ( $FORM{import} ) {
     return &_osbb_users_import;
   }
-
-  if($admin->{DOMAIN_ID}) {
+  
+  if ( $admin->{DOMAIN_ID} ) {
     delete $LIST_PARAMS{DOMAIN_ID};
   }
   
-  if ($FORM{add}){
+  if ( $FORM{add} ) {
     _osbb_user_create(\%FORM);
   }
   
-  if ($FORM{chg}){
+  if ( $FORM{chg} ) {
     $User->pi_change({ UID => $FORM{usr}, %FORM });
     $Osbb->user_change({ UID => $FORM{usr}, %FORM });
   }
-
-my $Address = Address->new($db, $admin, \%conf);
+  
+  my $Address = Address->new($db, $admin, \%conf);
   my $builds_list = $Address->build_list({ COLS_NAME => 1, PAGE_ROWS => 1 });
   _error_show($Address);
-
+  
   my $location_id = $FORM{LOCATION_ID} || $builds_list->[0]->{id};
-
-my $nav = $html->form_main({
-      CONTENT => osbb_simple_build_select({%FORM}),
-      HIDDEN => {index => $index},
-      class  => 'navbar-form navbar-right',
-    });
-  func_menu({ $lang{NAME} => $nav },{}, {} );
-
-  if (!$location_id){
+  
+  my $nav = $html->form_main({
+    CONTENT => osbb_simple_build_select({ %FORM }),
+    HIDDEN  => { index => $index },
+    class   => 'navbar-form navbar-right',
+  });
+  func_menu({ $lang{NAME} => $nav }, { }, { } );
+  
+  if ( !$location_id ) {
     $html->message('err', "$lang{NO} $lang{BUILDS}", $html->button("$lang{ADD} $lang{ADDRESS}", 'index=91'));
     return 0;
   }
   
-  if ($FORM{adding}) {
+  if ( $FORM{adding} ) {
     $html->tpl_show(_include('osbb_form_user_add', 'Osbb'), { %FORM, BUTTON => $lang{ADD}, ACTION => 'add' });
   }
-
-  if ($FORM{change}) {
+  
+  if ( $FORM{change} ) {
     my $user_info = $Osbb->user_list({
-      UID           => $FORM{usr},
-      FIO           => '_SHOW',
-      ADDRESS_FLAT  => '_SHOW',
-      PEOPLE_COUNT  => '_SHOW',
-      LIVING_AREA   => '_SHOW',
+      UID          => $FORM{usr},
+      FIO          => '_SHOW',
+      ADDRESS_FLAT => '_SHOW',
+      PEOPLE_COUNT => '_SHOW',
+      LIVING_AREA  => '_SHOW',
       
-      COLS_NAME     => 1,
-      COLS_UPPER    => 1,
+      COLS_NAME    => 1,
+      COLS_UPPER   => 1,
     });
-
-    $html->tpl_show(_include('osbb_form_user_add', 'Osbb'), { %FORM, %{$user_info->[0]}, BUTTON => $lang{CHANGE_}, ACTION => 'chg' });
-  }
-
-  my $users_list = $Osbb->user_list({
-    LOCATION_ID   => $location_id,
-    FIO           => '_SHOW',
-    ADDRESS_FLAT  => '_SHOW',
-    UID           => '_SHOW',
-    PEOPLE_COUNT  => '_SHOW',
-    LIVING_AREA   => '_SHOW',
     
-    COLS_NAME     => 1,
-    COLS_UPPER    => 1,
-    PAGE_ROWS     => 10000,
-    SORT          => 1,
-    DESC          => 1
+    $html->tpl_show(_include('osbb_form_user_add', 'Osbb'),
+      { %FORM, %{$user_info->[0]}, BUTTON => $lang{CHANGE_}, ACTION => 'chg' });
+  }
+  
+  my $users_list = $Osbb->user_list({
+    LOCATION_ID  => $location_id,
+    FIO          => '_SHOW',
+    ADDRESS_FLAT => '_SHOW',
+    UID          => '_SHOW',
+    PEOPLE_COUNT => '_SHOW',
+    LIVING_AREA  => '_SHOW',
+    
+    COLS_NAME    => 1,
+    COLS_UPPER   => 1,
+    PAGE_ROWS    => 10000,
+    SORT         => 1,
+    DESC         => 1
   });
   _error_show($Osbb);
   
   my $table = $html->table({
-    width      => '100%',
-    caption    => $lang{HOUSING},
-    border     => 1,
-    title      => [ $lang{ADDRESS_FLAT}, $lang{FIO}, $lang{LIVING_AREA}, $lang{PEOPLE_COUNT}],
-    ID         => 'HOUSING',
-    MENU       => "$lang{ADD}:index=$index&LOCATION_ID=$location_id&adding=1:btn bg-olive margin;"
-                . "$lang{IMPORT}:index=$index&LOCATION_ID=$location_id&import=1:btn bg-olive margin;"
-                . "$lang{SEARCH}:index=$index&LOCATION_ID=$location_id&search_form=1:btn bg-purple margin",
+    width   => '100%',
+    caption => $lang{HOUSING},
+    border  => 1,
+    title   => [ $lang{ADDRESS_FLAT}, $lang{FIO}, $lang{LIVING_AREA}, $lang{PEOPLE_COUNT} ],
+    ID      => 'HOUSING',
+    MENU    => "$lang{ADD}:index=$index&LOCATION_ID=$location_id&adding=1:btn bg-olive margin;"
+      . "$lang{IMPORT}:index=$index&LOCATION_ID=$location_id&import=1:btn bg-olive margin;"
+      . "$lang{SEARCH}:index=$index&LOCATION_ID=$location_id&search_form=1:btn bg-purple margin",
   });
-
-  foreach my $user_line (sort { 
-                            my ($anum, $bnum); 
-                            $a->{address_flat} =~ /^(\d+)*/;
-                            $anum = $1 || 0;
-                            $b->{address_flat} =~ /^(\d+)*/;
-                            $bnum = $1 || 0;
-                            $anum <=> $bnum; 
-                        } @$users_list) {
-    my $user_button = $html->button($user_line->{fio}, "index=$index&LOCATION_ID=$location_id&usr=$user_line->{uid}&change=1", {});
+  
+  foreach my $user_line ( sort {
+    my ($anum, $bnum);
+    $a->{address_flat} =~ /^(\d+)*/;
+    $anum = $1 || 0;
+    $b->{address_flat} =~ /^(\d+)*/;
+    $bnum = $1 || 0;
+    $anum <=> $bnum;
+  } @{$users_list} ) {
+    my $user_button = $html->button($user_line->{fio},
+      "index=$index&LOCATION_ID=$location_id&usr=$user_line->{uid}&change=1", { });
     $table->addrow($user_line->{address_flat}, $user_button, $user_line->{LIVING_AREA}, $user_line->{PEOPLE_COUNT});
   }
-
+  
   print $table->show();
-
+  
   # result_former({
   #   INPUT_DATA      => $Osbb,
   #   FUNCTION        => 'user_list',
@@ -257,7 +257,7 @@ my $nav = $html->form_main({
   #   MODULE       => 'Osbb',
   #   TOTAL        => 1,
   # });
-
+  
   return 1;
 }
 
@@ -268,48 +268,49 @@ my $nav = $html->form_main({
 #**********************************************************
 sub osbb_registration {
   my ($attr) = @_;
-
-  if ($FORM{reg}) {
-    if($FORM{EMAIL} !~ /^(([^<>()[\]\\.,;:\s\@\"]+(\.[^<>()[\]\\.,;:\s\@\"]+)*)|(\".+\"))\@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/) {
+  
+  if ( $FORM{reg} ) {
+    if ( $FORM{EMAIL} !~ /^(([^<>()[\]\\.,;:\s\@\"]+(\.[^<>()[\]\\.,;:\s\@\"]+)*)|(\".+\"))\@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/ ) {
       $Osbb->{MESSAGE} = $html->message('err', $lang{ERROR}, "$lang{ERR_WRONG_EMAIL}");
     }
-    elsif ($conf{REGISTRATION_CHECK_PHONE}
+    elsif ( $conf{REGISTRATION_CHECK_PHONE}
       && (!$FORM{PHONE} || ($conf{PHONE_FORMAT} && $FORM{PHONE} !~ /$conf{PHONE_FORMAT}/ )) ) {
-      $Osbb->{MESSAGE} = $html->message('err', $lang{ERROR}, $lang{ERR_WRONG_PHONE}. (($conf{PHONE_FORMAT}) ? ' '.human_exp($conf{PHONE_FORMAT}) : q{}));
+      $Osbb->{MESSAGE} = $html->message('err', $lang{ERROR},
+        $lang{ERR_WRONG_PHONE} . (($conf{PHONE_FORMAT}) ? ' ' . human_exp($conf{PHONE_FORMAT}) : q{}));
     }
-    elsif (! $FORM{ACCEPT_RULES}) {
+    elsif ( !$FORM{ACCEPT_RULES} ) {
       $html->message('err', $lang{ERROR}, "$lang{ERR_ACCEPT_RULES} -");
     }
     else {
-      if (form_purchase_module({
+      if ( form_purchase_module({
         HEADER          => $user->{UID} || $html->{show_header},
         MODULE          => 'Multidoms',
         REQUIRE_VERSION => 1.01
-      })) {
+      }) ) {
         exit;
       }
-
+      
       my $Multidoms = Multidoms->new($db, $admin, \%conf);
       $Multidoms->multidoms_domain_add({ NAME => "$FORM{PHONE}" });
-      if ($Multidoms->{errno}) {
+      if ( $Multidoms->{errno} ) {
         $html->message('err', $lang{ERROR}, "$FORM{PHONE} already registred");
       }
       else {
         $admin->add({ %FORM,
-          ID          => $FORM{PHONE},
-          NAME        => $FORM{FIO},
-          A_LOGIN     => $FORM{PHONE},
-          DOMAIN_ID   => $Multidoms->{INSERT_ID},
+          ID        => $FORM{PHONE},
+          NAME      => $FORM{FIO},
+          A_LOGIN   => $FORM{PHONE},
+          DOMAIN_ID => $Multidoms->{INSERT_ID},
         });
         
-        return 0 if _error_show($admin);
+        return 0 if (_error_show($admin));
         
         my $password = mk_unique_value($conf{PASSWD_LENGTH} || 8, { EXTRA_RULES => '2:0' });
         $admin->password($password, \%conf);
-  
-        return 0 if _error_show($admin);
         
-        if ($admin->{errno}) {
+        return 0 if (_error_show($admin));
+        
+        if ( $admin->{errno} ) {
           $html->message('err', $lang{ERROR}, "[$admin->{errno}] $err_strs{$admin->{errno}}");
         }
         else {
@@ -317,18 +318,17 @@ sub osbb_registration {
             AID       => $admin->{AID},
             DOMAIN_ID => $Multidoms->{INSERT_ID},
           });
-
-          $admin->set_permissions({
-            0 => {0 => 1, 1 => 1, 2 => 1, 3 => 1, 4 => 1, 5 => 1, 6 => 1},
-            1 => {0 => 1, 1 => 1, 2 => 1, 3 => 1, 4 => 1},
-            2 => {0 => 1, 1 => 1, 2 => 1, 3 => 1},
-            3 => {0 => 1, 1 => 1, 2 => 1, 3 => 1},
-            4 => {0 => 1, 1 => 1, 2 => 1, 3 => 1},
-            6 => { 0 => 1 },
-            7 => { 0 => 1 },
-            8 => { 0 => 1 },
-          }, {});
           
+          $admin->set_permissions({
+              0 => { 0 => 1, 1 => 1, 2 => 1, 3 => 1, 4 => 1, 5 => 1, 6 => 1 },
+              1 => { 0 => 1, 1 => 1, 2 => 1, 3 => 1, 4 => 1 },
+              2 => { 0 => 1, 1 => 1, 2 => 1, 3 => 1 },
+              3 => { 0 => 1, 1 => 1, 2 => 1, 3 => 1 },
+              4 => { 0 => 1, 1 => 1, 2 => 1, 3 => 1 },
+              6 => { 0 => 1 },
+              7 => { 0 => 1 },
+              8 => { 0 => 1 },
+            }, { });
           
           my $Address = Address->new( $db, $admin, \%conf );
           $Address->district_add({
@@ -336,32 +336,34 @@ sub osbb_registration {
             NAME      => $FORM{PHONE},
             CITY      => $FORM{CITY},
           });
-
+          
           $Address->street_add({
-            DISTRICT_ID  => $Address->{INSERT_ID},
-            NAME         => $FORM{ADDRESS_STREET},
+            DISTRICT_ID => $Address->{INSERT_ID},
+            NAME        => $FORM{ADDRESS_STREET},
           });
-
+          
           $Address->build_add({
             STREET_ID => $Address->{INSERT_ID},
             NUMBER    => $FORM{ADDRESS_BUILD},
           });
-
+          
           _error_show($Address);
-
-          if ($Multidoms->{errno}) {
+          
+          if ( $Multidoms->{errno} ) {
             $html->message('err', $lang{ERROR}, "Помилка Multidoms");
           }
-          elsif ($Address->{errno}) {
+          elsif ( $Address->{errno} ) {
             $html->message('err', $lang{ERROR}, "Помилка Address");
           }
           else {
-            my $message = $html->tpl_show(_include('osbb_reg_complete_mail', 'Osbb'), { %$Osbb, %FORM, PASSWORD => "$password" }, { OUTPUT2RETURN => 1 });
+            my $message = $html->tpl_show(_include('osbb_reg_complete_mail', 'Osbb'),
+              { %{$Osbb}, %FORM, PASSWORD => "$password" }, { OUTPUT2RETURN => 1 });
             
             # TODO: check mail was sent
             sendmail("$conf{ADMIN_MAIL}", "$FORM{EMAIL}", "$lang{REGISTRATION}", "$message", "$conf{MAIL_CHARSET}", '');
             # TODO: localize
-            $html->message('info', "Реєстрація успішна", "На пошту ($FORM{EMAIL}) вам надіслано листа з інформацією про наступні дії.");
+            $html->message('info', "Реєстрація успішна",
+              "На пошту ($FORM{EMAIL}) вам надіслано листа з інформацією про наступні дії.");
             _copy_template($Multidoms->{INSERT_ID});
             return 1;
           }
@@ -374,16 +376,16 @@ sub osbb_registration {
   
   $attr->{OSBB_RULES} = '';
   my $content = file_op({
-    FILENAME  => 'rules.txt',
-    PATH      => $conf{base_dir} . "/Abills/modules/Osbb",
-    ROWS      => 1
+    FILENAME => 'rules.txt',
+    PATH     => $conf{base_dir} . "/Abills/modules/Osbb",
+    ROWS     => 1
   });
-  foreach (@$content){
+  foreach ( @{$content} ) {
     $attr->{OSBB_RULES} .= $_ . "\n";
   }
-
-  $html->tpl_show(_include('osbb_registration', 'Osbb'), { %$Osbb, %$attr, %FORM }, { ID => 'OSBB_REGISTRATION' });
-
+  
+  $html->tpl_show(_include('osbb_registration', 'Osbb'), { %{$Osbb}, %{$attr}, %FORM }, { ID => 'OSBB_REGISTRATION' });
+  
   return 0;
 }
 
@@ -394,36 +396,36 @@ sub osbb_registration {
 #**********************************************************
 sub osbb_simple_build_select {
   my ($attr) = @_;
-
+  
   my $Address = Address->new($db, $admin, \%conf);
-
+  
   my $builds_list = $Address->build_list({
     NUMBER        => '_SHOW',
     DISTRICT_ID   => '_SHOW',
     DISTRICT_NAME => '_SHOW',
     STREET_ID     => '_SHOW',
     STREET_NAME   => '_SHOW',
-    COLS_NAME => 1,
-    PAGE_ROWS => 10000
+    COLS_NAME     => 1,
+    PAGE_ROWS     => 10000
   });
-
+  
   _error_show($Address);
-
+  
   my @full_name_builds_list = map {
     {
       id   => $_->{id},
-      name =>  join (', ', ($_->{street_name} || q{}), ($_->{number} || q{}) )
+      name => join (', ', ($_->{street_name} || q{}), ($_->{number} || q{}) )
     }
-  } @$builds_list;
-
+  } @{$builds_list};
+  
   return $html->form_select('LOCATION_ID', {
-    SELECTED    => $attr->{LOCATION_ID} || $FORM{LOCATION_ID} || '',
-    SEL_LIST    => \@full_name_builds_list,
-    NO_ID       => 1,
-    %{
-      $attr->{AUTO_SUBMIT} ? {EX_PARAMS => "data-auto-submit='form'"} : {'' => ''}
-    },
-  });
+      SELECTED => $attr->{LOCATION_ID} || $FORM{LOCATION_ID} || '',
+      SEL_LIST => \@full_name_builds_list,
+      NO_ID    => 1,
+      %{
+        $attr->{AUTO_SUBMIT} ? { EX_PARAMS => "data-auto-submit='form'" } : { '' => '' }
+        },
+    });
 }
 
 #**********************************************************
@@ -432,14 +434,14 @@ sub osbb_simple_build_select {
 =cut
 #**********************************************************
 sub _osbb_payments_type_select {
-    
+  
   return $html->form_select('METHOD', {
       SELECTED     => $FORM{METHOD} || '',
-      SEL_ARRAY    => [$lang{CASH}, $lang{BANK}, $lang{COMPENSATION}, $lang{CORRECTION}],
+      SEL_ARRAY    => [ $lang{CASH}, $lang{BANK}, $lang{COMPENSATION}, $lang{CORRECTION} ],
       ARRAY_NUM_ID => 1,
       NO_ID        => 1,
-  });
-
+    });
+  
 }
 
 #**********************************************************
@@ -448,39 +450,39 @@ sub _osbb_payments_type_select {
 =cut
 #**********************************************************
 sub _osbb_user_select {
-
+  
   my $users_list = $User->list({
-    LOCATION_ID   => $FORM{LOCATION_ID},
-    FIO           => '_SHOW',
-    ADDRESS_FLAT  => '_SHOW',
-    UID           => '_SHOW',
-    COLS_NAME     => 1,
-    PAGE_ROWS     => 10000
+    LOCATION_ID  => $FORM{LOCATION_ID},
+    FIO          => '_SHOW',
+    ADDRESS_FLAT => '_SHOW',
+    UID          => '_SHOW',
+    COLS_NAME    => 1,
+    PAGE_ROWS    => 10000
   });
   _error_show($User);
   
-  @$users_list = sort { 
-                            my ($anum, $bnum); 
-                            $a->{address_flat} =~ /^(\d+)*/;
-                            $anum = $1 || 0;
-                            $b->{address_flat} =~ /^(\d+)*/;
-                            $bnum = $1 || 0;
-                            $anum <=> $bnum; 
-                        } @$users_list;
+  @{$users_list} = sort {
+    my ($anum, $bnum);
+    $a->{address_flat} =~ /^(\d+)*/;
+    $anum = $1 || 0;
+    $b->{address_flat} =~ /^(\d+)*/;
+    $bnum = $1 || 0;
+    $anum <=> $bnum;
+  } @{$users_list};
   
   my @full_name_users_list = map {
     {
-      id        => $_->{uid},
-      name      =>  join (', ', $_->{address_flat}, $_->{fio})
+      id   => $_->{uid},
+      name => join (', ', $_->{address_flat}, $_->{fio})
     }
-  } @$users_list;
+  } @{$users_list};
   
   return $html->form_select('usr', {
-    SELECTED    => $FORM{usr} || '',
-    SEL_LIST    => \@full_name_users_list,
-    NO_ID       => 1,
-    SEL_OPTIONS => { '' => '' },
-  });
+      SELECTED    => $FORM{usr} || '',
+      SEL_LIST    => \@full_name_users_list,
+      NO_ID       => 1,
+      SEL_OPTIONS => { '' => '' },
+    });
 }
 
 
@@ -494,25 +496,25 @@ sub _osbb_user_create {
   
   my %PARAMS = %{$user_hash};
   
-  if (! $PARAMS{LOCATION_ID}){
+  if ( !$PARAMS{LOCATION_ID} ) {
     $html->message('err', 'No LOCATION_ID');
     return 0;
   }
-  if (! $PARAMS{ADDRESS_FLAT}){
+  if ( !$PARAMS{ADDRESS_FLAT} ) {
     $html->message('err', 'No ADDRESS_FLAT');
     return 0;
   }
   
   $User->add({
     CREATE_BILL => 1,
-    LOGIN => "$PARAMS{LOCATION_ID}_$PARAMS{ADDRESS_FLAT}",
+    LOGIN       => "$PARAMS{LOCATION_ID}_$PARAMS{ADDRESS_FLAT}",
     %PARAMS,
   });
   _error_show($User);
   
   my $uid = $User->{INSERT_ID};
   
-  if ($User->{errno}){
+  if ( $User->{errno} ) {
     $html->message('err', "$lang{ERROR}");
     return 0;
   }
@@ -520,10 +522,10 @@ sub _osbb_user_create {
   $User->pi_add({ %PARAMS, UID => $uid });
   _error_show($User);
   
-  $Osbb->user_add({ %PARAMS, UID => $uid});
+  $Osbb->user_add({ %PARAMS, UID => $uid });
   _error_show($Osbb);
   
-  if($Osbb->{errno} && $User->{errno}) {
+  if ( $Osbb->{errno} && $User->{errno} ) {
     $html->message('err', "$lang{ERROR}");
   }
   else {
@@ -543,87 +545,92 @@ sub osbb_form_address {
   my $Address = Address->new($db, $admin, \%conf);
   
   my $builds_list = $Address->build_list({
-    STREET_NAME    => '_SHOW',
-    CITY           => '_SHOW',
-    DISTRICT_ID    => '_SHOW',
-  
-    COLS_NAME      => 1,
-    COLS_UPPER     => 1,
+    STREET_NAME => '_SHOW',
+    CITY        => '_SHOW',
+    DISTRICT_ID => '_SHOW',
+    
+    COLS_NAME   => 1,
+    COLS_UPPER  => 1,
   });
   _error_show($Address);
-
-  if ($FORM{adding}) {
+  
+  if ( $FORM{adding} ) {
     $params->{BUTTON} = $lang{ADD};
     $params->{ACTION} = 'add';
     $params->{DISABLED} = 'readonly';
     $params->{CITY} = $builds_list->[0]->{CITY};
-    $html->tpl_show(_include('osbb_form_address', 'Osbb'), { %$params });
+    $html->tpl_show(_include('osbb_form_address', 'Osbb'), { %{$params} });
   }
-  elsif ($FORM{change}) {
+  elsif ( $FORM{change} ) {
     $params->{BUTTON} = $lang{CHANGE_};
     $params->{ACTION} = 'chg';
     $params->{build_id} = $FORM{change};
     my $build = $Address->build_list({
-      LOCATION_ID    => $FORM{change},
-      STREET_NAME    => '_SHOW',
-      DISTRICT_ID    => '_SHOW',
-      CITY           => '_SHOW',
-  
-      COLS_NAME      => 1,
-      COLS_UPPER     => 1,
+      LOCATION_ID => $FORM{change},
+      STREET_NAME => '_SHOW',
+      DISTRICT_ID => '_SHOW',
+      CITY        => '_SHOW',
+      
+      COLS_NAME   => 1,
+      COLS_UPPER  => 1,
     });
     _error_show($Address);
-
-    $html->tpl_show(_include('osbb_form_address', 'Osbb'), { %$params, %{$build->[0]} });
+    
+    $html->tpl_show(_include('osbb_form_address', 'Osbb'), { %{$params}, %{$build->[0]} });
   }
-  elsif ($FORM{add}) {
-    $Address->{debug}=1;
+  elsif ( $FORM{add} ) {
+    $Address->{debug} = 1;
     $Address->street_list({ STREET_NAME => '_SHOW', LIST2HASH => 'street_name,street_id' });
     my $street_hash = $Address->{list_hash};
-    $Address->street_add({ NAME => $FORM{STREET_NAME}, DISTRICT_ID => $builds_list->[0]->{DISTRICT_ID} }) if (!defined($street_hash->{$FORM{STREET_NAME}}));
-    $Address->build_add({ ADD_ADDRESS_BUILD => $FORM{NUMBER}, STREET_ID => $street_hash->{$FORM{STREET_NAME}} || $Address->{INSERT_ID} });
+    $Address->street_add({ NAME => $FORM{STREET_NAME}, DISTRICT_ID =>
+      $builds_list->[0]->{DISTRICT_ID} }) if (!defined($street_hash->{$FORM{STREET_NAME}}));
+    $Address->build_add({ ADD_ADDRESS_BUILD => $FORM{NUMBER}, STREET_ID =>
+      $street_hash->{$FORM{STREET_NAME}} || $Address->{INSERT_ID} });
   }
-  elsif ($FORM{chg}) {
-    my $changed_build_info = $Address->build_list({ 
-      LOCATION_ID    => $FORM{build_id},
-      NUMBER         => '_SHOW',
-      STREET_ID      => '_SHOW',
-      STREET_NAME    => '_SHOW',
-      DISTRICT_ID    => '_SHOW',
-      CITY           => '_SHOW',
-
-      COLS_NAME      => 1,
+  elsif ( $FORM{chg} ) {
+    my $changed_build_info = $Address->build_list({
+      LOCATION_ID => $FORM{build_id},
+      NUMBER      => '_SHOW',
+      STREET_ID   => '_SHOW',
+      STREET_NAME => '_SHOW',
+      DISTRICT_ID => '_SHOW',
+      CITY        => '_SHOW',
+      
+      COLS_NAME   => 1,
     });
-    $Address->street_change({ ID => $changed_build_info->[0]->{street_id}, NAME => $FORM{STREET_NAME} }) if ($changed_build_info->[0]->{street_name} ne $FORM{STREET_NAME});
-    $Address->build_change({ ID => $changed_build_info->[0]->{location_id}, NUMBER => $FORM{NUMBER} }) if ($changed_build_info->[0]->{number} ne $FORM{NUMBER});
-    $Address->district_change({ ID => $changed_build_info->[0]->{district_id}, CITY => $FORM{CITY}}) if ($changed_build_info->[0]->{city} ne $FORM{CITY});
+    $Address->street_change({ ID => $changed_build_info->[0]->{street_id}, NAME =>
+      $FORM{STREET_NAME} }) if ($changed_build_info->[0]->{street_name} ne $FORM{STREET_NAME});
+    $Address->build_change({ ID => $changed_build_info->[0]->{location_id}, NUMBER =>
+      $FORM{NUMBER} }) if ($changed_build_info->[0]->{number} ne $FORM{NUMBER});
+    $Address->district_change({ ID => $changed_build_info->[0]->{district_id}, CITY =>
+      $FORM{CITY} }) if ($changed_build_info->[0]->{city} ne $FORM{CITY});
     _error_show($Address);
   }
   
   $builds_list = $Address->build_list({
-    STREET_NAME    => '_SHOW',
-    CITY           => '_SHOW',
-    DISTRICT_ID    => '_SHOW',
-  
-    COLS_NAME      => 1,
-    COLS_UPPER     => 1,
+    STREET_NAME => '_SHOW',
+    CITY        => '_SHOW',
+    DISTRICT_ID => '_SHOW',
+    
+    COLS_NAME   => 1,
+    COLS_UPPER  => 1,
   });
-
+  
   my $table = $html->table({
     width               => '100%',
     caption             => $lang{ADDRESS},
     border              => 1,
-    title               => [ $lang{CITY}, $lang{ADDRESS_STREET}, $lang{ADDRESS_BUILD}],
+    title               => [ $lang{CITY}, $lang{ADDRESS_STREET}, $lang{ADDRESS_BUILD} ],
     ID                  => 'ADDRESS',
     MENU                => "$lang{ADD}:index=$index&adding=1:btn bg-olive margin;",
     HAS_FUNCTION_FIELDS => 1,
   });
-
-  foreach my $build_line (@$builds_list) {
-    my $change_button = $html->button($lang{CHANGE_}, "index=$index&change=$build_line->{id}", {});
+  
+  foreach my $build_line ( @{$builds_list} ) {
+    my $change_button = $html->button($lang{CHANGE_}, "index=$index&change=$build_line->{id}", { });
     $table->addrow($build_line->{CITY}, $build_line->{STREET_NAME}, $build_line->{NUMBER}, $change_button);
   }
-
+  
   print $table->show();
   
   return 1;
