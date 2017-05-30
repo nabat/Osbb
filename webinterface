@@ -690,7 +690,7 @@ sub osbb_form_address_select {
   }
   
   my $add_build_button = $html->button("$lang{ADD} $lang{BUILD}",
-    'get_index=form_districts&full=1',
+    'adding=1&index=' . get_function_index('osbb_form_address'),
     \%add_build_button_params
   );
   
