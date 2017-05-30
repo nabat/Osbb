@@ -186,10 +186,10 @@ sub osbb_calculated_balance {
     $total_new_saldo += $saldo;
     $balance_next_period{$user_line->{bill_id}} = $saldo;
   
-    push(@data_for_receipts, { FIO     => $user_line->{fio} || '', 
-                               SALDO   => $saldo, 
+    push(@data_for_receipts, { FIO        => $user_line->{fio} || '', 
+                               SALDO      => $saldo, 
                                ADDRESS => "$user_line->{address_street} $user_line->{address_build}, $user_line->{address_flat}", 
-                               PERIOD  => ($MONTHES[ int($month - 1) ] . " $year")
+                               PERIOD     => ($MONTHES[ int($month - 1) ] . " $year"),
                               });
   }
 
@@ -241,10 +241,12 @@ sub osbb_calculated_balance {
     # _under_construction();
     # return 1;
     my $print_info;
+    my $count = 1;
     foreach my $user_receipt (@data_for_receipts){
       $print_info .= $html->tpl_show(_include('osbb_receipt', 'Osbb'),
       {
-       %$user_receipt
+       %$user_receipt,
+       BREAK_PAGE => ($count++ % 8 == 0) ? 'style="page-break-after: always"' : '',
       },
       {OUTPUT2RETURN => 1}
       );

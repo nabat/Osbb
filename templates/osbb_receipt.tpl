@@ -3,15 +3,15 @@
   _{RECEIPT}_ <b>%PERIOD%</b>
   </tr>
   <tr>
-    <td><b>Платник:</b></td><td>&nbsp %FIO%</td>
+    <td width="30%"><b>Платник</b></td><td>&nbsp %FIO%</td>
   </tr>
   <tr>
-    <td><b>Адрес:</b></td><td>&nbsp %ADDRESS%</td>
+    <td><b>Адрес</b></td><td>&nbsp %ADDRESS%</td>
   </tr>
   <tr>
-    <td><b>До оплати:</b></td><td>&nbsp %SALDO%</td>
+    <td><b>До оплати</b></td><td>&nbsp %SALDO%</td>
   </tr>
 </table>
 
 
-  <hr>
+<br %BREAK_PAGE%>
