@@ -95,7 +95,7 @@ sub osbb_calculated_balance {
   
   $params->{BUILD_SELECT} = osbb_simple_build_select();
   
-  my $qs = "LOCATION_ID=$FORM{LOCATION_ID}&MONTH=$FORM{MONTH}&YEAR=$FORM{YEAR}";
+  my $qs = "&LOCATION_ID=$FORM{LOCATION_ID}&MONTH=$FORM{MONTH}&YEAR=$FORM{YEAR}";
 
   my $table = $html->table(
     {
@@ -106,7 +106,7 @@ sub osbb_calculated_balance {
       ID         => 'OSBB_CALCULATED_BALANCE',
       EXPORT     => 1,
       MENU       => "$lang{PRINT} $lang{ACCOUNTING_BALANCE}:qindex=$index&header=2&print_form=1$qs:btn bg-olive margin;"
-                  . "$lang{PRINT} $lang{RECEIPTS}:qindex=$index&header=1&print_receipts=1:btn bg-purple margin;"
+                  . "$lang{PRINT} $lang{RECEIPTS}:qindex=$index&header=2&print_receipts=1$qs:btn bg-purple margin;"
     }
   );
 
