@@ -95,7 +95,7 @@ sub osbb_calculated_balance {
   
   $params->{BUILD_SELECT} = osbb_simple_build_select();
   
-  my $qs = "LOCATION_ID=$FORM{LOCATION_ID}&MONTH=$FORM{MONTH}&YEAR=$FORM{YEAR}";
+  my $qs = "&LOCATION_ID=$FORM{LOCATION_ID}&MONTH=$FORM{MONTH}&YEAR=$FORM{YEAR}";
 
   my $table = $html->table(
     {
@@ -106,7 +106,7 @@ sub osbb_calculated_balance {
       ID         => 'OSBB_CALCULATED_BALANCE',
       EXPORT     => 1,
       MENU       => "$lang{PRINT} $lang{ACCOUNTING_BALANCE}:qindex=$index&header=2&print_form=1$qs:btn bg-olive margin;"
-                  . "$lang{PRINT} $lang{RECEIPTS}:index=$index&header=1&print_receipts=1:btn bg-purple margin;"
+                  . "$lang{PRINT} $lang{RECEIPTS}:qindex=$index&header=2&print_receipts=1$qs:btn bg-purple margin;"
     }
   );
 
@@ -116,7 +116,7 @@ sub osbb_calculated_balance {
     ADDRESS_FLAT  => '_SHOW',
     UID           => '_SHOW',
     BILL_ID       => '_SHOW',
-    
+    ADDRESS_FULL  => '_SHOW',
     COLS_NAME     => 1,
     PAGE_ROWS     => 10000,
     SORT          => 'pi.address_flat',
@@ -185,8 +185,13 @@ sub osbb_calculated_balance {
     $total_payments  += $Payments->{SUM};
     $total_new_saldo += $saldo;
     $balance_next_period{$user_line->{bill_id}} = $saldo;
-
-    push(@data_for_receipts, {FIO => $user_line->{fio} || '', SALDO => $saldo, });
+  
+    push(@data_for_receipts, { FIO        => $user_line->{fio} || '', 
+                               SALDO      => $saldo <= 0 ? sprintf('%.2f грн.', $saldo * (-1)) : sprintf('%.2f грн.',$saldo),
+                               SALDO_TEXT =>  $saldo <= 0 ? "До оплати" : "Переплата",
+                               ADDRESS => "$user_line->{address_street} $user_line->{address_build}, $user_line->{address_flat}", 
+                               PERIOD     => ($MONTHES[ int($month - 1) ] . " $year"),
+                              });
   }
 
   $table->addrow('-', '-', '-', '-', '-', '-');
@@ -234,19 +239,27 @@ sub osbb_calculated_balance {
 
   if ($FORM{print_receipts}){
 
-    _under_construction();
-    return 1;
+    # _under_construction();
+    # return 1;
     my $print_info;
+    my $count = 1;
     foreach my $user_receipt (@data_for_receipts){
       $print_info .= $html->tpl_show(_include('osbb_receipt', 'Osbb'),
       {
-       %$user_receipt
+       %$user_receipt,
+       BREAK_PAGE => ($count++ % 9 == 0) ? 'style="page-break-after: always;"' : '',
       },
       {OUTPUT2RETURN => 1}
       );
     }
 
-    print $print_info;
+    $html->tpl_show(_include('osbb_receipts_print', 'Osbb'),
+      {
+        RECEIPTS  => $print_info,
+      }
+    );
+
+    return 1;
   }
 
   $params->{TABLE} =  $table->show();
