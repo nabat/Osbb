@@ -451,7 +451,14 @@ sub osbb_simple_build_select {
   
   # If has lot of builds, show select with buttons
   elsif ( $builds_list && ref $builds_list eq 'ARRAY' && scalar(@{$builds_list}) > 1 ) {
-    my $add_btn = $html->button("$lang{ADD} $lang{BUILD}",  'adding=1&index=' . get_function_index('osbb_form_address'));
+    my $address_index = get_function_index('osbb_form_address');
+    my $add_btn = $html->button(
+      "$lang{ADD} $lang{BUILD}",
+      "adding=1&index=$address_index",
+      {
+        ICON => 'glyphicon glyphicon-plus'
+      }
+    );
   
     my @full_name_builds_list = map {
       {
@@ -464,6 +471,7 @@ sub osbb_simple_build_select {
         SELECTED    => $attr->{LOCATION_ID} || $FORM{LOCATION_ID} || '',
         SEL_LIST    => \@full_name_builds_list,
         NO_ID       => 1,
+        MAIN_MENU   => "?index=$address_index&LOCATION_ID=" . ( $attr->{LOCATION_ID} || $FORM{LOCATION_ID} || '' ),
         EXT_BUTTON  => $add_btn,
         AUTO_SUBMIT => $attr->{AUTO_SUBMIT}
           ? 'form'
