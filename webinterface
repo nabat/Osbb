@@ -148,7 +148,7 @@ sub osbb_users_list {
   my $location_id = $FORM{LOCATION_ID} || $builds_list->[0]->{id};
   
   my $nav = $html->form_main({
-    CONTENT => osbb_form_address_select(\%FORM), #osbb_simple_build_select({ %FORM }),
+    CONTENT => osbb_simple_build_select(\%FORM),
     HIDDEN  => { index => $index },
     class   => 'navbar-form navbar-right',
   });
@@ -397,8 +397,6 @@ sub osbb_registration {
 sub osbb_simple_build_select {
   my ($attr) = @_;
   
-  my $Address = Address->new($db, $admin, \%conf);
-  
   my $builds_list = $Address->build_list({
     NUMBER        => '_SHOW',
     DISTRICT_ID   => '_SHOW',
@@ -408,24 +406,72 @@ sub osbb_simple_build_select {
     COLS_NAME     => 1,
     PAGE_ROWS     => 10000
   });
+
+  if ( _error_show($Address) ) {
+    $html->message('err', $lang{ERROR}, 'Error retrieving builds');
+    return '';
+  }
   
-  _error_show($Address);
+  my $result = '';
   
-  my @full_name_builds_list = map {
-    {
-      id   => $_->{id},
-      name => join (', ', ($_->{street_name} || q{}), ($_->{number} || q{}) )
-    }
-  } @{$builds_list};
+  # If no builds, show button
+  if ( !$builds_list || ref $builds_list ne 'ARRAY' || !scalar( @{$builds_list} ) ) {
+    my $add_btn = $html->button(
+      " $lang{ADD} $lang{BUILD}",
+      'adding=1&index=' . get_function_index('osbb_form_address'),
+      {
+        class => 'btn btn-warning',
+        ADD_ICON  => 'glyphicon glyphicon-plus'
   
-  return $html->form_select('LOCATION_ID', {
-      SELECTED => $attr->{LOCATION_ID} || $FORM{LOCATION_ID} || '',
-      SEL_LIST => \@full_name_builds_list,
-      NO_ID    => 1,
-      %{
-        $attr->{AUTO_SUBMIT} ? { EX_PARAMS => "data-auto-submit='form'" } : { '' => '' }
-        },
-    });
+      }
+    );
+    # Form select
+    $result = $add_btn;
+  }
+  
+  # If 1 build show text and button
+  elsif ( scalar( @{$builds_list} ) == 1 ) {
+    my $build = $builds_list->[0];
+    
+    $FORM{LOCATION_ID} = $build->{id};
+    
+    my $add_btn = $html->button(
+      "$lang{ADD} $lang{BUILD}",
+      'adding=1&index=' . get_function_index('osbb_form_address'),
+      {
+        class => 'btn btn-xs btn-primary',
+        ICON  => 'glyphicon glyphicon-plus'
+      }
+    );
+    
+    $result = $html->element('div', "$build->{street_name}, $build->{number} " . $add_btn, {
+        class => 'text-bold'
+      });
+  }
+  
+  # If has lot of builds, show select with buttons
+  elsif ( $builds_list && ref $builds_list eq 'ARRAY' && scalar(@{$builds_list}) > 1 ) {
+    my $add_btn = $html->button("$lang{ADD} $lang{BUILD}",  'adding=1&index=' . get_function_index('osbb_form_address'));
+  
+    my @full_name_builds_list = map {
+      {
+        id   => $_->{id},
+        name => join (', ', ($_->{street_name} || q{}), ($_->{number} || q{}) )
+      }
+    } @{$builds_list};
+  
+    $result = $html->form_select('LOCATION_ID', {
+        SELECTED    => $attr->{LOCATION_ID} || $FORM{LOCATION_ID} || '',
+        SEL_LIST    => \@full_name_builds_list,
+        NO_ID       => 1,
+        EXT_BUTTON  => $add_btn,
+        AUTO_SUBMIT => $attr->{AUTO_SUBMIT}
+          ? 'form'
+          : 0,
+      });
+  }
+  
+  return $result;
 }
 
 #**********************************************************
@@ -633,76 +679,6 @@ sub osbb_form_address {
   print $table->show();
   
   return 1;
-}
-
-#**********************************************************
-=head2 osbb_form_address_select() - forms selection for current address
-
-=cut
-#**********************************************************
-sub osbb_form_address_select {
-  my ($attr) = @_;
-  
-  my $builds_list = $Address->build_list({
-    COLS_NAME   => 1,
-    STREET_NAME => '_SHOW',
-    PAGE_ROWS   => 10000
-  });
-  
-  if ( _error_show($Address) ) {
-    $html->message('err', $lang{ERROR}, 'Error retrieving builds');
-    return '';
-  }
-  
-  my $result = '';
-  my $show_add_build_btn = 0;
-  my $no_padding = 0;
-  
-  if ( $builds_list && ref $builds_list eq 'ARRAY' && scalar(@{$builds_list}) > 1 ) {
-    $result = osbb_simple_build_select($attr);
-    $no_padding = 1;
-  }
-  
-  my %add_build_button_params = ();
-  
-  if ( !$builds_list || ref $builds_list ne 'ARRAY' || !scalar( @{$builds_list} ) ) {
-    %add_build_button_params =
-      (
-        class    => 'btn btn-primary',
-        ADD_ICON => 'glyphicon glyphicon-plus'
-      );
-    
-    $result = '';
-    $show_add_build_btn = 1;
-    $no_padding = 1;
-  
-  }
-  elsif ( scalar( @{$builds_list} ) == 1 ) {
-    %add_build_button_params =
-      (
-        class => 'btn btn-xs btn-primary',
-        ICON  => 'glyphicon glyphicon-plus'
-      );
-  
-    my $build = $builds_list->[0];
-    $result = " $build->{street_name}, $build->{number} ";
-    $show_add_build_btn = 1;
-  }
-  
-  my $add_build_button = $html->button("$lang{ADD} $lang{BUILD}",
-    'adding=1&index=' . get_function_index('osbb_form_address'),
-    \%add_build_button_params
-  );
-  
-  return $html->tpl_show(templates('form_row_dynamic_size'), {
-      COLS_LEFT  => 'col-md-3',
-      COLS_RIGHT => 'col-md-9',
-      NAME       => $html->element('p', "$lang{ADDRESS}:", { class => 'form-control-static' }),
-      VALUE      => $html->element('p', $result . ( $show_add_build_btn ? $add_build_button : '' ),     {
-                      class => 'form-control-static text-muted text-bold',
-                      style => 'white-space : nowrap; ' . ( $no_padding ? 'padding : 0 5px;' : '' )
-                    })
-    }, { OUTPUT2RETURN => 1 } );
 }
 
 #**********************************************************
