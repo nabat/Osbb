@@ -436,7 +436,7 @@ sub osbb_simple_build_select {
     $FORM{LOCATION_ID} = $build->{id};
     
     my $add_btn = $html->button(
-      "$lang{ADD} $lang{BUILD}",
+      "$lang{ADD} $lang{ADDRESS_BUILD}",
       'adding=1&index=' . get_function_index('osbb_form_address'),
       {
         class => 'btn btn-xs btn-primary',
