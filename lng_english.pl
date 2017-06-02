@@ -5,7 +5,7 @@ $lang{UTILITY_AREA} = 'Utility area';
 $lang{BALCONY_AREA} = 'Balcony area';
 $lang{USEFUL_AREA} = 'Useful area';
 $lang{ROOMS_COUNT} = 'Rooms count';
-$lang{PEOPLE_COUNT} = 'People count';
+$lang{PEOPLE_COUNT} = 'Housing count';
 
 $lang{OSBB} = 'OSBB';
 $lang{RENT} = 'Rent';
@@ -36,4 +36,9 @@ $lang{FEES_ALREADY_EXISTS} = "Monthly fees already exists";
 $lang{THANK_YOU}           ='Thank you!';
 $lang{ACCOUNT_INFORMATION} = 'Your account information';
 $lang{SITE} = 'Site';
+
+$lang{BY_AREA} = 'By area';
+$lang{BY_HOUSING_COUNT} = 'By housing count';
+$lang{FIXED_AMOUNT} = 'Fixed amount';
+
 1;

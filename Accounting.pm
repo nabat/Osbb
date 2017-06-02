@@ -522,41 +522,44 @@ sub osbb_month_fees {
 =cut
 #**********************************************************
 sub osbb_payments_add{
-  if ($FORM{add} && $FORM{SUM}){
+  if ( $FORM{add} && $FORM{SUM} ) {
     $FORM{SUM} =~ s/,/\./g;
-    if ($FORM{SUM} !~ /[0-9\.]+/) {
+    if ( $FORM{SUM} !~ /[0-9\.]+/ ) {
       $html->message( 'err', $lang{ERROR}, "$lang{ERR_WRONG_SUM} SUM: $FORM{SUM}");
       return 0;
     }
-      
+    
     my $user_info = $User->info($FORM{usr});
     $Osbb->payments_add({ %FORM, UID => $FORM{usr}, BILL_ID => $user_info->{BILL_ID} });
     _error_show($Osbb);
-    if (!$Osbb->{errno}) {
+    if ( !$Osbb->{errno} ) {
       $html->message('info', "$lang{ADDED}");
       delete $FORM{SUM};
     }
   }
-
-  my $Address = Address->new($db, $admin, \%conf);
-  my $builds_list = $Address->build_list({ COLS_NAME => 1, PAGE_ROWS => 1 });
-  _error_show($Address);
-
-  $FORM{LOCATION_ID} = $FORM{LOCATION_ID} || $builds_list->[0]->{id};
-  my $build_sel = osbb_simple_build_select({ AUTO_SUBMIT => 1 , %FORM});
+  
+  if ( !$FORM{LOCATION_ID} ) {
+    my $Address = Address->new($db, $admin, \%conf);
+    my $builds_list = $Address->build_list({ COLS_NAME => 1, PAGE_ROWS => 1 });
+    _error_show($Address);
+    
+    $FORM{LOCATION_ID} = $builds_list->[0]->{id};
+  }
+  
+  my $build_sel = osbb_simple_build_select({ AUTO_SUBMIT => 1, %FORM });
   my $users_sel = _osbb_user_select();
   my $ptype_sel = _osbb_payments_type_select();
-      
-  if (!$FORM{DATE}) {
+  
+  if ( !$FORM{DATE} ) {
     $FORM{DATE} = $DATE;
   }
-      
+  
   $html->tpl_show(_include('osbb_form_payments_add', 'Osbb'), {
-          PTYPE_SEL => $ptype_sel,
-          BUILD_SEL => $build_sel,
-          USERS_SEL => $users_sel,
-          %FORM
-          });
+      PTYPE_SEL => $ptype_sel,
+      BUILD_SEL => $build_sel,
+      USERS_SEL => $users_sel,
+      %FORM
+    });
   return 1;
 }
 
