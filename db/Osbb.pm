@@ -400,6 +400,10 @@ sub osbb_tarifs_list {
   
   my @WHERE_RULES = ();
   
+  if ($admin->{DOMAIN_ID}) {
+    push @WHERE_RULES,  @{ $self->search_expr($admin->{DOMAIN_ID}, 'INT', 'u.domain_id') };
+  }
+  
   my $WHERE = $self->search_former(
     $attr,
     [ [ 'ID', 'INT', 'ot.id', 1 ],
@@ -408,7 +412,6 @@ sub osbb_tarifs_list {
       [ 'PRICE', 'INT', 'ot.price', 1 ],
       [ 'DOCUMENT_BASE', 'INT', 'ot.document_base', 1 ],
       [ 'START_DATE', 'DATE', 'ot.start_date', 1 ],
-      [ 'SET_ALL', 'INT', 'ot.set_all', 1 ],
     ],
     {
       WHERE       => 1,

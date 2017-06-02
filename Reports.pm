@@ -81,12 +81,51 @@ sub osbb_finance_report {
   my $Extfin = Extfin->new($db, $admin, \%conf);
   my $Payments = Finance->payments($db, $admin, \%conf);
   my $Fees = Finance->fees($db, $admin, \%conf);
+  my $Osbb = Osbb->new($db, $admin, \%conf);
   my $period = sprintf("%s-%#.2d", $year, $month);
   
-  $Extfin->extfin_report_balance_list({ PERIOD => $period });
-  $Payments->list({ MONTH => $period });
-  $Fees->list({ MONTH => $period });
-  my $end_saldo = $Extfin->{TOTAL_SUM} - $Fees->{SUM} + $Payments->{SUM};
+  my $users_list = $Osbb->user_list({
+    LOCATION_ID   => $FORM{LOCATION_ID},
+    FIO           => '_SHOW',
+    ADDRESS_FLAT  => '_SHOW',
+    UID           => '_SHOW',
+    BILL_ID       => '_SHOW',
+    ADDRESS_FULL  => '_SHOW',
+    COLS_NAME     => 1,
+    PAGE_ROWS     => 10000,
+    SORT          => 'pi.address_flat',
+    DESC          => 1
+  });
+  
+  my $total_old_saldo = 0;
+  my $total_fees      = 0;
+  my $total_payments  = 0;
+  
+  foreach my $user_line (@$users_list) {
+    my $balance_report_info = $Extfin->extfin_report_balance_info({
+      PERIOD => $period, 
+      BILL_ID => $user_line->{bill_id}, 
+      COLS_NAME => 1 
+    });
+    
+    my $month_payments = $Payments->list({
+      MONTH     => $period,
+      BILL_ID   => $user_line->{bill_id},
+      COLS_NAME => 1,
+    });
+    
+    my $month_fees = $Fees->list({
+      MONTH     => $period,
+      BILL_ID   => $user_line->{bill_id},
+      COLS_NAME => 1,
+    });
+    
+    $total_old_saldo += $balance_report_info->{SUM} || 0.00;
+    $total_fees      += $Fees->{SUM} || 0;
+    $total_payments  += $Payments->{SUM} || 0;
+  }
+  
+  my $end_saldo = $total_old_saldo - $total_fees + $total_payments;
 
   my $table = $html->table(
     {
@@ -95,10 +134,10 @@ sub osbb_finance_report {
       border     => 5,
       ID         => 'BALANCE',
       rows       => [
-        [$lang{START_SALDO},   sprintf('%.2f', $Extfin->{TOTAL_SUM} || 0)],
-        [$lang{FEES},          sprintf('%.2f', $Fees->{SUM}         || 0)],
-        [$lang{PAYMENTS},      sprintf('%.2f', $Payments->{SUM}     || 0)],
-        [$lang{END_SALDO},     sprintf('%.2f', $end_saldo           || 0)]
+        [$lang{START_SALDO},   sprintf('%.2f', $total_old_saldo  )],
+        [$lang{FEES},          sprintf('%.2f', $total_fees       )],
+        [$lang{PAYMENTS},      sprintf('%.2f', $total_payments   )],
+        [$lang{END_SALDO},     sprintf('%.2f', $end_saldo        )]
       ],
     }
   );
