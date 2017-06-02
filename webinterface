@@ -301,6 +301,7 @@ sub osbb_registration {
           NAME      => $FORM{FIO},
           A_LOGIN   => $FORM{PHONE},
           DOMAIN_ID => $Multidoms->{INSERT_ID},
+          WEB_OPTIONS => "language=$html->{language};QUICK_REPORTS=Osbb:osbb_quick_menu, Osbb:osbb_finance_report, Osbb:osbb_tarifs_report;"
         });
         
         return 0 if (_error_show($admin));
@@ -417,7 +418,7 @@ sub osbb_simple_build_select {
   # If no builds, show button
   if ( !$builds_list || ref $builds_list ne 'ARRAY' || !scalar( @{$builds_list} ) ) {
     my $add_btn = $html->button(
-      " $lang{ADD} $lang{BUILD}",
+      " $lang{ADD} $lang{ADDRESS_BUILD}",
       'adding=1&index=' . get_function_index('osbb_form_address'),
       {
         class => 'btn btn-warning',
