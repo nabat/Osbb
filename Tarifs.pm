@@ -89,7 +89,7 @@ sub osbb_tarifs {
       {
         INPUT_DATA      => $Osbb,
         FUNCTION        => 'osbb_tarifs_list',
-        DEFAULT_FIELDS  => 'ID, NAME, UNIT, PRICE, DOCUMENT_BASE, START_DATE',
+        DEFAULT_FIELDS  => 'ID, NAME, UNIT, PRICE, DOCUMENT_BASE',#, START_DATE',
         FUNCTION_FIELDS => 'change,del',
         EXT_TITLES      => {
           id            => '#',
