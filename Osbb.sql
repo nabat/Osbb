@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS `osbb_tarifs` (
   `price` DOUBLE(10, 2) UNSIGNED NOT NULL DEFAULT '0.00',
   `document_base` VARCHAR(120) NOT NULL DEFAULT '',
   `start_date` DATE NOT NULL,
-  `set_all` TINYINT(1) UNSIGNED NOT NULL DEFAULT '0',
+  `domain_id` SMALLINT(6) UNSIGNED NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id` (`id`),
   UNIQUE KEY `name` (`name`)
