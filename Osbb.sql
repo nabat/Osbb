@@ -52,8 +52,7 @@ CREATE TABLE IF NOT EXISTS `osbb_tarifs` (
   `start_date` DATE NOT NULL,
   `domain_id` SMALLINT(6) UNSIGNED NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `id` (`id`),
-  UNIQUE KEY `name` (`name`)
+  UNIQUE KEY `name` (`name`, `domain_id`)
 )
   COMMENT = 'Osbb Tarifs';
 
