@@ -29,7 +29,7 @@ sub _osbb_users_import {
     password     => $lang{PASSWD},
     fio          => $lang{FIO},
     phone        => $lang{PHONE},
-    email        => $lang{EMAIL},
+    email        => 'E-mail',
     address_flat => $lang{ADDRESS_FLAT},
     type         => $lang{TYPE},
     total_area   => $lang{TOTAL_AREA},
