@@ -35,6 +35,8 @@ $lang{START_SALDO}      = "Сальдо на початок";
 $lang{END_SALDO}        = "Сальдо на кінець";
 $lang{UNDER_CONSTRUCTION} = "В розробці";
 $lang{FEES_ALREADY_EXISTS} = "За цей період вже нараховано";
-
+$lang{THANK_YOU}           ='Дякуємо!';
+$lang{ACCOUNT_INFORMATION} = 'Ваш обліковий запис';
+$lang{SITE} = 'Сторінка авторизації';
 
 1;
