@@ -33,5 +33,7 @@ $lang{START_SALDO}      = "START_SALDO";
 $lang{END_SALDO}        = "END_SALDO";
 $lang{UNDER_CONSTRUCTION} = "Under construction";
 $lang{FEES_ALREADY_EXISTS} = "Monthly fees already exists";
-
+$lang{THANK_YOU}           ='Thank you!';
+$lang{ACCOUNT_INFORMATION} = 'Your account information';
+$lang{SITE} = 'Site';
 1;
