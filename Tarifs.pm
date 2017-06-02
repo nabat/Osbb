@@ -48,7 +48,7 @@ sub osbb_tarifs {
     }
     if ($FORM{SET_ALL}) {
       my $new_tp = $Osbb->{INSERT_ID};
-      my $user_list = $Osbb->user_list();
+      my $user_list = $Osbb->user_list({ PAGE_ROWS => 9999 });
       foreach (@$user_list) {
         $Osbb->users_services_add({ UID => $_->{uid}, TP_ID => $new_tp })
       }
@@ -77,7 +77,7 @@ sub osbb_tarifs {
       $html->message('info', $lang{INFO}, "$lang{CHANGED}") if (!$Osbb->{errno});
     }
     if ($FORM{SET_ALL}) {
-      my $user_list = $Osbb->user_list();
+      my $user_list = $Osbb->user_list({ PAGE_ROWS => 9999 });
       foreach (@$user_list) {
         $Osbb->users_services_add({ UID => $_->{uid}, TP_ID => $FORM{ID} })
       }
