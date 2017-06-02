@@ -6,6 +6,6 @@ _{LOGIN}_:    %PHONE%
 _{PASSWD}_: %PASSWORD%
 
 _{FIO}_:      %FIO%
-_{E-MAIL}_:    %EMAIL%
+E-Mail:    %EMAIL%
 
 _{SITE}_: https://portal.myosbb.net/admin
