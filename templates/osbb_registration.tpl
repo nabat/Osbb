@@ -55,14 +55,14 @@
         <div class='form-group'>
           <label class='control-label col-md-3' for='PHONE'>_{PHONE}_</label>
           <div class='col-md-9'>
-            <input id='FIO' name='PHONE' value='%PHONE%' placeholder='_{PHONE}_' class='form-control' type='text'>
+            <input id='FIO' name='PHONE' value='%PHONE%' placeholder='0501112233' class='form-control' type='text'>
           </div>
         </div>
 
         <div class='form-group'>
           <label class='control-label col-md-3' for='EMAIL'>E-MAIL</label>
           <div class='col-md-9'>
-            <input id='EMAIL' name='EMAIL' value='%EMAIL%' placeholder='E-mail' class='form-control' type='text'>
+            <input id='EMAIL' name='EMAIL' value='%EMAIL%' placeholder='Mymail@mail.com' class='form-control' type='text'>
           </div>
         </div>
       </div>

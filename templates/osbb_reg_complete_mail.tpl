@@ -1,11 +1,11 @@
-Thank you!
+_{THANK_YOU}_
 =================================================
-Your account information:
+_{ACCOUNT_INFORMATION}_:
 
-LOGIN:    %PHONE%
-PASSWORD: %PASSWORD%
+_{LOGIN}_:    %PHONE%
+_{PASSWD}_: %PASSWORD%
 
-FIO:      %FIO%
-EMAIL:    %EMAIL%
+_{FIO}_:      %FIO%
+E-Mail:    %EMAIL%
 
-Site: https://portal.myosbb.net/admin
+_{SITE}_: https://portal.myosbb.net/admin
