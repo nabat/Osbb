@@ -176,16 +176,18 @@ sub osbb_parse_import_file {
   if ( $file_format eq 'CSV' ) {
     
     # Prepare
-    my $delimiter = ';';
     my @file_rows = split(/\r?\n/, $content);
     
     # Parse
-    my @columns = split($delimiter, shift @file_rows);
+#    my @columns = split($delimiter, shift @file_rows);
     foreach my $file_row ( @file_rows ) {
-      next if (!$file_row || $file_row !~ /$delimiter/ );
-      push @users_rows, [ split($delimiter, $file_row ) ];
+      next if (!$file_row || $file_row !~ /[;,]/ );
+      push @users_rows, [ split(/[;,]/, $file_row ) ];
     }
-    
+  
+    my $cols_count = ($users_rows[0]) ? scalar( @{$users_rows[0]} ) : 1;
+    my @columns = map {''} (0 .. $cols_count);
+  
     return (\@columns, \@users_rows);
   }
   elsif ( $file_format eq 'JSON' ) {
