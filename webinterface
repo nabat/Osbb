@@ -301,6 +301,7 @@ sub osbb_registration {
           NAME      => $FORM{FIO},
           A_LOGIN   => $FORM{PHONE},
           DOMAIN_ID => $Multidoms->{INSERT_ID},
+          WEB_OPTIONS => "language=$html->{language};QUICK_REPORTS=Osbb:osbb_quick_menu, Osbb:osbb_finance_report, Osbb:osbb_tarifs_report;"
         });
         
         return 0 if (_error_show($admin));
