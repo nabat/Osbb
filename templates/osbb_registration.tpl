@@ -19,7 +19,6 @@
 
   <br>
 
-
   <div class='box box-theme box-big-form'>
     <div class='box-header with-border'>
       <div class='row'>
@@ -47,21 +46,21 @@
           <div class='form-group'>
             <label class='control-label col-md-3' for='FIO'>_{FIO}_</label>
             <div class='col-md-9'>
-              <input id='FIO' name='FIO' value='%FIO%' placeholder='_{FIO}_' class='form-control' type='text'>
+              <input id='FIO' name='FIO' value='%FIO%' placeholder='Приклад : Сидоренко Іван Петрович ' class='form-control' type='text'>
             </div>
           </div>
 
           <div class='form-group'>
             <label class='control-label col-md-3' for='PHONE'>_{PHONE}_</label>
             <div class='col-md-9'>
-              <input id='PHONE' name='PHONE' value='%PHONE%' placeholder='0501112233' class='form-control' type='text'>
+              <input id='PHONE' name='PHONE' value='%PHONE%' placeholder='Приклад : 0501112233' class='form-control' type='text'>
             </div>
           </div>
 
           <div class='form-group'>
             <label class='control-label col-md-3' for='EMAIL'>E-MAIL</label>
             <div class='col-md-9'>
-              <input id='EMAIL' name='EMAIL' value='%EMAIL%' placeholder='Mymail@mail.com' class='form-control'
+              <input id='EMAIL' name='EMAIL' value='%EMAIL%' placeholder='Приклад : mymail@mail.com' class='form-control'
                      type='text'>
             </div>
           </div>
@@ -71,14 +70,14 @@
           <div class='form-group'>
             <label class='control-label col-md-3' for='CITY'>_{CITY}_</label>
             <div class='col-md-9'>
-              <input id='CITY' name='CITY' value='%CITY%' placeholder='_{CITY}_' class='form-control' type='text'>
+              <input id='CITY' name='CITY' value='%CITY%' placeholder='Приклад : Київ' class='form-control' type='text'>
             </div>
           </div>
 
           <div class='form-group'>
             <label class='control-label col-md-3' for='ADDRESS_STREET'>_{ADDRESS_STREET}_</label>
             <div class='col-md-9'>
-              <input id='ADDRESS_STREET' name='ADDRESS_STREET' value='%ADDRESS_STREET%' placeholder='_{ADDRESS_STREET}_'
+              <input id='ADDRESS_STREET' name='ADDRESS_STREET' value='%ADDRESS_STREET%' placeholder='Приклад : Хрещатик'
                      class='form-control' type='text'>
             </div>
           </div>
@@ -86,25 +85,27 @@
           <div class='form-group'>
             <label class='control-label col-md-3' for='ADDRESS_BUILD'>_{ADDRESS_BUILD}_</label>
             <div class='col-md-9'>
-              <input id='ADDRESS_BUILD' name='ADDRESS_BUILD' value='%ADDRESS_BUILD%' placeholder='_{ADDRESS_BUILD}_'
+              <input id='ADDRESS_BUILD' name='ADDRESS_BUILD' value='%ADDRESS_BUILD%' placeholder='Приклад : 25'
                      class='form-control' type='text'>
-              <p class="help-block">
+              <p class='help-block'>
                 <small>Вкажіть адресу вашого будинку або одного з будинків (якщо їх декілька).</small>
               </p>
             </div>
           </div>
         </div>
       </div>
-      <div class='form-group text-center'>
+      <div class='form-group'>
         <label class='control-element col-md-12 '>_{RULES}_</label>
         <div class='col-md-12'>
-        <textarea cols=60 rows=10 class='form-control' readonly style='resize: none; overflow: auto;'>%OSBB_RULES%</textarea>
+          <div class="well">
+            %OSBB_RULES%
+          </div>
         </div>
       </div>
       <div class='checkbox'>
         <label>
           <input type='checkbox' name='ACCEPT_RULES'>
-          <strong>_{ACCEPT}_</strong>
+          <strong>_{ACCEPT}_ <span class='text-lowercase'>_{RULES}_</span></strong>
         </label>
       </div>
       <div class='col-md-6'>

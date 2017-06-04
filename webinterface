@@ -170,7 +170,7 @@ sub osbb_users_list {
       ADDRESS_FLAT => '_SHOW',
       PEOPLE_COUNT => '_SHOW',
       LIVING_AREA  => '_SHOW',
-      
+      PASSWORD => '_SHOW',
       COLS_NAME    => 1,
       COLS_UPPER   => 1,
     });

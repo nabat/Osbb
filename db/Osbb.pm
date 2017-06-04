@@ -401,7 +401,7 @@ sub osbb_tarifs_list {
   my @WHERE_RULES = ();
   
   if ($admin->{DOMAIN_ID}) {
-    push @WHERE_RULES,  @{ $self->search_expr($admin->{DOMAIN_ID}, 'INT', 'u.domain_id') };
+    push @WHERE_RULES,  @{ $self->search_expr($admin->{DOMAIN_ID}, 'INT', 'ot.domain_id') };
   }
   
   my $WHERE = $self->search_former(
