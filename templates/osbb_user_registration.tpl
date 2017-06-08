@@ -38,26 +38,14 @@
     <div class='box-body'>
       <div class='row'>
         <div class='col-md-12'>
-          <div class='form-group'>
-            <label class='control-label col-md-3' for='FIO'>_{FIO}_</label>
-            <div class='col-md-9'>
-              <input id='FIO' name='FIO' value='%FIO%' placeholder='_{FIO}_' class='form-control' type='text'>
-            </div>
+          <div class="form-group">
+            <input id='FIO' name='FIO' value='%FIO%' placeholder='_{FIO}_' class='form-control' type='text'>
           </div>
-
-          <div class='form-group'>
-            <label class='control-label col-md-3' for='PHONE'>_{PHONE}_</label>
-            <div class='col-md-9'>
-              <input id='PHONE' name='PHONE' value='%PHONE%' placeholder='0501112233' class='form-control' type='text'>
+          <div class="form-group">
+            <input id='PHONE' name='PHONE' value='%PHONE%' placeholder='_{PHONE}_ (0501112233)' class='form-control' type='text'>
             </div>
-          </div>
-
-          <div class='form-group'>
-            <label class='control-label col-md-3' for='EMAIL'>E-MAIL</label>
-            <div class='col-md-9'>
-              <input id='EMAIL' name='EMAIL' value='%EMAIL%' placeholder='Mymail@mail.com' class='form-control'
-                     type='text'>
-            </div>
+          <div class="form-group">
+            <input id='EMAIL' name='EMAIL' value='%EMAIL%' placeholder='E-MAIL' class='form-control' type='text'>
           </div>
         </div>
       </div>
@@ -67,8 +55,8 @@
     </div>
 
     <div class='box-footer'>
-      %FB_INFO%
-      <input type=submit name=reg value='_{REGISTRATION}_' class='btn btn-success'>      
+      <input type=submit name=reg value='_{REGISTRATION}_' class='btn btn-success btn-block'>
+      %FB_INFO_BLOCK%      
     </div>
 
 
