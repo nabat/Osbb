@@ -12,7 +12,7 @@ our ($db, $admin, %lang, $html, %ADMIN_REPORT);
 
 my $Osbb = Osbb->new($db, $admin, \%conf);
 
-my @units = ('', 'По площади', 'По количетву физ. лиц', 'Фиксированная сумма');
+my @units = ('', $lang{BY_AREA}, $lang{BY_HOUSING_COUNT}, $lang{FIXED_AMOUNT});
 #**********************************************************
 
 =head2 osbb_tarifs()
@@ -41,8 +41,7 @@ sub osbb_tarifs {
     $html->tpl_show(_include('osbb_tarifs', 'Osbb'), {%$Osbb, %$tarif_info});
   }
   elsif ($FORM{added}) {
-    $Osbb->tarifs_add({%FORM});
-
+    $Osbb->tarifs_add({%FORM, DOMAIN_ID => $admin->{DOMAIN_ID}});
     if (!$Osbb->{errno}) {
       $html->message('info', $lang{INFO}, "$lang{ADDED}");
     }
@@ -89,7 +88,7 @@ sub osbb_tarifs {
       {
         INPUT_DATA      => $Osbb,
         FUNCTION        => 'osbb_tarifs_list',
-        DEFAULT_FIELDS  => 'ID, NAME, UNIT, PRICE, DOCUMENT_BASE, START_DATE, SET_ALL',
+        DEFAULT_FIELDS  => 'ID, NAME, UNIT, PRICE, DOCUMENT_BASE',#, START_DATE',
         FUNCTION_FIELDS => 'change,del',
         EXT_TITLES      => {
           id            => '#',
@@ -98,7 +97,6 @@ sub osbb_tarifs {
           price         => $lang{PRICE},
           document_base => $lang{DOCUMENT_BASE},
           start_date    => $lang{COME_INTO_FORCE},
-          set_all       => $lang{SET_TARIF_TO_ALL},
         },
         SKIP_USER_TITLE => 1,
         FILTER_COLS     => {
@@ -110,7 +108,7 @@ sub osbb_tarifs {
           caption => "$lang{TARIFS}",
           qs      => $pages_qs,
           ID      => 'TARIFS',
-          MENU    => "$lang{ADD}:add_form=1&index=$index:add"
+          MENU    => "$lang{ADD}:add_form=1&index=$index:btn bg-olive margin;"
         },
         MAKE_ROWS => 1,
         TOTAL     => 1,

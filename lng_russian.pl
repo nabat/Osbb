@@ -38,4 +38,9 @@ $lang{FEES_ALREADY_EXISTS} = "За этот период уже начислен
 $lang{THANK_YOU}           ='Спасибо!';
 $lang{ACCOUNT_INFORMATION} = 'Ваша учетная запись';
 $lang{SITE} = 'Страница авторизации';
+
+$lang{BY_AREA} = 'По площади';
+$lang{BY_HOUSING_COUNT} = 'По количеству жильцов';
+$lang{FIXED_AMOUNT} = 'Фиксированная сумма';
+
 1;

@@ -170,7 +170,7 @@ sub osbb_users_list {
       ADDRESS_FLAT => '_SHOW',
       PEOPLE_COUNT => '_SHOW',
       LIVING_AREA  => '_SHOW',
-      
+      PASSWORD => '_SHOW',
       COLS_NAME    => 1,
       COLS_UPPER   => 1,
     });
@@ -510,7 +510,7 @@ sub osbb_simple_build_select {
   elsif ( $builds_list && ref $builds_list eq 'ARRAY' && scalar(@{$builds_list}) > 1 ) {
     my $address_index = get_function_index('osbb_form_address');
     my $add_btn = $html->button(
-      "$lang{ADD} $lang{BUILD}",
+      "$lang{ADD} $lang{ADDRESS_BUILD}",
       "adding=1&index=$address_index",
       {
         ICON => 'glyphicon glyphicon-plus'
@@ -530,7 +530,7 @@ sub osbb_simple_build_select {
         NO_ID       => 1,
         MAIN_MENU   => "?index=$address_index&LOCATION_ID=" . ( $attr->{LOCATION_ID} || $FORM{LOCATION_ID} || '' ),
         EXT_BUTTON  => $add_btn,
-        AUTO_SUBMIT => $attr->{AUTO_SUBMIT}
+        AUTOSUBMIT => ($attr->{AUTO_SUBMIT} || $attr->{AUTOSUBMIT})
           ? 'form'
           : 0,
       });
@@ -584,7 +584,7 @@ sub _osbb_user_select {
   my @full_name_users_list = map {
     {
       id   => $_->{uid},
-      name => join (', ', $_->{address_flat}, $_->{fio})
+      name => "$_->{address_flat}, $_->{fio}"
     }
   } @{$users_list};
   
@@ -689,7 +689,6 @@ sub osbb_form_address {
     $html->tpl_show(_include('osbb_form_address', 'Osbb'), { %{$params}, %{$build->[0]} });
   }
   elsif ( $FORM{add} ) {
-    $Address->{debug} = 1;
     $Address->street_list({ STREET_NAME => '_SHOW', LIST2HASH => 'street_name,street_id' });
     my $street_hash = $Address->{list_hash};
     $Address->street_add({ NAME => $FORM{STREET_NAME}, DISTRICT_ID =>
