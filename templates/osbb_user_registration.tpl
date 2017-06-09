@@ -43,7 +43,7 @@
           </div>
           <div class="form-group">
             <input id='PHONE' name='PHONE' value='%PHONE%' placeholder='_{PHONE}_ (0501112233)' class='form-control' type='text'>
-            </div>
+           </div>
           <div class="form-group">
             <input id='EMAIL' name='EMAIL' value='%EMAIL%' placeholder='E-MAIL' class='form-control' type='text'>
           </div>

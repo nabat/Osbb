@@ -437,6 +437,7 @@ sub osbb_user_registration {
     }
     else {
       $html->message('info', "$lang{SUCCESS}", "Пользователь $login успешно зарегистрирован.");
+      print "Location: $attr->{login_url}\n\n";
       return 1;
     }
   }
