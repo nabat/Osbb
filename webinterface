@@ -320,7 +320,7 @@ sub osbb_registration {
       my $Multidoms = Multidoms->new($db, $admin, \%conf);
       $Multidoms->multidoms_domain_add({ NAME => "$FORM{PHONE}" });
       if ( $Multidoms->{errno} ) {
-        $html->message('err', $lang{ERROR}, "$FORM{PHONE} already registred");
+        $html->message('err', $lang{ERROR}, "$FORM{PHONE} $lang{EXIST}");
       }
       else {
         $admin->add({ %FORM,
@@ -335,13 +335,8 @@ sub osbb_registration {
         
         my $password = mk_unique_value($conf{PASSWD_LENGTH} || 8, { EXTRA_RULES => '0:0' });
         $admin->password($password, \%conf);
-        
-        return 0 if (_error_show($admin));
-        
-        if ( $admin->{errno} ) {
-          $html->message('err', $lang{ERROR}, "[$admin->{errno}] $err_strs{$admin->{errno}}");
-        }
-        else {
+
+        if (!  $admin->{errno} ) {
           $Multidoms->admin_change({
             AID       => $admin->{AID},
             DOMAIN_ID => $Multidoms->{INSERT_ID},
@@ -358,7 +353,7 @@ sub osbb_registration {
               8 => { 0 => 1 },
             }, { });
           
-          my $Address = Address->new( $db, $admin, \%conf );
+          $Address = Address->new( $db, $admin, \%conf );
           $Address->district_add({
             DOMAIN_ID => $Multidoms->{INSERT_ID},
             NAME      => $FORM{PHONE},
@@ -397,8 +392,10 @@ sub osbb_registration {
           }
         }
       }
-      _error_show($admin);
-      _error_show($Multidoms);
+
+      if(! _error_show($admin)) {
+        _error_show($Multidoms);
+      }
     }
   }
   
