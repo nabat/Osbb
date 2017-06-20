@@ -166,6 +166,12 @@ sub osbb_tarifs_report{
   foreach my $tarif_line (@$tarifs_list) {
     $table->addrow($tarif_line->{NAME}, $tarif_line->{PRICE}, $unit_list[$tarif_line->{UNIT}] || '');
   }
+  if (@$tarifs_list < 1) {
+    $table->addrow( 
+      $html->button("$lang{ADD}", "index=" . get_function_index('osbb_tarifs') . "&add_form=1",
+      { class => 'btn btn-success btn-block' })
+    );
+  }
 
   return $table->show();
 }
