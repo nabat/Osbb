@@ -262,6 +262,28 @@ sub osbb_users_list {
 }
 
 #**********************************************************
+=head2 osbb_user_info ()
+  main osbb user page
+
+=cut
+#**********************************************************
+sub osbb_user_info {
+  _under_construction();
+  return 1;
+}
+
+#**********************************************************
+=head2 osbb_user_finance ()
+  finance osbb user page
+
+=cut
+#**********************************************************
+sub osbb_user_finance {
+  _under_construction();
+  return 1;
+}
+
+#**********************************************************
 =head2 osbb_registration($attr)
 
 =cut
@@ -411,10 +433,11 @@ sub osbb_user_registration {
     }
     $login =~ s/\s/_/g;
     $login = lc $login;
+    
+    $admin->{DOMAIN_ID} = 1;
     $User->add({
       CREATE_BILL => 1,
       LOGIN       => $login,
-      DOMAIN_ID   => 1,
       %$attr,
     });
     _error_show($User);
@@ -755,7 +778,7 @@ sub _copy_template {
   my ($domain) = @_;
   
   print cmd("mkdir /usr/abills/Abills/templates/$domain/");
-  print cmd("cp /usr/abills/Abills/templates/0/_admin_menu.tpl /usr/abills/Abills/templates/$domain/_admin_menu.tpl");
+  print cmd("cp /usr/abills/Abills/templates/0/* /usr/abills/Abills/templates/$domain/");
   
   return 1;
 }
