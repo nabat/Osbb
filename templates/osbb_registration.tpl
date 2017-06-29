@@ -25,12 +25,14 @@
         <div class='col-md-8'>
           <h3 class='box-title'>_{REGISTRATION}_ _{OSBB}_</h3>
         </div>
-        <label class='control-label col-md-2' for='LANGUAGE'>_{LANGUAGE}_</label>
-        <div class='col-md-2'>
-          <div class='form-group no-margin pull-right'>
-            %SEL_LANGUAGE%
+
+          <div class='col-md-3 pull-right'>
+            <div class='input-group'>
+              <span class='input-group-addon glyphicon glyphicon-globe'></span>
+              %SEL_LANGUAGE%
+            </div>
           </div>
-        </div>
+
       </div>
     </div>
     <div class='box-body'>
