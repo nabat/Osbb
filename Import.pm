@@ -3,6 +3,7 @@ use warnings FATAL => 'all';
 
 use Abills::Base qw/convert _bp/;
 use JSON;
+use Encode;
 use Users;
 
 our (
@@ -27,6 +28,9 @@ sub _osbb_users_import {
   my %columns = (
     uid          => 'UID',
     password     => $lang{PASSWD},
+    firstname    => $lang{FIRSTNAME},
+    lastname     => $lang{LASTNAME},
+    surname      => $lang{SURNAME},
     fio          => $lang{FIO},
     phone        => $lang{PHONE},
     email        => 'E-mail',
@@ -113,15 +117,47 @@ sub _osbb_users_import {
     
     return _osbb_process_imported_rows($rows);
   }
+  elsif ($FORM{analyze_file} && $FORM{file}){
+    
+    my $file_name = $FORM{filename} || '';
+    if ($file_name !~ /\.(?:csv|json|txt)$/i){
+      print qq{{ "result" : "error", "message" : "$lang{WRONG_FILE_EXTENSION}" }};
+      return 0;
+    }
+    
+    my $encoding = _osbb_import_guess_encoding($FORM{file});
+    if ($encoding){
+      print qq{ { "result" : "ok", "encoding" : "$encoding"  } };
+      return 1;
+    }
+    else {
+      print qq{ { "result" : "error" } };
+      return 0;
+    }
+  
+  }
   else {
     
     my $type_select = $html->form_select('FILE_FORMAT', {
         SEL_ARRAY   => [ 'CSV', 'JSON' ],
-        NO_ARRAY_ID => 1
+        NO_ARRAY_ID => 1,
+        REQUIRED => 1
+      });
+    
+    my $encoding_select = $html->form_select('FILE_ENCODING', {
+        SEL_ARRAY   => [
+          'UTF-8',
+          'CP-1252',
+          'KOI',
+          'DOS',
+        ],
+        NO_ARRAY_ID => 1,
+        REQUIRED => 1
       });
     
     $html->tpl_show(_include('osbb_import_file_form', 'Osbb'),
       {
+        FILE_ENCODING_SELECT    => $encoding_select,
         FILE_FORMAT_SELECT => $type_select,
         LOCATION_ID_SELECT => osbb_simple_build_select({ REQUIRED => 1 })
       }
@@ -144,6 +180,23 @@ sub _osbb_process_imported_rows {
   return 0 unless (ref $users eq 'ARRAY');
   
   foreach (@$users) {
+    if ($_->{FIRSTNAME} || $_->{LASTNAME} || $_->{SURNAME}){
+      $_->{FIO} =
+        ($_->{LASTNAME} || '')
+          . ($_->{FIRSTNAME} ? ' ' . $_->{FIRSTNAME} : '')
+          . ($_->{SURNAME} ? ' ' . $_->{SURNAME} : '')
+    }
+    
+    if ($_->{PHONE}){
+      # Remove all non allowed symbols
+      $_->{PHONE} =~ s/[^0-9,]//gm;
+      
+      if ($conf{DEFAULT_PHONE_PREFIX} && $_->{PHONE} =~ /^$conf{DEFAULT_PHONE_PREFIX}/){
+        $_->{PHONE} = $conf{DEFAULT_PHONE_PREFIX};
+      }
+      
+    }
+    
     _osbb_user_create($_);
   }
   
@@ -171,6 +224,11 @@ sub osbb_parse_import_file {
   return 0 unless ($file_format && $upload_obj && ref $upload_obj eq 'HASH');
   
   my $content = $upload_obj->{Contents};
+  
+  if ($FORM{FILE_ENCODING} && $FORM{FILE_ENCODING} ne 'UTF-8'){
+    $content = _osbb_import_encode_to_utf8($content, $FORM{FILE_ENCODING});
+  }
+  
   my @users_rows = ();
   
   if ( $file_format eq 'CSV' ) {
@@ -178,11 +236,25 @@ sub osbb_parse_import_file {
     # Prepare
     my @file_rows = split(/\r?\n/, $content);
     
+    my $delimiter = ',';
+    
+    if ($file_rows[0]){
+      # Guess delimiter
+      my $comma_values = split(',', $file_rows[0]);
+      my $semicolon_values = split(';', $file_rows[0]);
+      
+      if ($semicolon_values > $comma_values){
+        $delimiter = ';';
+      }
+    }
+    
     # Parse
 #    my @columns = split($delimiter, shift @file_rows);
     foreach my $file_row ( @file_rows ) {
-      next if (!$file_row || $file_row !~ /[;,]/ );
-      push @users_rows, [ split(/[;,]/, $file_row ) ];
+      
+      
+      next if (!$file_row || $file_row !~ /$delimiter/ );
+      push @users_rows, [ split(/$delimiter/, $file_row ) ];
     }
   
     my $cols_count = ($users_rows[0]) ? scalar( @{$users_rows[0]} ) : 1;
@@ -240,15 +312,23 @@ sub osbb_parse_import_preview_form {
     my %row = ();
     
     foreach my $col_name ( @$table_col_names ) {
-      if ( exists $FORM{$row_num . '_' . $col_name} && defined $FORM{$row_num . '_' . $col_name} ) {
-        $row{$upper_case ? uc $col_name : $col_name} = $FORM{$row_num . '_' . $col_name};
+      my $row_key = $upper_case ? uc $col_name : $col_name;
+      
+      if ( exists $FORM{$row_num . '_' . $col_name} && $FORM{$row_num . '_' . $col_name} ) {
+        if (exists $row{$row_key} && defined $row{$row_key}){
+          $row{$row_key} .= ', ' . $FORM{$row_num . '_' . $col_name};
+        }
+        else{
+          $row{$row_key} = $FORM{$row_num . '_' . $col_name};
+        }
       }
     }
   
     foreach my $col_name ( @$general_col_names ) {
+      my $row_key = $upper_case ? uc $col_name : $col_name;
       my $template_col_name = uc $col_name;
       if (exists $FORM{$template_col_name} && defined $FORM{$template_col_name}){
-        $row{$upper_case ? uc $col_name : $col_name} = $FORM{$template_col_name};
+        $row{$row_key} = $FORM{$template_col_name};
       }
     }
     
@@ -256,6 +336,46 @@ sub osbb_parse_import_preview_form {
   }
   
   return wantarray ? @rows : \@rows;
+}
+
+#**********************************************************
+=head2 _osbb_import_guess_encoding($upload_file_hash_ref)
+
+=cut
+#**********************************************************
+sub _osbb_import_guess_encoding {
+  my ($file_hash) = @_;
+  
+  my $raw = $file_hash->{Contents};
+  
+  my $check_encoding = sub {
+    my $str = shift || '';
+    return $str =~ /Андрій|Андрей|Василий|Василь|Тарас|Алла/;
+  };
+  
+  return 'UTF-8' if ($check_encoding->(_osbb_import_encode_to_utf8($raw, 'UTF-8')));
+  return 'CP-1252' if ($check_encoding->(_osbb_import_encode_to_utf8($raw, 'CP-1252')));
+  return 'KOI' if ($check_encoding->(_osbb_import_encode_to_utf8($raw, 'KOI')));
+  return 'DOS' if ($check_encoding->(_osbb_import_encode_to_utf8($raw, 'DOS')));
+  
+  return 0;
+}
+
+#**********************************************************
+=head2 _osbb_import_encode()
+
+=cut
+#**********************************************************
+sub _osbb_import_encode_to_utf8 {
+  my ($text, $ENCODING) = @_;
+  
+  $ENCODING //= 'UTF-8';
+  
+  return (convert($text, { win2utf8 => 1 })) if ($ENCODING eq 'CP-1252');
+  return convert(convert($text, { koi2win => 1 }), { win2utf8 => 1 }) if ($ENCODING eq 'KOI');
+  return convert(convert($text, { dos2win => 1 }), { win2utf8 => 1 }) if ($ENCODING eq 'DOS');
+  
+  return $text;
 }
 
 1;
