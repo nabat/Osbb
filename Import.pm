@@ -315,7 +315,7 @@ sub osbb_parse_import_preview_form {
       my $row_key = $upper_case ? uc $col_name : $col_name;
       
       if ( exists $FORM{$row_num . '_' . $col_name} && $FORM{$row_num . '_' . $col_name} ) {
-        if (exists $row{$row_key} && defined $row{$row_key}){
+        if (exists $row{$row_key} && $row{$row_key}){
           $row{$row_key} .= ', ' . $FORM{$row_num . '_' . $col_name};
         }
         else{
