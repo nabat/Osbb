@@ -766,4 +766,20 @@ sub _under_construction {
   $html->message('info', "$lang{UNDER_CONSTRUCTION}");
 }
 
+#**********************************************************
+=head2 osbb_create_wizard()
+
+=cut
+#**********************************************************
+sub osbb_create_wizard {
+  
+  $html->tpl_show(_include('osbb_create_wizard', 'Osbb'),
+    {
+    
+    }
+  );
+  
+  return 1;
+}
+
 1;
