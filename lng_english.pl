@@ -41,4 +41,8 @@ $lang{BY_AREA} = 'By area';
 $lang{BY_HOUSING_COUNT} = 'By housing count';
 $lang{FIXED_AMOUNT} = 'Fixed amount';
 
+$lang{WRONG_FILE_EXTENSION} = 'Wrong file extension';
+$lang{FIRSTNAME} = 'Firstname';
+$lang{LASTNAME} = 'Lastname';
+$lang{SURNAME} = 'Surname';
 1;

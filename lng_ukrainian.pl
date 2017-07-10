@@ -43,4 +43,9 @@ $lang{BY_AREA} = 'По площі';
 $lang{BY_HOUSING_COUNT} = 'По кількості мешканців';
 $lang{FIXED_AMOUNT} = 'Фіксована сума';
 
+$lang{WRONG_FILE_EXTENSION} = 'Невірне розширення файлу';
+$lang{FIRSTNAME} = "Ім\\'я";
+$lang{LASTNAME} = 'Прізвище';
+$lang{SURNAME} = 'По батькові';
+
 1;
