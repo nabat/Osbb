@@ -214,7 +214,7 @@ sub osbb_users_list {
     $bnum = $1 || 0;
     $anum <=> $bnum;
   } @{$users_list} ) {
-    my $user_button = $html->button($user_line->{fio},
+    my $user_button = $html->button($user_line->{fio} || "(null)",
       "index=$index&LOCATION_ID=$location_id&usr=$user_line->{uid}&change=1", { });
     $table->addrow($user_line->{address_flat}, $user_button, $user_line->{LIVING_AREA}, $user_line->{PEOPLE_COUNT});
   }
