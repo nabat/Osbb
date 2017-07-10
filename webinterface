@@ -214,7 +214,7 @@ sub osbb_users_list {
     $bnum = $1 || 0;
     $anum <=> $bnum;
   } @{$users_list} ) {
-    my $user_button = $html->button($user_line->{fio},
+    my $user_button = $html->button($user_line->{fio} || "(null)",
       "index=$index&LOCATION_ID=$location_id&usr=$user_line->{uid}&change=1", { });
     $table->addrow($user_line->{address_flat}, $user_button, $user_line->{LIVING_AREA}, $user_line->{PEOPLE_COUNT});
   }
@@ -258,6 +258,28 @@ sub osbb_users_list {
   #   TOTAL        => 1,
   # });
   
+  return 1;
+}
+
+#**********************************************************
+=head2 osbb_user_info ()
+  main osbb user page
+
+=cut
+#**********************************************************
+sub osbb_user_info {
+  _under_construction();
+  return 1;
+}
+
+#**********************************************************
+=head2 osbb_user_finance ()
+  finance osbb user page
+
+=cut
+#**********************************************************
+sub osbb_user_finance {
+  _under_construction();
   return 1;
 }
 
@@ -366,6 +388,9 @@ sub osbb_registration {
             $html->message('info', "Реєстрація успішна",
               "На пошту ($FORM{EMAIL}) вам надіслано листа з інформацією про наступні дії.");
             _copy_template($Multidoms->{INSERT_ID});
+            my $login_url = $SELF_URL;
+            $login_url =~ s/registration.cgi/admin\//;
+            print "Location: $login_url\n\n";
             return 1;
           }
         }
@@ -408,10 +433,11 @@ sub osbb_user_registration {
     }
     $login =~ s/\s/_/g;
     $login = lc $login;
+    
+    $admin->{DOMAIN_ID} = 1;
     $User->add({
       CREATE_BILL => 1,
       LOGIN       => $login,
-      DOMAIN_ID   => 1,
       %$attr,
     });
     _error_show($User);
@@ -614,9 +640,13 @@ sub _osbb_user_create {
     return 0;
   }
   
+  my $login = "$PARAMS{LOCATION_ID}_$PARAMS{ADDRESS_FLAT}";
+  $login = lc $login;
+  $login =~ tr/абвгдежзіийклмнопрстуфхцчшщыєэюя/abvgdegziijklmnoprstufhchscyeeyy/;
+  
   $User->add({
     CREATE_BILL => 1,
-    LOGIN       => "$PARAMS{LOCATION_ID}_$PARAMS{ADDRESS_FLAT}",
+    LOGIN       => $login,
     %PARAMS,
   });
   _error_show($User);
@@ -752,7 +782,7 @@ sub _copy_template {
   my ($domain) = @_;
   
   print cmd("mkdir /usr/abills/Abills/templates/$domain/");
-  print cmd("cp /usr/abills/Abills/templates/0/_admin_menu.tpl /usr/abills/Abills/templates/$domain/_admin_menu.tpl");
+  print cmd("cp /usr/abills/Abills/templates/0/* /usr/abills/Abills/templates/$domain/");
   
   return 1;
 }
