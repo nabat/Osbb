@@ -11,7 +11,7 @@ our %FUNCTIONS_LIST = (
   "18:10:$lang{FEES}:osbb_month_fees"                      => 5,
   "19:10:Оборотно-сальдова відомість:osbb_calculated_balance" => 5,
   "20:10:$lang{ADDRESS}:osbb_form_address"                 => 5,
-  "21:0:$lang{CREATE}:osbb_create_wizard" => 5
+  "21:0:$lang{REGISTRATION} $lang{OSBB}:osbb_create_wizard" => 5
 
 );
 

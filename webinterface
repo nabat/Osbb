@@ -76,7 +76,7 @@ if ( %ADMIN_REPORT ) {
 =cut
 #**********************************************************
 sub osbb_user {
-  return 0 unless ($FORM{UID});
+  return 0 unless ( $FORM{UID} );
   
   my $tp_info = $Osbb->user_info($FORM{UID});
   _error_show($Osbb);
@@ -152,7 +152,7 @@ sub osbb_users_list {
     HIDDEN  => { index => $index },
     class   => 'navbar-form navbar-right',
   });
-  func_menu({ $lang{NAME} => $nav }, { }, { } );
+  func_menu({ $lang{NAME} => $nav }, {}, {});
   
   if ( !$location_id ) {
     $html->message('err', "$lang{NO} $lang{BUILDS}", $html->button("$lang{ADD} $lang{ADDRESS}", 'index=91'));
@@ -170,7 +170,7 @@ sub osbb_users_list {
       ADDRESS_FLAT => '_SHOW',
       PEOPLE_COUNT => '_SHOW',
       LIVING_AREA  => '_SHOW',
-      PASSWORD => '_SHOW',
+      PASSWORD     => '_SHOW',
       COLS_NAME    => 1,
       COLS_UPPER   => 1,
     });
@@ -215,7 +215,7 @@ sub osbb_users_list {
     $anum <=> $bnum;
   } @{$users_list} ) {
     my $user_button = $html->button($user_line->{fio} || "(null)",
-      "index=$index&LOCATION_ID=$location_id&usr=$user_line->{uid}&change=1", { });
+      "index=$index&LOCATION_ID=$location_id&usr=$user_line->{uid}&change=1", {});
     $table->addrow($user_line->{address_flat}, $user_button, $user_line->{LIVING_AREA}, $user_line->{PEOPLE_COUNT});
   }
   
@@ -291,7 +291,7 @@ sub osbb_user_finance {
 sub osbb_registration {
   my ($attr) = @_;
   
-  if ($attr->{user_registration}) {
+  if ( $attr->{user_registration} ) {
     osbb_user_registration($attr);
     return 1;
   }
@@ -301,7 +301,7 @@ sub osbb_registration {
       $Osbb->{MESSAGE} = $html->message('err', $lang{ERROR}, "$lang{ERR_WRONG_EMAIL}");
     }
     elsif ( $conf{REGISTRATION_CHECK_PHONE}
-      && (!$FORM{PHONE} || ($conf{PHONE_FORMAT} && $FORM{PHONE} !~ /$conf{PHONE_FORMAT}/ )) ) {
+      && (!$FORM{PHONE} || ($conf{PHONE_FORMAT} && $FORM{PHONE} !~ /$conf{PHONE_FORMAT}/)) ) {
       $Osbb->{MESSAGE} = $html->message('err', $lang{ERROR},
         $lang{ERR_WRONG_PHONE} . (($conf{PHONE_FORMAT}) ? ' ' . human_exp($conf{PHONE_FORMAT}) : q{}));
     }
@@ -324,19 +324,20 @@ sub osbb_registration {
       }
       else {
         $admin->add({ %FORM,
-          ID        => $FORM{PHONE},
-          NAME      => $FORM{FIO},
-          A_LOGIN   => $FORM{PHONE},
-          DOMAIN_ID => $Multidoms->{INSERT_ID},
-          WEB_OPTIONS => "language=$html->{language};QUICK_REPORTS=Osbb:osbb_quick_menu, Osbb:osbb_finance_report, Osbb:osbb_tarifs_report;"
+          ID          => $FORM{PHONE},
+          NAME        => $FORM{FIO},
+          A_LOGIN     => $FORM{PHONE},
+          DOMAIN_ID   => $Multidoms->{INSERT_ID},
+          WEB_OPTIONS =>
+          "language=$html->{language};QUICK_REPORTS=Osbb:osbb_quick_menu, Osbb:osbb_finance_report, Osbb:osbb_tarifs_report;"
         });
         
-        return 0 if (_error_show($admin));
+        return 0 if ( _error_show($admin) );
         
         my $password = mk_unique_value($conf{PASSWD_LENGTH} || 8, { EXTRA_RULES => '0:0' });
         $admin->password($password, \%conf);
-
-        if (!  $admin->{errno} ) {
+        
+        if ( !$admin->{errno} ) {
           $Multidoms->admin_change({
             AID       => $admin->{AID},
             DOMAIN_ID => $Multidoms->{INSERT_ID},
@@ -351,9 +352,9 @@ sub osbb_registration {
               6 => { 0 => 1 },
               7 => { 0 => 1 },
               8 => { 0 => 1 },
-            }, { });
+            }, {});
           
-          $Address = Address->new( $db, $admin, \%conf );
+          $Address = Address->new($db, $admin, \%conf);
           $Address->district_add({
             DOMAIN_ID => $Multidoms->{INSERT_ID},
             NAME      => $FORM{PHONE},
@@ -395,8 +396,8 @@ sub osbb_registration {
           }
         }
       }
-
-      if(! _error_show($admin)) {
+      
+      if ( !_error_show($admin) ) {
         _error_show($Multidoms);
       }
     }
@@ -425,9 +426,9 @@ sub osbb_registration {
 sub osbb_user_registration {
   my ($attr) = @_;
   
-   if ( $FORM{reg} || $attr->{USER_ID} ) {
+  if ( $FORM{reg} || $attr->{USER_ID} ) {
     my $login = $FORM{FIO} || $attr->{FIO} || $attr->{USER_ID};
-    if (!$login) {
+    if ( !$login ) {
       $Osbb->{MESSAGE} = $html->message('err', $lang{ERROR}, "$lang{ERR_WRONG_NAME}");
       return 0;
     }
@@ -438,7 +439,7 @@ sub osbb_user_registration {
     $User->add({
       CREATE_BILL => 1,
       LOGIN       => $login,
-      %$attr,
+      %{$attr},
     });
     _error_show($User);
     
@@ -448,11 +449,11 @@ sub osbb_user_registration {
       $html->message('err', "$lang{ERROR}", "Ошибка при создании пользователя $login");
       return 0;
     }
-
-    $User->pi_add({ %$attr, UID => $uid });
+    
+    $User->pi_add({ %{$attr}, UID => $uid });
     _error_show($User);
     
-    $Osbb->user_add({ %$attr, UID => $uid });
+    $Osbb->user_add({ %{$attr}, UID => $uid });
     _error_show($Osbb);
     
     if ( $Osbb->{errno} && $User->{errno} ) {
@@ -465,7 +466,8 @@ sub osbb_user_registration {
     }
   }
   
-  $html->tpl_show(_include('osbb_user_registration', 'Osbb'), { %{$Osbb}, %{$attr}, %FORM }, { ID => 'OSBB_REGISTRATION' });
+  $html->tpl_show(_include('osbb_user_registration', 'Osbb'), { %{$Osbb}, %{$attr}, %FORM },
+    { ID => 'OSBB_REGISTRATION' });
   
   return 1;
 }
@@ -487,7 +489,7 @@ sub osbb_simple_build_select {
     COLS_NAME     => 1,
     PAGE_ROWS     => 10000
   });
-
+  
   if ( _error_show($Address) ) {
     $html->message('err', $lang{ERROR}, 'Error retrieving builds');
     return '';
@@ -496,14 +498,14 @@ sub osbb_simple_build_select {
   my $result = '';
   
   # If no builds, show button
-  if ( !$builds_list || ref $builds_list ne 'ARRAY' || !scalar( @{$builds_list} ) ) {
+  if ( !$builds_list || ref $builds_list ne 'ARRAY' || !scalar(@{$builds_list}) ) {
     my $add_btn = $html->button(
       " $lang{ADD} $lang{ADDRESS_BUILD}",
       'adding=1&index=' . get_function_index('osbb_form_address'),
       {
-        class => 'btn btn-warning',
-        ADD_ICON  => 'glyphicon glyphicon-plus'
-  
+        class    => 'btn btn-warning',
+        ADD_ICON => 'glyphicon glyphicon-plus'
+        
       }
     );
     # Form select
@@ -511,7 +513,7 @@ sub osbb_simple_build_select {
   }
   
   # If 1 build show text and button
-  elsif ( scalar( @{$builds_list} ) == 1 ) {
+  elsif ( scalar(@{$builds_list}) == 1 ) {
     my $build = $builds_list->[0];
     
     $FORM{LOCATION_ID} = $build->{id};
@@ -540,20 +542,20 @@ sub osbb_simple_build_select {
         ICON => 'glyphicon glyphicon-plus'
       }
     );
-  
+    
     my @full_name_builds_list = map {
       {
         id   => $_->{id},
-        name => join (', ', ($_->{street_name} || q{}), ($_->{number} || q{}) )
+        name => join (', ', ($_->{street_name} || q{}), ($_->{number} || q{}))
       }
     } @{$builds_list};
-  
+    
     $result = $html->form_select('LOCATION_ID', {
-        SELECTED    => $attr->{LOCATION_ID} || $FORM{LOCATION_ID} || '',
-        SEL_LIST    => \@full_name_builds_list,
-        NO_ID       => 1,
-        MAIN_MENU   => "?index=$address_index&LOCATION_ID=" . ( $attr->{LOCATION_ID} || $FORM{LOCATION_ID} || '' ),
-        EXT_BUTTON  => $add_btn,
+        SELECTED   => $attr->{LOCATION_ID} || $FORM{LOCATION_ID} || '',
+        SEL_LIST   => \@full_name_builds_list,
+        NO_ID      => 1,
+        MAIN_MENU  => "?index=$address_index&LOCATION_ID=" . ($attr->{LOCATION_ID} || $FORM{LOCATION_ID} || ''),
+        EXT_BUTTON => $add_btn,
         AUTOSUBMIT => ($attr->{AUTO_SUBMIT} || $attr->{AUTOSUBMIT})
           ? 'form'
           : 0,
@@ -720,7 +722,7 @@ sub osbb_form_address {
     $Address->street_list({ STREET_NAME => '_SHOW', LIST2HASH => 'street_name,street_id' });
     my $street_hash = $Address->{list_hash};
     $Address->street_add({ NAME => $FORM{STREET_NAME}, DISTRICT_ID =>
-      $builds_list->[0]->{DISTRICT_ID} }) if (!defined($street_hash->{$FORM{STREET_NAME}}));
+      $builds_list->[0]->{DISTRICT_ID} }) if ( !defined($street_hash->{$FORM{STREET_NAME}}) );
     $Address->build_add({ ADD_ADDRESS_BUILD => $FORM{NUMBER}, STREET_ID =>
       $street_hash->{$FORM{STREET_NAME}} || $Address->{INSERT_ID} });
   }
@@ -736,11 +738,11 @@ sub osbb_form_address {
       COLS_NAME   => 1,
     });
     $Address->street_change({ ID => $changed_build_info->[0]->{street_id}, NAME =>
-      $FORM{STREET_NAME} }) if ($changed_build_info->[0]->{street_name} ne $FORM{STREET_NAME});
+      $FORM{STREET_NAME} }) if ( $changed_build_info->[0]->{street_name} ne $FORM{STREET_NAME} );
     $Address->build_change({ ID => $changed_build_info->[0]->{location_id}, NUMBER =>
-      $FORM{NUMBER} }) if ($changed_build_info->[0]->{number} ne $FORM{NUMBER});
+      $FORM{NUMBER} }) if ( $changed_build_info->[0]->{number} ne $FORM{NUMBER} );
     $Address->district_change({ ID => $changed_build_info->[0]->{district_id}, CITY =>
-      $FORM{CITY} }) if ($changed_build_info->[0]->{city} ne $FORM{CITY});
+      $FORM{CITY} }) if ( $changed_build_info->[0]->{city} ne $FORM{CITY} );
     _error_show($Address);
   }
   
@@ -764,7 +766,7 @@ sub osbb_form_address {
   });
   
   foreach my $build_line ( @{$builds_list} ) {
-    my $change_button = $html->button($lang{CHANGE_}, "index=$index&change=$build_line->{id}", { });
+    my $change_button = $html->button($lang{CHANGE_}, "index=$index&change=$build_line->{id}", {});
     $table->addrow($build_line->{CITY}, $build_line->{STREET_NAME}, $build_line->{NUMBER}, $change_button);
   }
   
@@ -803,9 +805,59 @@ sub _under_construction {
 #**********************************************************
 sub osbb_create_wizard {
   
+  if ( my $module_load_error = load_pmodule2("JSON", { SHOW_RETURN => 1 }) ) {
+    print $module_load_error;
+    return 0;
+  }
+  require JSON;
+  JSON->import();
+  
+  my $json = JSON->new->utf8(0);
+  
+  my @steps = (
+    {
+      name  => 'Установчі збори',
+      items => []
+    },
+    {
+      name  => 'Створення списку членів ОСББ',
+      items => [
+        'Номер квартири або дані нежитлового приміщення',
+        'Прізвище, ім’я, по-батькові власника або уповноваженої ним особи',
+        'Розмір загальної площі житлового або нежитлового приміщення (або його частини)',
+        'Загальна площа житлових та нежитлових приміщень у будинку.'
+      ]
+    },
+    {
+      name  => 'Підписання статуту та довіреності на реєстрацію',
+      items => []
+    },
+    {
+      name  => 'Реєстрація ОСББ у державного реєстратора',
+      items => [
+        'Заява на реєстрацію',
+        'Протокол установчих зборів',
+        'Статут ОСББ',
+      ]
+    },
+    {
+      name  => 'Реєстрація неприбуткової організації в податковій',
+      items => [
+        'Заява',
+        'Копія паспорта та ін. коду голови ОСББ',
+        'Копія протоколу про створення',
+        'Копія статуту'
+      ]
+    },
+    {
+      name => 'Відкриття рахунку'
+    }
+  );
+  
   $html->tpl_show(_include('osbb_create_wizard', 'Osbb'),
     {
-    
+      STEPS_COUNT => scalar(@steps),
+      STEPS       => $json->encode(\@steps)
     }
   );
   

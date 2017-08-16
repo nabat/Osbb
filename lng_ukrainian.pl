@@ -48,4 +48,9 @@ $lang{FIRSTNAME} = "Ім\\'я";
 $lang{LASTNAME} = 'Прізвище';
 $lang{SURNAME} = 'По батькові';
 
+$lang{RETURN_BACK} = 'Повернутись';
+$lang{DONE} = 'Готово';
+$lang{FINISH} = 'Завершити';
+
+
 1;

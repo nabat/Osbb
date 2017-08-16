@@ -48,4 +48,8 @@ $lang{FIRSTNAME} = "Имя";
 $lang{LASTNAME} = 'Фамилия';
 $lang{SURNAME} = 'Отчество';
 
+$lang{RETURN_BACK} = 'На предыдущий шаг';
+$lang{DONE} = 'Готово';
+$lang{FINISH} = 'Завершить';
+
 1;

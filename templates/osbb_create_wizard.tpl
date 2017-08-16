@@ -6,8 +6,7 @@
 
   .wizard .nav-tabs {
     position: relative;
-    margin: 40px auto;
-    margin-bottom: 0;
+    margin: 40px auto 0;
     border-bottom-color: #e0e0e0;
   }
 
@@ -69,11 +68,11 @@
   }
 
   .wizard .nav-tabs > li {
-    width: 25%;
+    width: calc(100% / %STEPS_COUNT%);
   }
 
   .wizard li:after {
-    content: " ";
+    content: ' ';
     position: absolute;
     left: 46%;
     opacity: 0;
@@ -85,7 +84,7 @@
   }
 
   .wizard li.active:after {
-    content: " ";
+    content: ' ';
     position: absolute;
     left: 46%;
     opacity: 1;
@@ -110,6 +109,12 @@
   .wizard .tab-pane {
     position: relative;
     padding-top: 50px;
+  }
+
+  .wizard .tab-pane .tab-pane-content {
+    min-height: 30vh;
+    text-align: left;
+    padding: auto 100px;
   }
 
   .wizard h3 {
@@ -137,139 +142,171 @@
     }
 
     .wizard li.active:after {
-      content: " ";
+      content: ' ';
       position: absolute;
       left: 35%;
     }
   }
 </style>
-<div class="row">
+
+<script type='x-tmpl-mustache' id="osbb_wizard_tab_template">
+  <div class='tab-pane {{#is_active}}active{{/is_active}}' role='tabpanel' id='step{{ step_num }}'>
+    <h3>{{ name }}</h3>
+    <ul class='tab-pane-content'>
+    {{#steps}}
+    <li>{{.}}</li>
+    {{/steps}}
+    </ul>
+    <ul class='list-inline pull-right'>
+      {{#is_not_first}}
+        <li>
+          <button type='button' class='btn btn-default prev-step'></button>
+        </li>
+      {{/is_not_first}}
+      {{#is_not_last}}
+        <li>
+          <button type='button' class='btn btn-primary next-step'></button>
+        </li>
+      {{/is_not_last}}
+      {{#is_last}}
+        <li>
+          <button type='button' class='btn btn-primary last-step'></button>
+        </li>
+      {{/is_last}}
+    </ul>
+  </div>
+
+
+
+
+
+</script>
+
+<script type='x-tmpl-mustache' id="osbb_wizard_tab_control_template">
+
+  <li role='presentation' data-index='{{ step_num }}' class='{{#is_active}}active{{/is_active}}{{^is_active}}disabled{{/is_active}}'>
+    <a href='#step{{ step_num }}' aria-controls='step{{ step_num }}' title='{{ name }}' data-toggle='tab'  role='tab'>
+      <span class='round-tab'>
+          <i class='glyphicon glyphicon-{{icon}}'></i>
+      </span>
+    </a>
+  </li>
+
+
+
+
+
+
+</script>
+
+<div class='row'>
   <section>
-    <div class="wizard">
-      <div class="wizard-inner">
-        <div class="connecting-line"></div>
-        <ul class="nav nav-tabs" role="tablist">
-
-          <li role="presentation" class="active">
-            <a href="#step1" data-toggle="tab" aria-controls="step1" role="tab" title="Step 1">
-                            <span class="round-tab">
-                                <i class="glyphicon glyphicon-user"></i>
-                            </span>
-            </a>
-          </li>
-
-          <li role="presentation" class="disabled">
-            <a href="#step2" data-toggle="tab" aria-controls="step2" role="tab" title="Step 2">
-                            <span class="round-tab">
-                                <i class="glyphicon glyphicon-folder-open"></i>
-                            </span>
-            </a>
-          </li>
-          <li role="presentation" class="disabled">
-            <a href="#step3" data-toggle="tab" aria-controls="step3" role="tab" title="Step 3">
-                            <span class="round-tab">
-                                <i class="glyphicon glyphicon-pencil"></i>
-                            </span>
-            </a>
-          </li>
-
-          <li role="presentation" class="disabled">
-            <a href="#complete" data-toggle="tab" aria-controls="complete" role="tab" title="Complete">
-                            <span class="round-tab">
-                                <i class="glyphicon glyphicon-ok"></i>
-                            </span>
-            </a>
-          </li>
-        </ul>
+    <div class='wizard'>
+      <div class='wizard-inner'>
+        <div class='connecting-line'></div>
+        <ul class='nav nav-tabs' role='tablist' id='wizard_controls'></ul>
       </div>
-
-      <form role="form">
-        <div class="tab-content">
-          <div class="tab-pane active" role="tabpanel" id="step1">
-            <h3>Step 1</h3>
-            <ul>
-              <li>Сповістити мешканців про збори</li>
-              <li>Прийняти рішення про створення ОСББ</li>
-            </ul>
-            <ul class="list-inline pull-right">
-              <li>
-                <button type="button" class="btn btn-primary next-step">Готово</button>
-              </li>
-            </ul>
-          </div>
-          <div class="tab-pane" role="tabpanel" id="step2">
-            <h3>Step 2</h3>
-            <ul>
-              <li>Створити ініціативну групу</li>
-              <li>Провести підготовчу роботу</li>
-            </ul>
-            <ul class="list-inline pull-right">
-              <li>
-                <button type="button" class="btn btn-default prev-step">Повернутись</button>
-              </li>
-              <li>
-                <button type="button" class="btn btn-primary next-step">Готово</button>
-              </li>
-            </ul>
-          </div>
-          <div class="tab-pane" role="tabpanel" id="step3">
-            <h3>Step 3</h3>
-            <ul>
-              <li>Зареєструвати ОСББ в державних органах</li>
-              <li>Провести установчі збори</li>
-            </ul>
-            <ul class="list-inline pull-right">
-              <li>
-                <button type="button" class="btn btn-default prev-step">Повернутись</button>
-              </li>
-              <li>
-                <button type="button" class="btn btn-default next-step">Готово</button>
-              </li>
-            </ul>
-          </div>
-          <div class="tab-pane" role="tabpanel" id="complete">
-            <h3>Почати управляти своєю власністю</h3>
-          </div>
-          <div class="clearfix"></div>
+      <form role='form'>
+        <div class='tab-content' id='wizard_tabs'>
+          <div class='clearfix'></div>
         </div>
       </form>
     </div>
   </section>
 </div>
+
 <script>
   jQuery(document).ready(function () {
+    // Parse templates
+    var tab_template     = jQuery('#osbb_wizard_tab_template').html();
+    var control_template = jQuery('#osbb_wizard_tab_control_template').html();
+    Mustache.parse(tab_template);
+    Mustache.parse(control_template);
+
+    var controls_wrapper = jQuery('#wizard_controls');
+    var tabs_wrapper     = jQuery('#wizard_tabs');
+
+    var steps_count = '%STEPS_COUNT%';
+    var steps       = JSON.parse('%STEPS%');
+
+    // Get current active tab
+    var aStorage           = new AStorage('localStorage');
+    var current_active_tab = +aStorage.getValue('osbb_wizard_active_tab', 0);
+
+    console.log(current_active_tab);
+
+    // Build html
+    var controls_html = '';
+    var tabs_html     = '';
+
+    for (var i = 0; i < steps_count; i++) {
+      var step = steps[i];
+      // Controls consists of first level items
+      controls_html += Mustache.render(control_template, {
+        is_active: i === +current_active_tab,
+        name     : step.name,
+        icon     : step.icon || 'ok',
+        step_num : i
+      });
+      tabs_html += Mustache.render(tab_template, {
+        is_active   : i === +current_active_tab,
+        step_num    : i,
+        name        : step.name,
+        steps       : step.items,
+        is_not_first: i !== 0,
+        is_not_last : i !== (steps_count - 1),
+        is_last     : i === (steps_count - 1)
+      });
+    }
+    controls_wrapper.html(controls_html);
+    tabs_wrapper.html(tabs_html);
+
+    // Translate buttons ( Mustache kills utf8 ? )
+    jQuery('button.btn.prev-step').text('_{RETURN_BACK}_');
+    jQuery('button.btn.next-step').text('_{DONE}_');
+    jQuery('button.btn.last-step').text('_{FINISH}_');
+
+
     //Initialize tooltips
     jQuery('.nav-tabs > li a[title]').tooltip();
-    
-    //Wizard
+
+    //Wizard controls logic
     jQuery('a[data-toggle="tab"]').on('show.bs.tab', function (e) {
-      
       var _target = jQuery(e.target);
-      
       if (_target.parent().hasClass('disabled')) {
         return false;
       }
     });
-    
+
     jQuery(".next-step").click(function (e) {
-      
       var _active = jQuery('.wizard .nav-tabs li.active');
       _active.next().removeClass('disabled');
       nextTab(_active);
-      
+
     });
     jQuery(".prev-step").click(function (e) {
-      
       var _active = jQuery('.wizard .nav-tabs li.active');
       prevTab(_active);
-      
     });
   });
-  
+
   function nextTab(elem) {
-    jQuery(elem).next().find('a[data-toggle="tab"]').click();
+    var next_tab = jQuery(elem).next();
+
+    // Save progress
+    aStorage.setValue('osbb_wizard_active_tab', next_tab.data('index'));
+
+    // Emulate click
+    next_tab.find('a[data-toggle="tab"]').click();
   }
+
   function prevTab(elem) {
-    jQuery(elem).prev().find('a[data-toggle="tab"]').click();
+    var prev_tab = jQuery(elem).prev();
+
+    // Save progress
+    aStorage.setValue('osbb_wizard_active_tab', prev_tab.data('index'));
+
+    //Emulate click
+    prev_tab.find('a[data-toggle="tab"]').click();
   }
 </script>
