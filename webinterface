@@ -330,6 +330,8 @@ sub osbb_registration {
           DOMAIN_ID => $Multidoms->{INSERT_ID},
           WEB_OPTIONS => "language=$html->{language};QUICK_REPORTS=Osbb:osbb_quick_menu, Osbb:osbb_finance_report, Osbb:osbb_tarifs_report;"
         });
+
+        $Osbb->cashbox_add({DOMAIN_ID => $Multidoms->{INSERT_ID}, NAME => $FORM{PHONE}});
         
         return 0 if (_error_show($admin));
         

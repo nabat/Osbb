@@ -305,7 +305,7 @@ sub user_list {
 
 =cut
 #**********************************************************
-sub spending_types_list {
+sub spending_type_list {
   my $self = shift;
   my ($attr) = @_;
   

@@ -65,3 +65,12 @@ CREATE TABLE IF NOT EXISTS `osbb_users_services` (
   UNIQUE KEY `uid_tp` (`uid`, `tp_id`)
 )
   COMMENT = 'Osbb Users Services';
+
+  CREATE TABLE IF NOT EXISTS `osbb_cashbox` (
+  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` varchar(20)  NOT NULL DEFAULT '',
+  `domain_id` SMALLINT(6) UNSIGNED NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY (`domain_id`)
+)
+  COMMENT = 'OSBB cashboxes';
