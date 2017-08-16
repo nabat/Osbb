@@ -484,6 +484,139 @@ sub ownership_types_list{
   return $self->{list};
 }
 
+#**********************************************************
+=head2 ownership_types_list($attr)
+
+  Arguments:
+    $attr - hash_ref
+
+  Returns:
+    list
+
+=cut
+#**********************************************************
+sub cashbox_list{
+  my ($self, $attr) = @_;
+  
+  my $SORT = $attr->{SORT} || 'id';
+  my $DESC = ($attr->{DESC}) ? '' : 'DESC';
+  my $PG = $attr->{PG} || '0';
+  my $PAGE_ROWS = $attr->{PAGE_ROWS} || 25;
+  
+  my $search_columns = [
+    [ 'ID', 'INT', 'id', 1 ],
+    [ 'NAME', 'STR', 'name', 1 ],
+    [ 'DOMAIN_ID', 'INT', 'domain_id', 1 ],
+  ];
+  
+  if ( $attr->{SHOW_ALL_COLUMNS} ) {
+    map { $attr->{$_->[0]} = '_SHOW' unless (exists $attr->{$_->[0]}) } @{$search_columns};
+  }
+  my $WHERE = $self->search_former($attr, $search_columns, { WHERE => 1 });
+  
+  $self->query2( "SELECT $self->{SEARCH_FIELDS} id
+   FROM osbb_cashbox
+   $WHERE ORDER BY $SORT $DESC LIMIT $PG, $PAGE_ROWS;", undef, {
+      COLS_NAME => 1,
+      %{ $attr // { }} }
+  );
+  
+  return [ ] if ($self->{errno});
+  
+  return $self->{list};
+}
+
+#**********************************************************
+=head2 ownership_types_list($attr)
+
+  Arguments:
+    $attr - hash_ref
+
+  Returns:
+    list
+
+=cut
+#**********************************************************
+sub cashbox_coming_list{
+  my ($self, $attr) = @_;
+  
+  my $SORT = $attr->{SORT} || 'id';
+  my $DESC = ($attr->{DESC}) ? '' : 'DESC';
+  my $PG = $attr->{PG} || '0';
+  my $PAGE_ROWS = $attr->{PAGE_ROWS} || 25;
+  
+  my $search_columns = [
+    [ 'ID', 'INT', 'id', 1 ],
+    [ 'SUM', 'INT', 'sum', 1 ],
+    [ 'UID', 'INT', 'uid', 1 ],
+    [ 'AID', 'INT', 'aid', 1 ],
+    [ 'DATE', 'DATE', 'date', 1 ],
+    [ 'COMMENTS', 'STR', 'comments', 1 ],
+    [ 'CASHBOX_ID', 'DATE', 'cashbox_id',  ],
+  ];
+  
+  if ( $attr->{SHOW_ALL_COLUMNS} ) {
+    map { $attr->{$_->[0]} = '_SHOW' unless (exists $attr->{$_->[0]}) } @{$search_columns};
+  }
+  my $WHERE = $self->search_former($attr, $search_columns, { WHERE => 1 });
+  
+  $self->query2( "SELECT $self->{SEARCH_FIELDS} id
+   FROM osbb_cashbox_coming
+   $WHERE ORDER BY $SORT $DESC LIMIT $PG, $PAGE_ROWS;", undef, {
+      COLS_NAME => 1,
+      %{ $attr // { }} }
+  );
+  
+  return [ ] if ($self->{errno});
+  
+  return $self->{list};
+}
+
+#**********************************************************
+=head2 ownership_types_list($attr)
+
+  Arguments:
+    $attr - hash_ref
+
+  Returns:
+    list
+
+=cut
+#**********************************************************
+sub cashbox_spending_list{
+  my ($self, $attr) = @_;
+  
+  my $SORT = $attr->{SORT} || 'id';
+  my $DESC = ($attr->{DESC}) ? '' : 'DESC';
+  my $PG = $attr->{PG} || '0';
+  my $PAGE_ROWS = $attr->{PAGE_ROWS} || 25;
+  
+  my $search_columns = [
+    [ 'ID', 'INT', 'id', 1 ],
+    [ 'SUM', 'INT', 'sum', 1 ],
+    [ 'UID', 'INT', 'uid', 1 ],
+    [ 'AID', 'INT', 'aid', 1 ],
+    [ 'DATE', 'DATE', 'date', 1 ],
+    [ 'COMMENTS', 'STR', 'comments', 1 ],
+    [ 'CASHBOX_ID', 'DATE', 'cashbox_id',  ],
+  ];
+  
+  if ( $attr->{SHOW_ALL_COLUMNS} ) {
+    map { $attr->{$_->[0]} = '_SHOW' unless (exists $attr->{$_->[0]}) } @{$search_columns};
+  }
+  my $WHERE = $self->search_former($attr, $search_columns, { WHERE => 1 });
+  
+  $self->query2( "SELECT $self->{SEARCH_FIELDS} id
+   FROM osbb_cashbox_spending
+   $WHERE ORDER BY $SORT $DESC LIMIT $PG, $PAGE_ROWS;", undef, {
+      COLS_NAME => 1,
+      %{ $attr // { }} }
+  );
+  
+  return [ ] if ($self->{errno});
+  
+  return $self->{list};
+}
 
 DESTROY { }
 

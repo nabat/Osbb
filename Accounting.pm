@@ -532,6 +532,16 @@ sub osbb_payments_add{
     my $user_info = $User->info($FORM{usr});
     $Osbb->payments_add({ %FORM, UID => $FORM{usr}, BILL_ID => $user_info->{BILL_ID} });
     _error_show($Osbb);
+
+    my $cashbox_info = $Osbb->cashbox_info({DOMAIN_ID => $admin->{DOMAIN_ID}});
+    $Osbb->cashbox_coming_add({
+      UID        => $FORM{usr},
+      CASHBOX_ID => $cashbox_info->{id},
+      AID        => $admin->{AID},
+      SUM        => $FORM{SUM},
+    });
+    _error_show($Osbb);
+
     if ( !$Osbb->{errno} ) {
       $html->message('info', "$lang{ADDED}");
       delete $FORM{SUM};
@@ -560,6 +570,163 @@ sub osbb_payments_add{
       USERS_SEL => $users_sel,
       %FORM
     });
+  return 1;
+}
+
+#**********************************************************
+=head2 osbb_cashbox_coming() -
+
+  Arguments:
+    $attr -
+  Returns:
+
+  Examples:
+
+=cut
+#**********************************************************
+sub osbb_coming_add {
+
+  my $cashbox_info = $Osbb->cashbox_info({DOMAIN_ID => $admin->{DOMAIN_ID}});
+  $LIST_PARAMS{CASHBOX_ID} = $cashbox_info->{id};
+
+  my %TEMPLATE_HASH;
+
+  if($FORM{add} && $FORM{SUM}){
+    $Osbb->cashbox_coming_add({ %FORM, AID => $admin->{AID}, CASHBOX_ID=>$cashbox_info->{id} });
+    _error_show($Osbb);
+  }
+  elsif($FORM{del}){
+    $Osbb->cashbox_coming_del({ ID => $FORM{del} });
+    _error_show($Osbb);
+  }
+  elsif($FORM{chg}){
+    %TEMPLATE_HASH = %{$Osbb->cashbox_coming_info( $FORM{chg} )};
+    _error_show($Osbb); 
+  }
+  elsif($FORM{change}){
+
+  }
+
+  $TEMPLATE_HASH{DATETIMEPICKER} = $html->form_datetimepicker(
+      'DATE',
+      $TEMPLATE_HASH{DATE} || (($DATE || '') . ' ' . ($TIME || ''))
+    );
+
+  $html->tpl_show(_include('osbb_form_coming_add', 'Osbb'), {
+    %TEMPLATE_HASH
+    });
+  
+  result_former(
+    {
+      INPUT_DATA      => $Osbb,
+      FUNCTION        => 'cashbox_coming_list',
+      BASE_FIELDS     => 0,
+      DEFAULT_FIELDS  => "SUM, DATE, COMMENTS",
+      FUNCTION_FIELDS => 'del',
+      EXT_TITLES      => {
+        'sum'        => "$lang{SUM}",
+        'date'       => "$lang{DATE}",
+        'comments'   => "$lang{COMMENTS}",
+      },
+      TABLE => {
+        width   => '100%',
+        caption => "$lang{COMING}",
+        qs      => $pages_qs,
+        ID      => 'COMING_TABLE',
+        header  => '',
+        EXPORT  => 1,
+        DATA_TABLE=>1
+      },
+
+      #SELECT_VALUE    => {
+      # every_month    => { 0 => "$lang{NO}:text-danger",
+      #                     1 => "$lang{YES}:text-primary",
+      #},
+      MAKE_ROWS     => 1,
+      SEARCH_FORMER => 1,
+      MODULE        => 'Osbb',
+      TOTAL         => 1
+    }
+  );
+    
+  return 1;
+}
+
+#**********************************************************
+=head2 osbb_cashbox_coming() -
+
+  Arguments:
+    $attr -
+  Returns:
+
+  Examples:
+
+=cut
+#**********************************************************
+sub osbb_spending_add {
+  my $cashbox_info = $Osbb->cashbox_info({DOMAIN_ID => $admin->{DOMAIN_ID}});
+  $LIST_PARAMS{CASHBOX_ID} = $cashbox_info->{id};
+
+  my %TEMPLATE_HASH;
+
+  if($FORM{add} && $FORM{SUM}){
+    $Osbb->cashbox_spending_add({ %FORM, AID => $admin->{AID}, CASHBOX_ID=>$cashbox_info->{id} });
+    _error_show($Osbb);
+  }
+  elsif($FORM{del}){
+    $Osbb->cashbox_spending_del({ ID => $FORM{del} });
+    _error_show($Osbb);
+  }
+  elsif($FORM{chg}){
+    %TEMPLATE_HASH = %{$Osbb->cashbox_coming_info( $FORM{chg} )};
+    _error_show($Osbb); 
+  }
+  elsif($FORM{change}){
+
+  }
+
+  $TEMPLATE_HASH{DATETIMEPICKER} = $html->form_datetimepicker(
+      'DATE',
+      $TEMPLATE_HASH{DATE} || (($DATE || '') . ' ' . ($TIME || ''))
+    );
+
+  $html->tpl_show(_include('osbb_form_spending_add', 'Osbb'), {
+    %TEMPLATE_HASH
+    });
+
+  result_former(
+    {
+      INPUT_DATA      => $Osbb,
+      FUNCTION        => 'cashbox_spending_list',
+      BASE_FIELDS     => 0,
+      DEFAULT_FIELDS  => "SUM, DATE, COMMENTS",
+      FUNCTION_FIELDS => 'del',
+      EXT_TITLES      => {
+        'sum'        => "$lang{SUM}",
+        'date'       => "$lang{DATE}",
+        'comments'   => "$lang{COMMENTS}",
+      },
+      TABLE => {
+        width   => '100%',
+        caption => "$lang{SPENDING}",
+        qs      => $pages_qs,
+        ID      => 'SPENDING_TABLE',
+        header  => '',
+        EXPORT  => 1,
+        DATA_TABLE=>1
+      },
+
+      #SELECT_VALUE    => {
+      # every_month    => { 0 => "$lang{NO}:text-danger",
+      #                     1 => "$lang{YES}:text-primary",
+      #},
+      MAKE_ROWS     => 1,
+      SEARCH_FORMER => 1,
+      MODULE        => 'Osbb',
+      TOTAL         => 1
+    }
+  );
+    
   return 1;
 }
 

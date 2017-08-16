@@ -48,4 +48,6 @@ $lang{FIRSTNAME} = "Имя";
 $lang{LASTNAME} = 'Фамилия';
 $lang{SURNAME} = 'Отчество';
 
+$lang{SPENDING} = 'Расход';
+$lang{COMING} = 'Приход';
 1;

@@ -45,4 +45,7 @@ $lang{WRONG_FILE_EXTENSION} = 'Wrong file extension';
 $lang{FIRSTNAME} = 'Firstname';
 $lang{LASTNAME} = 'Lastname';
 $lang{SURNAME} = 'Surname';
+
+$lang{SPENDING} = 'Spending';
+$lang{COMING} = 'Coming';
 1;
