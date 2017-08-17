@@ -219,6 +219,7 @@
 
 
 
+
 </script>
 
 <script type='x-tmpl-mustache' id="osbb_wizard_tab_control_template">
@@ -230,6 +231,7 @@
       </span>
     </a>
   </li>
+
 
 
 
@@ -322,39 +324,41 @@
     // Wizard tabs controls logic
     initTabControls();
 
-    var ph = new WizardProgressHolder('osbb_wizard_progress')
+    var ph = new WizardProgressHolder('osbb_wizard_progress');
 
     // Init checkbox permanent logic
     jQuery('input.wizard-checkbox').on('change', function () {
       var chb   = jQuery(this);
-      var state = chb.prop('checked');
-
-      ph.setState(chb.id, state);
+      ph.setState('#' + chb.attr('id'), chb.prop('checked'));
     });
 
   });
 
   function WizardProgressHolder(storage_key) {
     // Set checkboxes state from storage
-    this.state = aStorage.getValue(storage_key, '{}');
+    this.storage_key = storage_key;
+    this.state       = {};
+    var saved        = aStorage.getValue(this.storage_key, null);
+    if (saved !== null) {
+      this.state = JSON.parse(saved);
+    }
 
     // Set saved checkboxes checked state
     for (var checkbox_identifier in this.state) {
       if (!this.state.hasOwnProperty(checkbox_identifier)) continue;
-
-      jQuery('input' + checkbox_identifier).prop('checked', !!this.state[checkbox_identifier]);
+      jQuery('input' + checkbox_identifier).prop('checked', this.state[checkbox_identifier]);
     }
+  }
 
-    this.saveState = function () {
-      aStorage.setValue(storage_key, JSON.stringify(this.state));
-    };
-
-    this.setState = function (checkbox_identifier, state) {
+  WizardProgressHolder.prototype = {
+    saveState: function () {
+      aStorage.setValue(this.storage_key, JSON.stringify(this.state));
+    },
+    setState : function (checkbox_identifier, state) {
       this.state[checkbox_identifier] = state;
       this.saveState();
     }
-
-  }
+  };
 
   function initTabControls() {
     //Initialize tooltips
