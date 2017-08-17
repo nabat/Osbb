@@ -14,6 +14,12 @@
     position: relative;
   }
 
+  .wizard div.wizard-list-block {
+    border-right: 1px solid #e0e0e0;
+    /*padding-bottom: 10px;*/
+    margin-bottom: 30px;
+  }
+
   .connecting-line {
     height: 2px;
     background: #e0e0e0;
@@ -55,11 +61,14 @@
   .wizard li.active span.round-tab {
     background: #fff;
     border: 2px solid #5bc0de;
-
   }
 
   .wizard li.active span.round-tab i {
     color: #5bc0de;
+  }
+
+  .wizard li.done span.round-tab i {
+    color: #a0d58f;
   }
 
   span.round-tab:hover {
@@ -77,7 +86,7 @@
     left: 46%;
     opacity: 0;
     margin: 0 auto;
-    bottom: 0px;
+    bottom: 0;
     border: 5px solid transparent;
     border-bottom-color: #5bc0de;
     transition: 0.1s ease-in-out;
@@ -89,7 +98,7 @@
     left: 46%;
     opacity: 1;
     margin: 0 auto;
-    bottom: 0px;
+    bottom: 0;
     border: 10px solid transparent;
     border-bottom-color: #5bc0de;
   }
@@ -108,7 +117,11 @@
 
   .wizard .tab-pane {
     position: relative;
-    padding-top: 50px;
+    padding: 2% 3% 0;
+  }
+
+  .wizard .tab-pane ul.tab-pane-content > li {
+    list-style: none;
   }
 
   .wizard .tab-pane .tab-pane-content {
@@ -122,7 +135,6 @@
   }
 
   @media ( max-width: 585px ) {
-
     .wizard {
       width: 90%;
       height: auto !important;
@@ -151,29 +163,56 @@
 
 <script type='x-tmpl-mustache' id="osbb_wizard_tab_template">
   <div class='tab-pane {{#is_active}}active{{/is_active}}' role='tabpanel' id='step{{ step_num }}'>
-    <h3>{{ name }}</h3>
-    <ul class='tab-pane-content'>
-    {{#steps}}
-    <li>{{.}}</li>
-    {{/steps}}
-    </ul>
-    <ul class='list-inline pull-right'>
-      {{#is_not_first}}
-        <li>
-          <button type='button' class='btn btn-default prev-step'></button>
-        </li>
-      {{/is_not_first}}
-      {{#is_not_last}}
-        <li>
-          <button type='button' class='btn btn-primary next-step'></button>
-        </li>
-      {{/is_not_last}}
-      {{#is_last}}
-        <li>
-          <button type='button' class='btn btn-primary last-step'></button>
-        </li>
-      {{/is_last}}
-    </ul>
+
+    <div class='row'>
+      <div class='col-md-7 text-left'>
+        <h3>{{ name }}</h3>
+      </div>
+
+      <div class='col-md-5'>
+        <ul class='list-inline text-right'>
+          {{#is_not_first}}
+            <li><button type='button' class='btn btn-default prev-step'>
+              <span class='glyphicon glyphicon-chevron-left'></span>
+              _{RETURN_BACK}_
+            </button></li>
+          {{/is_not_first}}
+          {{#is_not_last}}
+            <li><button type='button' class='btn btn-lg btn-primary next-step'>
+              _{DONE}_
+              <span class='glyphicon glyphicon-chevron-right'></span>
+            </button></li>
+          {{/is_not_last}}
+          {{#is_last}}
+            <li><button type='button' class='btn btn-lg btn-success last-step'>
+              _{FINISH}_
+              <span class='glyphicon glyphicon-chevron-right'></span>
+            </button></li>
+          {{/is_last}}
+        </ul>
+      </div>
+    </div>
+
+    <div class='row'>
+      <div class='col-md-5 wizard-list-block'>
+        <ul class='tab-pane-content'>
+          {{#steps}}<li>{{name}}</li>
+            {{#items.length}}
+              <ul>
+              {{#items}}
+                  <li>{{name}}</li>
+              {{/items}}
+              </ul>
+            {{/items.length}}
+          {{/steps}}
+        </ul>
+      </div>
+      <div class='col-md-7 wizard-hint-block text-left'>
+        {{{ hint }}}
+      </div>
+    </div>
+
+    </div>
   </div>
 
 
@@ -194,25 +233,18 @@
 
 
 
-
-
-
 </script>
 
 <div class='row'>
-  <section>
-    <div class='wizard'>
-      <div class='wizard-inner'>
-        <div class='connecting-line'></div>
-        <ul class='nav nav-tabs' role='tablist' id='wizard_controls'></ul>
-      </div>
-      <form role='form'>
-        <div class='tab-content' id='wizard_tabs'>
-          <div class='clearfix'></div>
-        </div>
-      </form>
+  <div class='wizard'>
+    <div class='wizard-inner'>
+      <div class='connecting-line'></div>
+      <ul class='nav nav-tabs' role='tablist' id='wizard_controls'></ul>
     </div>
-  </section>
+    <div class='tab-content' id='wizard_tabs'>
+      <div class='clearfix'></div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -233,14 +265,13 @@
     var aStorage           = new AStorage('localStorage');
     var current_active_tab = +aStorage.getValue('osbb_wizard_active_tab', 0);
 
-    console.log(current_active_tab);
-
     // Build html
     var controls_html = '';
     var tabs_html     = '';
 
     for (var i = 0; i < steps_count; i++) {
       var step = steps[i];
+
       // Controls consists of first level items
       controls_html += Mustache.render(control_template, {
         is_active: i === +current_active_tab,
@@ -248,11 +279,13 @@
         icon     : step.icon || 'ok',
         step_num : i
       });
+
       tabs_html += Mustache.render(tab_template, {
         is_active   : i === +current_active_tab,
         step_num    : i,
         name        : step.name,
         steps       : step.items,
+        hint        : step.hint,
         is_not_first: i !== 0,
         is_not_last : i !== (steps_count - 1),
         is_last     : i === (steps_count - 1)
@@ -261,16 +294,75 @@
     controls_wrapper.html(controls_html);
     tabs_wrapper.html(tabs_html);
 
-    // Translate buttons ( Mustache kills utf8 ? )
-    jQuery('button.btn.prev-step').text('_{RETURN_BACK}_');
-    jQuery('button.btn.next-step').text('_{DONE}_');
-    jQuery('button.btn.last-step').text('_{FINISH}_');
+    // When we have tabs on page. we can generate checkboxes for lis
+    tabs_wrapper.find('ul.tab-pane-content').each(function (i, tab) {
+
+      jQuery(tab).children('li').each(function (j, li_) {
+        var li = jQuery(li_);
+
+        var id_for_checkbox = 'wizard_chb_' + i + '_' + j;
+
+        // Generate checkbox
+        var checkbox = jQuery('<input/>', {
+          type   : 'checkbox',
+          'class': 'wizard-checkbox',
+          id     : id_for_checkbox
+        });
+        // Make label from text
+        var label    = jQuery('<label/>')
+            .html(checkbox[0].outerHTML + li[0].innerHTML);
+
+        // Add checkbox and label
+        li.html('<div class="checkbox">' + label[0].outerHTML + '</div>');
+      });
+
+    });
 
 
+    // Wizard tabs controls logic
+    initTabControls();
+
+    var ph = new WizardProgressHolder('osbb_wizard_progress')
+
+    // Init checkbox permanent logic
+    jQuery('input.wizard-checkbox').on('change', function () {
+      var chb   = jQuery(this);
+      var state = chb.prop('checked');
+
+      ph.setState(chb.id, state);
+    });
+
+  });
+
+  function WizardProgressHolder(storage_key) {
+    // Set checkboxes state from storage
+    this.state = aStorage.getValue(storage_key, '{}');
+
+    // Set saved checkboxes checked state
+    for (var checkbox_identifier in this.state) {
+      if (!this.state.hasOwnProperty(checkbox_identifier)) continue;
+
+      jQuery('input' + checkbox_identifier).prop('checked', !!this.state[checkbox_identifier]);
+    }
+
+    this.saveState = function () {
+      aStorage.setValue(storage_key, JSON.stringify(this.state));
+    };
+
+    this.setState = function (checkbox_identifier, state) {
+      this.state[checkbox_identifier] = state;
+      this.saveState();
+    }
+
+  }
+
+  function initTabControls() {
     //Initialize tooltips
     jQuery('.nav-tabs > li a[title]').tooltip();
 
-    //Wizard controls logic
+    // Unlock previous steps
+    jQuery('.wizard .nav-tabs li.active').prevAll().removeClass('disabled').addClass('done');
+
     jQuery('a[data-toggle="tab"]').on('show.bs.tab', function (e) {
       var _target = jQuery(e.target);
       if (_target.parent().hasClass('disabled')) {
@@ -281,14 +373,16 @@
     jQuery(".next-step").click(function (e) {
       var _active = jQuery('.wizard .nav-tabs li.active');
       _active.next().removeClass('disabled');
+      _active.addClass('done');
       nextTab(_active);
 
     });
     jQuery(".prev-step").click(function (e) {
       var _active = jQuery('.wizard .nav-tabs li.active');
+      _active.removeClass('done');
       prevTab(_active);
     });
-  });
+  }
 
   function nextTab(elem) {
     var next_tab = jQuery(elem).next();
@@ -309,4 +403,5 @@
     //Emulate click
     prev_tab.find('a[data-toggle="tab"]').click();
   }
+
 </script>
