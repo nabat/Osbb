@@ -586,7 +586,7 @@ sub osbb_payments_add{
 #**********************************************************
 sub osbb_coming_add {
 
-  my $cashbox_info = $Osbb->cashbox_info({DOMAIN_ID => $admin->{DOMAIN_ID}});
+  my $cashbox_info = $Osbb->cashbox_info(undef, { DOMAIN_ID => $admin->{DOMAIN_ID} });
   $LIST_PARAMS{CASHBOX_ID} = $cashbox_info->{id};
 
   my %TEMPLATE_HASH;
@@ -615,7 +615,7 @@ sub osbb_coming_add {
   $html->tpl_show(_include('osbb_form_coming_add', 'Osbb'), {
     %TEMPLATE_HASH
     });
-  
+
   result_former(
     {
       INPUT_DATA      => $Osbb,
@@ -664,7 +664,7 @@ sub osbb_coming_add {
 =cut
 #**********************************************************
 sub osbb_spending_add {
-  my $cashbox_info = $Osbb->cashbox_info({DOMAIN_ID => $admin->{DOMAIN_ID}});
+  my $cashbox_info = $Osbb->cashbox_info(undef, { DOMAIN_ID => $admin->{DOMAIN_ID} });
   $LIST_PARAMS{CASHBOX_ID} = $cashbox_info->{id};
 
   my %TEMPLATE_HASH;
@@ -729,6 +729,132 @@ sub osbb_spending_add {
     
   return 1;
 }
+
+#**********************************************************
+=head2 osbb_cashbox_report() -
+
+  Arguments:
+    ATTRIBUTES -
+  Returns:
+
+  Examples:
+
+=cut
+#**********************************************************
+sub osbb_cashbox_report {
+  my $cashbox_info = $Osbb->cashbox_info(undef, { DOMAIN_ID => $admin->{DOMAIN_ID} });
+
+  my $date_value = '';
+  if($FORM{FROM_DATE} && $FORM{TO_DATE}){
+    $date_value = "$FORM{FROM_DATE}/$FORM{TO_DATE}";
+  }
+  else{
+    
+    $date_value = "$DATE/$DATE";
+  }
+
+  my $date_range    = $html->form_daterangepicker(
+    {
+      NAME      => 'FROM_DATE/TO_DATE',
+      FORM_NAME => 'report_panel',
+      WITH_TIME => $FORM{TIME_FORM} || 0,
+      VALUE     => "$date_value",
+    }
+  );
+
+  reports(
+    {
+      DATE        => $FORM{FROM_DATE_TO_DATE} || $FORM{DATE},
+      PERIOD_FORM => 1,
+      DATE_RANGE  => 1,
+      NO_GROUP    => 1,
+      NO_TAGS     => 1,
+    }
+  );
+
+  my $spending_list = $Osbb->cashbox_spending_list({
+    CASHBOX_ID  => $cashbox_info->{id}, 
+    'FROM_DATE' => $FORM{FROM_DATE}, 
+    TO_DATE     => $FORM{TO_DATE},
+    SUM         => '_SHOW',
+    DATE => '_SHOW',
+  });
+
+  my $coming_list   = $Osbb->cashbox_coming_list({
+    CASHBOX_ID  => $cashbox_info->{id}, 
+    'FROM_DATE' => $FORM{FROM_DATE}, 
+    TO_DATE     => $FORM{TO_DATE},
+    SUM         => '_SHOW',
+    DATE => '_SHOW',
+    });
+
+   my $total_coming_amount   = 0.00;
+  my $total_spending_amount = 0.00;
+
+  my %dates_hash;    # hash with dates and spending/comings
+
+  # make dates hash
+  foreach my $coming (@$coming_list) {
+    $total_coming_amount += $coming->{sum} || 0;
+    my ($date) = $coming->{date} =~ /(\d+\-\d+\-\d+).+/;
+    push(@{ $dates_hash{ ($date || 'NODATE') }{coming} }, ($coming->{sum} || 0) );
+  }
+
+  foreach my $spending (@$spending_list) {
+    $total_spending_amount += $spending->{sum} || 0;
+    my ($date) = $spending->{date} =~ /(\d+\-\d+\-\d+).+/;
+    push(@{ $dates_hash{ ($date || 'NODATE') }{spending} }, $spending->{sum} || 0);
+  }
+
+  my $balance = $total_coming_amount - $total_spending_amount;
+
+  my @dates;                # date array
+  my @coming_per_date;      # incoming sum per date
+  my @spending_per_date;    # spending sum per date
+
+  # make data for graphics
+  foreach my $key (sort keys %dates_hash) {
+    push(@dates, $key);
+    my $spending_sum;
+    my $coming_sum;
+
+    foreach my $each_spend (@{ $dates_hash{$key}{spending} }) {
+      $spending_sum += $each_spend || 0;
+    }
+    foreach my $each_come (@{ $dates_hash{$key}{coming} }) {
+      $coming_sum += $each_come || 0;
+    }
+    push(@coming_per_date,   $coming_sum);
+    push(@spending_per_date, $spending_sum);
+  }
+    
+
+  my $chart = $html->chart({ 
+        TYPE        => 'bar',
+        X_LABELS    => \@dates,
+        DATA        => { 
+          "$lang{COMING}"   => \@coming_per_date, 
+          "$lang{SPENDING}" => \@spending_per_date, 
+        },
+        BACKGROUND_COLORS => { 
+          "$lang{SPENDING}" => 'rgb(255, 99, 132)', 
+          "$lang{COMING}"   => 'rgb(75, 192, 192)', 
+        },
+        Y_BEGIN_ZERO    => 1,
+        OUTPUT2RETURN => 1,
+  });
+    
+  $html->tpl_show(_include('osbb_cashbox_report', 'Osbb'), {
+    DATE_RANGE => $date_range,
+    CHART      => $chart,
+    TOTAL_COMING   => sprintf('%.2f',$total_coming_amount),
+    TOTAL_SPENDING => sprintf('%.2f',$total_spending_amount),
+    BALANCE        => sprintf('%.2f',$balance),
+  });
+
+  return 1;
+}
+
 
 1
 

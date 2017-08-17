@@ -553,6 +553,7 @@ sub cashbox_coming_list{
     [ 'DATE', 'DATE', 'date', 1 ],
     [ 'COMMENTS', 'STR', 'comments', 1 ],
     [ 'CASHBOX_ID', 'DATE', 'cashbox_id',  ],
+    [ 'FROM_DATE|TO_DATE', 'DATE', "DATE_FORMAT(date, '%Y-%m-%d')" ],
   ];
   
   if ( $attr->{SHOW_ALL_COLUMNS} ) {
@@ -599,6 +600,7 @@ sub cashbox_spending_list{
     [ 'DATE', 'DATE', 'date', 1 ],
     [ 'COMMENTS', 'STR', 'comments', 1 ],
     [ 'CASHBOX_ID', 'DATE', 'cashbox_id',  ],
+    [ 'FROM_DATE|TO_DATE', 'DATE', "DATE_FORMAT(date, '%Y-%m-%d')" ],
   ];
   
   if ( $attr->{SHOW_ALL_COLUMNS} ) {
