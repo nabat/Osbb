@@ -14,8 +14,6 @@ $lang{FILL_DEFAULT_VALUES_THAT_WILL_REPLACE_EMPTY_FILE_FIELDS} = 'Заповні
 $lang{FILL_DEFAULT_VALUES_AND_CHOOSE_FILE_FOR_IMPORT} = 'Заповніть значення однакові для всіх жильців та виберіть файл для імпорту';
 $lang{TOTAL_SPACE} = 'Загальна площа';
 $lang{SPACE_TYPES} = 'Види приміщень';
-$lang{SPENDING} = 'Розхід';
-$lang{SPENDING_TYPES} = 'Типи розходів';
 
 $lang{TARIFS} = 'Тарифи';
 $lang{TARIF} = 'Тариф';
@@ -49,5 +47,7 @@ $lang{LASTNAME} = 'Прізвище';
 $lang{SURNAME} = 'По батькові';
 
 $lang{SPENDING} = 'Розхід';
+$lang{SPENDING_TYPES} = 'Типи розходів';
 $lang{COMING} = 'Прихід';
+$lang{CASHBOX_REPORT}='Звіт по балансу';
 1;

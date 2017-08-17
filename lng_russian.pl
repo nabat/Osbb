@@ -13,8 +13,6 @@ $lang{RENT}='Квартплата';
 $lang{FILL_DEFAULT_VALUES_THAT_WILL_REPLACE_EMPTY_FILE_FIELDS} = 'Заполните значения общие для всех жильцов';
 $lang{FILL_DEFAULT_VALUES_AND_CHOOSE_FILE_FOR_IMPORT} = 'Заполните значения общие для всех жильцов и выб та виберите файл для импорта';
 $lang{TOTAL_SPACE}      ='Общая площадь';
-$lang{SPENDING}='Расход';
-$lang{SPENDING_TYPES}='Типы расходов';
 $lang{SPACE_TYPES}      ='Виды помещений';
 
 $lang{TARIFS}           = 'Тарифы';
@@ -49,5 +47,7 @@ $lang{LASTNAME} = 'Фамилия';
 $lang{SURNAME} = 'Отчество';
 
 $lang{SPENDING} = 'Расход';
+$lang{SPENDING_TYPES}='Типы расходов';
 $lang{COMING} = 'Приход';
+$lang{CASHBOX_REPORT}='Отчет по балансу';
 1;

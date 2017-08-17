@@ -12,8 +12,6 @@ $lang{RENT} = 'Rent';
 $lang{FILL_DEFAULT_VALUES_THAT_WILL_REPLACE_EMPTY_FILE_FIELDS} = 'Fill dwellers common values';
 $lang{FILL_DEFAULT_VALUES_AND_CHOOSE_FILE_FOR_IMPORT} = 'Fill general values and choose file for import';
 $lang{SPACE_TYPES} = 'Space types';
-$lang{SPENDING} = 'Spending';
-$lang{SPENDING_TYPES} = 'Spending types';
 
 $lang{TARIFS}           = 'Tarifs';
 $lang{TARIF}            = 'Tarif';
@@ -47,5 +45,7 @@ $lang{LASTNAME} = 'Lastname';
 $lang{SURNAME} = 'Surname';
 
 $lang{SPENDING} = 'Spending';
+$lang{SPENDING_TYPES} = 'Spending types';
 $lang{COMING} = 'Coming';
+$lang{CASHBOX_REPORT}='Balance report';
 1;
