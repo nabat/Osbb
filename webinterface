@@ -799,11 +799,11 @@ sub _under_construction {
 }
 
 #**********************************************************
-=head2 osbb_create_wizard()
+=head2 osbb_registration_wizard()
 
 =cut
 #**********************************************************
-sub osbb_create_wizard {
+sub osbb_registration_wizard {
   
   if ( my $module_load_error = load_pmodule2("JSON", { SHOW_RETURN => 1 }) ) {
     print $module_load_error;
@@ -932,7 +932,7 @@ sub osbb_create_wizard {
       name  => 'Державна реєстрація ОСББ',
       icon  => 'ok',
       items => [
-      {name => 'Подати документи державному реєстратору'}
+        { name => 'Подати документи державному реєстратору' }
       ],
       hint  => q{
       <p>Відповідно до Закону України «Про державну реєстрацію юридичних осіб та фізичних осіб — підприємців», для проведення державної реєстрації ОСББ як юридичної особи вповноваженій установчими зборами особі необхідно подати державному реєстратору такі документи:</p>
@@ -965,5 +965,30 @@ sub osbb_create_wizard {
   
   return 1;
 }
+
+#**********************************************************
+=head2 osbb_osbb_reg_wizard_sp()
+
+=cut
+#**********************************************************
+sub osbb_osbb_reg_wizard_sp {
+  
+  my $reg_index = get_function_index('osbb_registration_wizard');
+  my $reg_btn = $html->button("$lang{REGISTRATION} $lang{OSBB}", "index=$reg_index", {
+      class => 'btn btn-lg btn-success'
+    });
+  
+  my $table = $html->table({
+    width        => '100%',
+    titles_plain => [ '-' ],
+    caption      => "$lang{HELP} $lang{OSBB}",
+    ID           => 'OSBB_HELP',
+  });
+  
+  $table->addrow($html->element('div', $reg_btn, { class => 'text-center' }));
+  
+  return $table->show();
+}
+
 
 1;
