@@ -220,6 +220,7 @@
 
 
 
+
 </script>
 
 <script type='x-tmpl-mustache' id="osbb_wizard_tab_control_template">
@@ -231,6 +232,7 @@
       </span>
     </a>
   </li>
+
 
 
 
@@ -328,7 +330,7 @@
 
     // Init checkbox permanent logic
     jQuery('input.wizard-checkbox').on('change', function () {
-      var chb   = jQuery(this);
+      var chb = jQuery(this);
       ph.setState('#' + chb.attr('id'), chb.prop('checked'));
     });
 
@@ -341,6 +343,9 @@
     var saved        = aStorage.getValue(this.storage_key, null);
     if (saved !== null) {
       this.state = JSON.parse(saved);
+    }
+    else {
+      this.state = {};
     }
 
     // Set saved checkboxes checked state
