@@ -10,7 +10,7 @@ use strict;
 use warnings FATAL => 'all';
 
 use Osbb::db::Osbb;
-use Abills::Base qw(cmd convert _bp mk_unique_value sendmail encode_base64);
+use Abills::Base qw(cmd convert _bp mk_unique_value sendmail encode_base64 load_pmodule);
 use Abills::Filters qw(human_exp);
 use JSON;
 use Users;
@@ -805,7 +805,7 @@ sub _under_construction {
 #**********************************************************
 sub osbb_registration_wizard {
   
-  if ( my $module_load_error = load_pmodule2("JSON", { SHOW_RETURN => 1 }) ) {
+  if ( my $module_load_error = load_pmodule("JSON", { SHOW_RETURN => 1 }) ) {
     print $module_load_error;
     return 0;
   }
