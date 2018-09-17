@@ -37,7 +37,7 @@
     </form>
 
   </div>
-  <div class='box-footer text-center'>
+  <div class='box-footer'>
     <input type='submit' id='form_submit' form='form_OSBB_IMPORT_FILE' class='btn btn-primary' name='preview' value='_{PREVIEW}_'>
   </div>
 </div>

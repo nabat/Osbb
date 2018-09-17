@@ -22,13 +22,14 @@ our (
 #**********************************************************
 sub osbb_start_page {
   my ($attr) = @_;
-
+  
   my %START_PAGE_F = (
-      'osbb_quick_menu'     => "$lang{OSBB} $lang{MENU}",
-      'osbb_finance_report' => "$lang{OSBB} $lang{BALANCE}",
-      'osbb_tarifs_report'    => "$lang{OSBB} $lang{TARIFS}",
+    'osbb_quick_menu'         => "$lang{OSBB} $lang{MENU}",
+    'osbb_finance_report'     => "$lang{OSBB} $lang{BALANCE}",
+    'osbb_tarifs_report'      => "$lang{OSBB} $lang{TARIFS}",
+    'osbb_osbb_reg_wizard_sp' => "$lang{REGISTRATION} $lang{OSBB}"
   );
-
+  
   return \%START_PAGE_F;
 }
 
