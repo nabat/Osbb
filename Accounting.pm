@@ -30,6 +30,10 @@ my $Osbb = Osbb->new($db, $admin, \%conf);
 my $User = Users->new($db, $admin, \%conf);
 
 
+use Fin::db::Fin;
+my $Fin = Fin->new($db, $admin, \%conf);
+
+
 #**********************************************************
 =head2 osbb_calculated_balance () -
 
@@ -146,23 +150,69 @@ sub osbb_calculated_balance {
                         } @$users_list) {
     my $balance_report_info = $Extfin->extfin_report_balance_info({ PERIOD => $period, BILL_ID => $user_line->{bill_id}, COLS_NAME => 1 });
 
-    my $month_payments = $Payments->list({
-      MONTH     => $period,
-      BILL_ID   => $user_line->{bill_id},
-      COLS_NAME => 1,
-    });
+    # my $month_payments = $Payments->list({
+    #   MONTH     => $period,
+    #   BILL_ID   => $user_line->{bill_id},
+    #   COLS_NAME => 1,
+    # });
 
-    my $month_fees = $Fees->list({
-      MONTH     => $period,
-      BILL_ID   => $user_line->{bill_id},
-      COLS_NAME => 1,
-    });
+    # my $month_fees = $Fees->list({
+    #   MONTH     => $period,
+    #   BILL_ID   => $user_line->{bill_id},
+    #   COLS_NAME => 1,
+    # });
 
-    my $saldo = ($balance_report_info->{SUM} || 0) - $Fees->{SUM} + $Payments->{SUM};
+    # my $saldo = ($balance_report_info->{SUM} || 0) - $Fees->{SUM} + $Payments->{SUM};
+
+    # my $user_button = $html->button($user_line->{fio} || "Немає ФІО", "index=" . get_function_index('osbb_users_list'). "&usr=$user_line->{uid}&change=1", {});
+
+    # $table->addrow($user_line->{address_flat}, $user_button, sprintf('%.2f', ($balance_report_info->{SUM} || 0)), sprintf('%.2f', $Fees->{SUM}), sprintf('%.2f', $Payments->{SUM}), sprintf('%.2f', $saldo));
+
+    # $users_print_table .=
+    #   "<tr><td>"
+    # . $user_line->{address_flat}
+    # . "</td><td align='right'>"
+    # . ($user_line->{fio} || '---------')
+    # . "</td><td align='right'>"
+    # . sprintf('%.2f', $balance_report_info->{SUM} || 0)
+    # . "</td><td align='right'>"
+    # . sprintf('%.2f', $Fees->{SUM})
+    # . "</td><td align='right'>"
+    # . sprintf('%.2f', $Payments->{SUM})
+    # . "</td><td align='right'>"
+    # . sprintf('%.2f', $saldo)
+    # . "</td></tr>";
+
+    # # total count
+    # $total_old_saldo += $balance_report_info->{SUM} || 0.00;
+    # $total_fees      += $Fees->{SUM};
+    # $total_payments  += $Payments->{SUM};
+    # $total_new_saldo += $saldo;
+    # $balance_next_period{$user_line->{bill_id}} = $saldo;
+
+
+
+    my $month_payments = $Fin->payments_list({
+      MONTH      => $period,
+      UID        => $user_line->{uid},
+      COLS_NAME  => 1,
+      PAGE_ROWS  => 10000,
+    });
+    my $payments_sum = $Fin->{SUM};
+
+    my $month_fees = $Fin->fees_list({
+      MONTH      => $period,
+      UID        => $user_line->{uid},
+      COLS_NAME  => 1,
+      PAGE_ROWS  => 10000,
+    });
+    my $fees_sum = $Fin->{SUM};
+
+    my $saldo = ($balance_report_info->{SUM} || 0) + $fees_sum - $payments_sum;
 
     my $user_button = $html->button($user_line->{fio} || "Немає ФІО", "index=" . get_function_index('osbb_users_list'). "&usr=$user_line->{uid}&change=1", {});
 
-    $table->addrow($user_line->{address_flat}, $user_button, sprintf('%.2f', ($balance_report_info->{SUM} || 0)), sprintf('%.2f', $Fees->{SUM}), sprintf('%.2f', $Payments->{SUM}), sprintf('%.2f', $saldo));
+    $table->addrow($user_line->{address_flat}, $user_button, sprintf('%.2f', ($balance_report_info->{SUM} || 0)), sprintf('%.2f', $fees_sum), sprintf('%.2f', $payments_sum), sprintf('%.2f', $saldo));
 
     $users_print_table .=
       "<tr><td>"
@@ -172,19 +222,21 @@ sub osbb_calculated_balance {
     . "</td><td align='right'>"
     . sprintf('%.2f', $balance_report_info->{SUM} || 0)
     . "</td><td align='right'>"
-    . sprintf('%.2f', $Fees->{SUM})
+    . sprintf('%.2f', $fees_sum)
     . "</td><td align='right'>"
-    . sprintf('%.2f', $Payments->{SUM})
+    . sprintf('%.2f', $payments_sum)
     . "</td><td align='right'>"
     . sprintf('%.2f', $saldo)
     . "</td></tr>";
 
     # total count
     $total_old_saldo += $balance_report_info->{SUM} || 0.00;
-    $total_fees      += $Fees->{SUM};
-    $total_payments  += $Payments->{SUM};
+    $total_fees      += $fees_sum;
+    $total_payments  += $payments_sum;
     $total_new_saldo += $saldo;
     $balance_next_period{$user_line->{bill_id}} = $saldo;
+
+
   
     push(@data_for_receipts, { FIO        => $user_line->{fio} || '', 
                                SALDO      => $saldo <= 0 ? sprintf('%.2f грн.', $saldo * (-1)) : sprintf('%.2f грн.',$saldo),
@@ -393,18 +445,30 @@ sub osbb_month_fees {
   _error_show($Osbb);
   
   
-  my $month_fees = $Fees->list({ 
+  # my $month_fees = $Fees->list({ 
+  #   LOCATION_ID   => $FORM{LOCATION_ID},
+  #   DOMAIN_ID     => $admin->{DOMAIN_ID},
+  #   MONTH         => $period,
+  #   COLS_NAME     => 1,
+  #   PAGE_ROWS     => 10000,
+  # });
+  # _error_show($Fees);
+
+  # if ($Fees->{SUM} > 0 && !$FORM{print_form}) {
+  #   $html->message('info', "$lang{FEES_ALREADY_EXISTS}: " . sprintf('%.2f',$Fees->{SUM}));
+  #   $params->{BUTTON} = $html->form_input('change', $lang{CHANGE_}, { TYPE => 'submit' });
+  # }
+
+  my $month_fees = $Fin->fees_list({ 
     LOCATION_ID   => $FORM{LOCATION_ID},
     DOMAIN_ID     => $admin->{DOMAIN_ID},
     MONTH         => $period,
     COLS_NAME     => 1,
+    PAGE_ROWS     => 10000,
   });
-  _error_show($Fees);
+  _error_show($Fin);
   
-  if ($Fees->{SUM} > 0 && !$FORM{print_form}) {
-    $html->message('info', "$lang{FEES_ALREADY_EXISTS}: " . sprintf('%.2f',$Fees->{SUM}));
-    $params->{BUTTON} = $html->form_input('change', $lang{CHANGE_}, { TYPE => 'submit' });
-  }
+  my $month_sum = $Fin->{SUM};
   
   my $total_fees = 0;
   my $users_print_table = '';
@@ -498,20 +562,40 @@ sub osbb_month_fees {
     return 1;
   }  
 
-  $params->{TABLE} = $table->show();
-  
-  $html->tpl_show(_include('osbb_form_month_fees', 'Osbb'), $params);
-
   if ($FORM{add} || $FORM{change}) { 
     if ($FORM{change}) {
       foreach (@$month_fees) {
-        $Fees->del(undef, $_->{id});
+        # $Fees->del(undef, $_->{id});
+        $Fin->entry_del($_->{id});
       }
     }  
     foreach ( @fees_array ) {
-      $Osbb->fees_add( {UID => $_->[0], BILL_ID => $_->[1], SUM => $_->[2], DATE => $period . "-01", DSC => $_->[3]} );
+      # $Osbb->fees_add( {UID => $_->[0], BILL_ID => $_->[1], SUM => $_->[2], DATE => $period . "-01", DSC => $_->[3]} );
+      $Fin->fees_add({
+        UID      => $_->[0],
+        SUM      => $_->[2],
+        DATE     => $period . "-01",
+        COMMENTS => $_->[3],
+      });
     }
+    $month_fees = $Fin->fees_list({ 
+      LOCATION_ID   => $FORM{LOCATION_ID},
+      DOMAIN_ID     => $admin->{DOMAIN_ID},
+      MONTH         => $period,
+      COLS_NAME     => 1,
+      PAGE_ROWS     => 10000,
+    });
+    $month_sum = $Fin->{SUM};
   }
+
+  if ($month_sum > 0 && !$FORM{print_form}) {
+    $html->message('info', "$lang{FEES_ALREADY_EXISTS}: " . sprintf('%.2f',$month_sum));
+    $params->{BUTTON} = $html->form_input('change', $lang{CHANGE_}, { TYPE => 'submit' });
+  }
+
+  $params->{TABLE} = $table->show();
+  
+  $html->tpl_show(_include('osbb_form_month_fees', 'Osbb'), $params);
   
   return 1;
 }
@@ -529,13 +613,21 @@ sub osbb_payments_add{
       return 0;
     }
     
-    my $user_info = $User->info($FORM{usr});
-    $Osbb->payments_add({ %FORM, UID => $FORM{usr}, BILL_ID => $user_info->{BILL_ID} });
-    _error_show($Osbb);
-    if ( !$Osbb->{errno} ) {
+    # my $user_info = $User->info($FORM{usr});
+    # $Osbb->payments_add({ %FORM, UID => $FORM{usr}, BILL_ID => $user_info->{BILL_ID} });
+    # _error_show($Osbb);
+    # if ( !$Osbb->{errno} ) {
+    #   $html->message('info', "$lang{ADDED}");
+    #   delete $FORM{SUM};
+    # }
+     
+    $Fin->payment_add({ %FORM, UID => $FORM{usr}, UID => $FORM{usr} });
+    _error_show($Fin);
+    if ( !$Fin->{errno} ) {
       $html->message('info', "$lang{ADDED}");
       delete $FORM{SUM};
     }
+
   }
   
   if ( !$FORM{LOCATION_ID} ) {

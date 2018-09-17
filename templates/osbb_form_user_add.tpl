@@ -32,6 +32,13 @@
       </div>
 
       <div class='form-group'>
+        <label class='control-label col-md-3' for='EMAIL'>_{EMAIL}_</label>
+        <div class='col-md-9'>
+          <input id='EMAIL' name='EMAIL' value='%EMAIL%' class='form-control' type='text'>
+        </div>
+      </div>
+
+      <div class='form-group'>
         <label class='control-label col-md-3' for='LIVING_AREA'>_{LIVING_AREA}_</label>
         <div class='col-md-9'>
           <input id='LIVING_AREA' name='LIVING_AREA' value='%LIVING_AREA%' class='form-control' type='number' step='0.01'>
